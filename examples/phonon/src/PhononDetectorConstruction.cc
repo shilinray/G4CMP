@@ -164,6 +164,7 @@ void PhononDetectorConstruction::SetupGeometry()
   //
   // surface between Al and Ge determines phonon reflection/absorption
   //
+  // 
   if (!fConstructed) {
     const G4double GHz = 1e9 * hertz; 
 
