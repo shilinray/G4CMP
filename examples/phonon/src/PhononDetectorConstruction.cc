@@ -112,8 +112,8 @@ void PhononDetectorConstruction::SetupGeometry()
   //                               
   // Germanium cylinder - this is the volume in which we will propagate phonons
   //  
-  G4VSolid* fGermaniumSolid = new G4Tubs("fGermaniumSolid",0.*cm,3.81*cm,
-                                         1.27*cm, 0.*deg, 360.*deg);
+  G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", 0.5*cm, 0.5*cm,
+                                         0.05*cm);
   G4LogicalVolume* fGermaniumLogical =
     new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
   G4VPhysicalVolume* GePhys = 
@@ -140,9 +140,9 @@ void PhononDetectorConstruction::SetupGeometry()
   // Aluminum - crystal end caps. This is where phonon hits are registered
   //
   // Make square plates smaller than Ge radius (3.81 cm)
-  const G4double geHalfZ = 1.27*cm;
-  const G4double alHalfXY = 1.5*cm;     // full side = 3.0 cm < 3.81 cm (Ge radius)
-  const G4double alHalfZ  = 0.005*cm;   // thinner than previous 0.01 cm
+  const G4double geHalfZ = 0.05*cm;
+  const G4double alHalfXY = 0.5*mm;     // full side = 1.0 mm
+  const G4double alHalfZ  = 0.05*mm;   // full thickness = 0.1 mm
 
   G4VSolid* fAluminumSolid = new G4Box("aluminiumSolid", alHalfXY, alHalfXY, alHalfZ);
 
@@ -151,10 +151,7 @@ void PhononDetectorConstruction::SetupGeometry()
   G4VPhysicalVolume* aluminumTopPhysical = new G4PVPlacement(
     0, G4ThreeVector(0.,0., geHalfZ + alHalfZ), fAluminumLogical, "fAluminumPhysical",
     worldLogical, false, 0);
-  G4VPhysicalVolume* aluminumBotPhysical = new G4PVPlacement(
-    0, G4ThreeVector(0.,0., -geHalfZ - alHalfZ), fAluminumLogical, "fAluminumPhysical",
-    worldLogical, false, 1);
-
+  
   //
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
   // want a phonon sensitive detector, attached to Ge crystal
@@ -186,11 +183,7 @@ void PhononDetectorConstruction::SetupGeometry()
 					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
     AttachPhononSensor(topSurfProp);
 
-    botSurfProp = new G4CMPSurfaceProperty("BotAlSurf", 1.0, 0.0, 0.0, 0.0,
-					   	        0.3, 1.0, 0.0, 0.0);
-    botSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
-    AttachPhononSensor(botSurfProp);
+    botSurfProp = 0;
 
     wallSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
 					    	          0.0, 1.0, 0.0, 0.0);
@@ -200,12 +193,10 @@ void PhononDetectorConstruction::SetupGeometry()
   }
 
   // Connects the inner volume, outer volume, and physics that applies at the surface
-  // Separate surfaces for sensors vs. bare sidewall
+  // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
   new G4CMPLogicalBorderSurface("detTop", GePhys, aluminumTopPhysical,
 				topSurfProp);
-  new G4CMPLogicalBorderSurface("detBot", GePhys, aluminumBotPhysical,
-				botSurfProp);
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys,
 				wallSurfProp);
 
