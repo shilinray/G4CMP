@@ -37,7 +37,7 @@ int main(int argc,char** argv)
  runManager->SetUserInitialization(detector);
 
  G4VUserPhysicsList* physics = new G4CMPPhysicsList();
- physics->SetCuts();
+ physics->SetCuts(); // what does this do???
  runManager->SetUserInitialization(physics);
  
  // Set user action classes (different for Geant4 10.0)

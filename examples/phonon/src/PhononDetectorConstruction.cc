@@ -107,7 +107,7 @@ void PhononDetectorConstruction::SetupGeometry()
     new G4LogicalVolume(worldSolid,fLiquidHelium,"World");
   worldLogical->SetUserLimits(new G4UserLimits(10*mm, DBL_MAX, DBL_MAX, 0, 0));
   fWorldPhys = new G4PVPlacement(0,G4ThreeVector(),worldLogical,"World",0,
-                                 false,0);
+                                 false,0); // physical placement
   
   //                               
   // Germanium cylinder - this is the volume in which we will propagate phonons
@@ -116,7 +116,7 @@ void PhononDetectorConstruction::SetupGeometry()
                                          1.27*cm, 0.*deg, 360.*deg);
   G4LogicalVolume* fGermaniumLogical =
     new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
-  G4VPhysicalVolume* GePhys =
+  G4VPhysicalVolume* GePhys = 
     new G4PVPlacement(0,G4ThreeVector(),fGermaniumLogical,"fGermaniumPhysical",
                       worldLogical,false,0); // placing physical volume at center of world logical
 
@@ -139,17 +139,21 @@ void PhononDetectorConstruction::SetupGeometry()
   //
   // Aluminum - crystal end caps. This is where phonon hits are registered
   //
-  G4VSolid* fAluminumSolid = new G4Tubs("aluminiumSolid",0.*cm,3.81*cm,0.01*cm,
-                                        0.*deg, 360.*deg);
+  // Make square plates smaller than Ge radius (3.81 cm)
+  const G4double geHalfZ = 1.27*cm;
+  const G4double alHalfXY = 1.5*cm;     // full side = 3.0 cm < 3.81 cm (Ge radius)
+  const G4double alHalfZ  = 0.005*cm;   // thinner than previous 0.01 cm
+
+  G4VSolid* fAluminumSolid = new G4Box("aluminiumSolid", alHalfXY, alHalfXY, alHalfZ);
 
   G4LogicalVolume* fAluminumLogical =
     new G4LogicalVolume(fAluminumSolid,fAluminum,"fAluminumLogical");
-  G4VPhysicalVolume* aluminumTopPhysical = new G4PVPlacement(0,
-    G4ThreeVector(0.,0.,1.28*cm), fAluminumLogical, "fAluminumPhysical",
-    worldLogical,false,0);
-  G4VPhysicalVolume* aluminumBotPhysical = new G4PVPlacement(0,
-    G4ThreeVector(0.,0.,-1.28*cm), fAluminumLogical, "fAluminumPhysical",
-    worldLogical,false,1);
+  G4VPhysicalVolume* aluminumTopPhysical = new G4PVPlacement(
+    0, G4ThreeVector(0.,0., geHalfZ + alHalfZ), fAluminumLogical, "fAluminumPhysical",
+    worldLogical, false, 0);
+  G4VPhysicalVolume* aluminumBotPhysical = new G4PVPlacement(
+    0, G4ThreeVector(0.,0., -geHalfZ - alHalfZ), fAluminumLogical, "fAluminumPhysical",
+    worldLogical, false, 1);
 
   //
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
@@ -195,7 +199,7 @@ void PhononDetectorConstruction::SetupGeometry()
 
   }
 
-  //
+  // Connects the inner volume, outer volume, and physics that applies at the surface
   // Separate surfaces for sensors vs. bare sidewall
   //
   new G4CMPLogicalBorderSurface("detTop", GePhys, aluminumTopPhysical,
