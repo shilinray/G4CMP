@@ -102,7 +102,7 @@ void PhononDetectorConstruction::SetupGeometry()
   //     
   // World
   //
-  G4VSolid* worldSolid = new G4Box("World",16.*cm,16.*cm,16.*cm);
+  G4VSolid* worldSolid = new G4Box("World",16.*cm,16.*cm,16.*cm); // half (-16,16)
   G4LogicalVolume* worldLogical =
     new G4LogicalVolume(worldSolid,fLiquidHelium,"World");
   worldLogical->SetUserLimits(new G4UserLimits(10*mm, DBL_MAX, DBL_MAX, 0, 0));
@@ -118,7 +118,7 @@ void PhononDetectorConstruction::SetupGeometry()
     new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
   G4VPhysicalVolume* GePhys =
     new G4PVPlacement(0,G4ThreeVector(),fGermaniumLogical,"fGermaniumPhysical",
-                      worldLogical,false,0);
+                      worldLogical,false,0); // placing physical volume at center of world logical
 
   //
   //Germanium lattice information
@@ -130,8 +130,8 @@ void PhononDetectorConstruction::SetupGeometry()
 
   // G4LatticePhysical assigns G4LatticeLogical a physical orientation
   G4LatticePhysical* GePhysical = new G4LatticePhysical(GeLogical);
-  GePhysical->SetMillerOrientation(1,0,0);
-  LM->RegisterLattice(GePhys, GePhysical);
+  GePhysical->SetMillerOrientation(1,0,0); // how crystal is oriented, also 4 coord orient. (online calculator)
+  LM->RegisterLattice(GePhys, GePhysical); // connects physical lattice to volume
 
   // NOTE:  Above registration can also be done in single step:
   // G4LatticlePhysical* GePhysical = LM->LoadLattice(GePhys, "Ge");
@@ -153,7 +153,7 @@ void PhononDetectorConstruction::SetupGeometry()
 
   //
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
-  //
+  // want a phonon sensitive detector, attached to Ge crystal
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   if (!electrodeSensitivity)
     electrodeSensitivity = new PhononSensitivity("PhononElectrode");
@@ -176,8 +176,8 @@ void PhononDetectorConstruction::SetupGeometry()
 
     const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
 
-    topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 1.0, 0.0, 0.0, 0.0,
-					  	        0.3, 1.0, 0.0, 0.0);
+    topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 1.0, 0.0, 0.0, 0.0,  
+					  	        0.3, 1.0, 0.0, 0.0);   // absorption and reflection are the first two, opposite for the wall
     topSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
     AttachPhononSensor(topSurfProp);
