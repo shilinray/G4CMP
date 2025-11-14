@@ -1,0 +1,8 @@
+/sdf/home/s/shilin/mycode/G4CMP/examples/phonon/build/CMakeFiles/phononLib.dir
+/sdf/home/s/shilin/mycode/G4CMP/examples/phonon/build/CMakeFiles/g4cmpPhonon.dir
+/sdf/home/s/shilin/mycode/G4CMP/examples/phonon/build/CMakeFiles/edit_cache.dir
+/sdf/home/s/shilin/mycode/G4CMP/examples/phonon/build/CMakeFiles/rebuild_cache.dir
+/sdf/home/s/shilin/mycode/G4CMP/examples/phonon/build/CMakeFiles/list_install_components.dir
+/sdf/home/s/shilin/mycode/G4CMP/examples/phonon/build/CMakeFiles/install.dir
+/sdf/home/s/shilin/mycode/G4CMP/examples/phonon/build/CMakeFiles/install/local.dir
+/sdf/home/s/shilin/mycode/G4CMP/examples/phonon/build/CMakeFiles/install/strip.dir
