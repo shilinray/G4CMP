@@ -112,8 +112,9 @@ void PhononDetectorConstruction::SetupGeometry()
   //                               
   // Germanium cylinder - this is the volume in which we will propagate phonons
   //  
+  const G4double geHalfZ = 0.05*mm;
   G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", 0.5*cm, 0.5*cm,
-                                         0.05*cm);
+                                         geHalfZ);
   G4LogicalVolume* fGermaniumLogical =
     new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
   G4VPhysicalVolume* GePhys = 
@@ -137,10 +138,7 @@ void PhononDetectorConstruction::SetupGeometry()
   // G4LatticlePhysical* GePhysical = LM->LoadLattice(GePhys, "Ge");
 
   //
-  // Aluminum - crystal end caps. This is where phonon hits are registered
-  //
-  // Make square plates smaller than Ge radius (3.81 cm)
-  const G4double geHalfZ = 0.05*cm;
+  // Aluminum. This is where phonon hits are registered
 
   // Aluminum sensor
   const G4double alSensorHalfXY = 0.5*mm;     // full side = 1.0 mm
@@ -151,7 +149,7 @@ void PhononDetectorConstruction::SetupGeometry()
 
   // Aluminum feedline
   const G4double alFeedlineHalfX = 0.5*cm;
-  const G4double alFeedlineHalfY = 0.1*cm;
+  const G4double alFeedlineHalfY = 0.05*mm;
   const G4double alFeedlineHalfZ = 0.05*mm;
   G4VSolid* fAluminumFeedlineSolid = new G4Box("feedline", alFeedlineHalfX, alFeedlineHalfY, alFeedlineHalfZ);
   G4LogicalVolume* fAluminumFeedlineLogical =
