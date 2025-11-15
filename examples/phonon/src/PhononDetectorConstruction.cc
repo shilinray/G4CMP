@@ -159,8 +159,10 @@ void PhononDetectorConstruction::SetupGeometry()
     0, G4ThreeVector(0.,0., geHalfZ + alFeedlineHalfZ), fAluminumFeedlineLogical, "feedlinePhysical",
     worldLogical, false, 0);
 
+  const G4double gaptosensor = .1*mm
+  
   G4VPhysicalVolume* aluminumSensorPhysical = new G4PVPlacement(
-    0, G4ThreeVector(0., alFeedlineHalfY + 1.*mm + alSensorHalfXY, geHalfZ + alFeedlineHalfZ), fAluminumSensorLogical, "sensorPhysical",
+    0, G4ThreeVector(0., alFeedlineHalfY + gaptosensor + alSensorHalfXY, geHalfZ + alFeedlineHalfZ), fAluminumSensorLogical, "sensorPhysical",
     worldLogical, false, 0);
   
   //
