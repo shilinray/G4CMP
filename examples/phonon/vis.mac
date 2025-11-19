@@ -23,6 +23,9 @@
 /vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
 #
 # Generate 20 phonons per event to populate display
+/g4cmp/HitsFile phonon_hits_2.txt
+/run/initialize
+/tracking/storeTrajectory 1
 /gun/number 20
 /run/beamOn 1
 #
