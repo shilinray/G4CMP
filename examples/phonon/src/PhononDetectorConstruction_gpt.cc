@@ -20,10 +20,6 @@
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPSurfaceProperty.hh"
 #include "G4Box.hh"
-#include "G4MultiUnion.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4Transform3D.hh"
-#include "G4RotationMatrix.hh"
 #include "G4Colour.hh"
 #include "G4GeometryManager.hh"
 #include "G4LatticeLogical.hh"
@@ -144,75 +140,99 @@ void PhononDetectorConstruction::SetupGeometry()
   //
   // Aluminum. This is where phonon hits are registered
 
-  // Aluminum feedline
-  const G4double alFeedlineHalfX = 0.5*cm;
-  const G4double alFeedlineHalfY = 1.5*um;
-  const G4double alFeedlineHalfZ = 0.1*um;
+  // Aluminum meander: multiple long horizontal traces, plus left short pad comb,
+  // a top bus, and a bottom semicircular coupling arc; all lie in XY plane on top of Ge.
+  const G4double alHalfZ      = 0.05*mm;          // same thickness as before
+  const G4double zPos         = geHalfZ + alHalfZ;
+  // Meander long horizontal traces
+  const G4int    nLongTraces  = 24;
+  const G4double traceWidth   = 0.05*mm;          // full width = 0.10 mm
+  const G4double traceGap     = 0.05*mm;          // full gap between traces
+  const G4double traceHalfY   = traceWidth/2.;
+  const G4double longTraceHalfX = 3.0*mm;         // full length 6 mm
+  // Left comb short pads
+  const G4int    nShortPads   = 12;
+  const G4double shortPadHalfX = 0.6*mm;          // full length 1.2 mm
+  const G4double padPitch     = 0.30*mm;          // vertical spacing (center-to-center)
+  // Top bus
+  const G4double busHalfX     = 3.2*mm;
+  const G4double busHalfY     = 0.06*mm;
+  // Bottom coupling semicircle
+  const G4double arcInnerR    = 0.40*mm;
+  const G4double arcWidth     = 0.10*mm;
+  const G4double arcOuterR    = arcInnerR + arcWidth;
+  const G4double arcHalfZ     = alHalfZ;
+  const G4double arcPhiStart  = 180.*deg;
+  const G4double arcPhiSpan   = 180.*deg;
 
-  // Outer feedline dimensions (100um width)
-  const G4double alOuterFeedlineHalfY = 50.0*um;
-  const G4double feedlineGap = 2.0*um;
+  // Center offsets
+  const G4double patternCenterX = 0.*mm;
+  const G4double patternCenterY = 0.*mm;
 
-  G4Box* solidCenter = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, alFeedlineHalfZ);
-  G4Box* solidOuter  = new G4Box("feedlineOuter",  alFeedlineHalfX, alOuterFeedlineHalfY, alFeedlineHalfZ);
+  // Solids/logicals reused
+  G4VSolid* longTraceSolid =
+    new G4Box("longTraceSolid", longTraceHalfX, traceHalfY, alHalfZ);
+  G4LogicalVolume* longTraceLogical =
+    new G4LogicalVolume(longTraceSolid, fAluminum, "longTraceLogical");
 
-  // Create bottom feedline with cutout
-  // Cut 98um in Y, 723um in X. Leave 2um closest to center.
-  // Bottom feedline is at negative Y global. Local +Y is closest to center.
-  // Local Y range: [-50, 50]. Keep [48, 50]. Cut [-50, 48].
-  // Center of cut Y = -1.
-  G4double cutHalfX = 723.0*um / 2.0;
-  G4double cutHalfY = 98.0*um / 2.0;
-  G4double cutHalfZ = alFeedlineHalfZ; 
-  G4Box* solidCutout = new G4Box("feedlineCutout", cutHalfX, cutHalfY, cutHalfZ);
+  G4VSolid* shortPadSolid =
+    new G4Box("shortPadSolid", shortPadHalfX, traceHalfY, alHalfZ);
+  G4LogicalVolume* shortPadLogical =
+    new G4LogicalVolume(shortPadSolid, fAluminum, "shortPadLogical");
 
-  G4ThreeVector cutPos(0, -1.0*um, 0);
-  G4SubtractionSolid* solidBottom = new G4SubtractionSolid("feedlineBottom", solidOuter, solidCutout, 0, cutPos);
+  G4VSolid* busSolid =
+    new G4Box("busSolid", busHalfX, busHalfY, alHalfZ);
+  G4LogicalVolume* busLogical =
+    new G4LogicalVolume(busSolid, fAluminum, "busLogical");
 
-  G4MultiUnion* fAluminumFeedlineSolid = new G4MultiUnion("feedlineMultiUnion");
+  G4VSolid* arcSolid =
+    new G4Tubs("couplingArcSolid", arcInnerR, arcOuterR, arcHalfZ,
+               arcPhiStart, arcPhiSpan);
+  G4LogicalVolume* arcLogical =
+    new G4LogicalVolume(arcSolid, fAluminum, "couplingArcLogical");
 
-  G4RotationMatrix rot;
-  G4ThreeVector posCenter(0, 0, 0);
-  G4Transform3D trCenter(rot, posCenter);
-  fAluminumFeedlineSolid->AddNode(*solidCenter, trCenter);
+  std::vector<G4VPhysicalVolume*> alPhysParts;
 
-  G4double yOffset = alFeedlineHalfY + feedlineGap + alOuterFeedlineHalfY;
+  // Place long traces (stacked along +Y)
+  const G4double totalHeight =
+      nLongTraces*(2.*traceHalfY) + (nLongTraces-1)*traceGap;
+  const G4double firstTraceY =
+      patternCenterY - 0.5*totalHeight + traceHalfY;
+  for (G4int i = 0; i < nLongTraces; ++i) {
+    G4double y = firstTraceY + i*(2.*traceHalfY + traceGap);
+    G4String name = "longTracePhys_" + std::to_string(i);
+    alPhysParts.push_back(new G4PVPlacement(
+        0, G4ThreeVector(patternCenterX, y, zPos),
+        longTraceLogical, name, worldLogical, false, i));
+  }
 
-  G4ThreeVector posTop(0, yOffset, 0);
-  G4Transform3D trTop(rot, posTop);
-  fAluminumFeedlineSolid->AddNode(*solidOuter, trTop);
+  // Place short pads (left comb), aligned roughly to upper section
+  const G4double combStartY = firstTraceY + 2.*mm; // shift start
+  for (G4int i = 0; i < nShortPads; ++i) {
+    G4double y = combStartY + i*padPitch;
+    G4String name = "shortPadPhys_" + std::to_string(i);
+    alPhysParts.push_back(new G4PVPlacement(
+        0, G4ThreeVector(patternCenterX - longTraceHalfX + shortPadHalfX - 0.4*mm,
+                         y, zPos),
+        shortPadLogical, name, worldLogical, false, i));
+  }
 
-  G4ThreeVector posBot(0, -yOffset, 0);
-  G4Transform3D trBot(rot, posBot);
-  fAluminumFeedlineSolid->AddNode(*solidBottom, trBot);
+  // Place top bus
+  G4VPhysicalVolume* busPhys = new G4PVPlacement(
+      0, G4ThreeVector(patternCenterX,
+                       firstTraceY + nLongTraces*(2.*traceHalfY + traceGap)/2. + busHalfY + 0.05*mm,
+                       zPos),
+      busLogical, "busPhys", worldLogical, false, 0);
+  alPhysParts.push_back(busPhys);
 
-  fAluminumFeedlineSolid->Voxelize();
+  // Place bottom coupling semicircle
+  G4VPhysicalVolume* arcPhys = new G4PVPlacement(
+      0, G4ThreeVector(patternCenterX,
+                       firstTraceY - arcOuterR - 0.2*mm,
+                       zPos),
+      arcLogical, "couplingArcPhys", worldLogical, false, 0);
+  alPhysParts.push_back(arcPhys);
 
-  G4LogicalVolume* fAluminumFeedlineLogical =
-    new G4LogicalVolume(fAluminumFeedlineSolid,fAluminum,"feedlineLogical");
-
-  G4VPhysicalVolume* aluminumFeedlinePhysical = new G4PVPlacement(
-    0, G4ThreeVector(0.,0., geHalfZ + alFeedlineHalfZ), fAluminumFeedlineLogical, "feedlinePhysical",
-    worldLogical, false, 0);
-
-  // Aluminum sensor
-  const G4double alSensorHalfXY = 0.5*mm;     // full side = 1.0 mm
-  const G4double alSensorHalfZ  = 0.1*um;  
-  const G4double gaptosensor = .1*mm;
-
-  G4VSolid* fAluminumSensorSolid = new G4Box("sensor", alSensorHalfXY, alSensorHalfXY, alSensorHalfZ);
-  G4LogicalVolume* fAluminumSensorLogical =
-    new G4LogicalVolume(fAluminumSensorSolid,fAluminum,"sensorLogical");
-  
-  G4double ycentertosensor = yOffset + alOuterFeedlineHalfY + gaptosensor + alSensorHalfXY;
-
-  G4VPhysicalVolume* aluminumSensorPhysical = new G4PVPlacement(
-    0, G4ThreeVector(0., ycentertosensor, geHalfZ + alSensorHalfZ), fAluminumSensorLogical, "sensorPhysical",
-    worldLogical, false, 0);
-
-  // QPD
-  
-  
   //
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
   // want a phonon sensitive detector, attached to Ge crystal
@@ -222,9 +242,16 @@ void PhononDetectorConstruction::SetupGeometry()
   SDman->AddNewDetector(electrodeSensitivity);
   fGermaniumLogical->SetSensitiveDetector(electrodeSensitivity);
 
+  // Assign SD to all aluminum logicals
+  longTraceLogical->SetSensitiveDetector(electrodeSensitivity);
+  shortPadLogical->SetSensitiveDetector(electrodeSensitivity);
+  busLogical->SetSensitiveDetector(electrodeSensitivity);
+  arcLogical->SetSensitiveDetector(electrodeSensitivity);
+
   //
   // surface between Al and Ge determines phonon reflection/absorption
   //
+  // 
   if (!fConstructed) {
     const G4double GHz = 1e9 * hertz; 
 
@@ -256,35 +283,29 @@ void PhononDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  new G4CMPLogicalBorderSurface("feedlineTop", GePhys, aluminumFeedlinePhysical,
-				topSurfProp);
-  new G4CMPLogicalBorderSurface("sensorTop", GePhys, aluminumSensorPhysical,
-				topSurfProp);
-  new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys,
-				wallSurfProp);
+  for (size_t i = 0; i < alPhysParts.size(); ++i) {
+    new G4CMPLogicalBorderSurface("AlCurveSurface_" + std::to_string(i),
+                                  GePhys, alPhysParts[i], topSurfProp);
+  }
+
+  // Remove old: new G4CMPLogicalBorderSurface("feedlineTop", ...), ("sensorTop", ...)
 
   //                                        
   // Visualization attributes
   //
-  // World remains invisible
   worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
+  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
+  simpleBoxVisAtt->SetVisibility(true);
+  fGermaniumLogical->SetVisAttributes(simpleBoxVisAtt);
+  // fAluminumFeedlineLogical->SetVisAttributes(simpleBoxVisAtt);
+  // fAluminumSensorLogical->SetVisAttributes(simpleBoxVisAtt);
 
-  // Germanium crystal: light gray, solid
-  G4VisAttributes* geVis = new G4VisAttributes(G4Colour(0.85,0.85,0.85));
-  geVis->SetForceSolid(true);
-  fGermaniumLogical->SetVisAttributes(geVis);
-
-  // Hide legacy feedline/sensor boxes (kept for compatibility)
-  fAluminumFeedlineLogical->SetVisAttributes(G4VisAttributes::Invisible);
-  fAluminumSensorLogical->SetVisAttributes(G4VisAttributes::Invisible);
-
-  // Aluminum patterned parts already assigned alVis earlier; ensure solid
-  // (reassert to be explicit)
-  // longTraceLogical, shortPadLogical, busLogical, arcLogical exist above
-  G4VisAttributes* alVis = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
+  G4VisAttributes* alVis = new G4VisAttributes(G4Colour(0.7,0.7,0.2));
   alVis->SetForceSolid(true);
-  fAluminumSensorLogical->SetVisAttributes(alVis);
-  fAluminumFeedlineLogical->SetVisAttributes(alVis);
+  longTraceLogical->SetVisAttributes(alVis);
+  shortPadLogical->SetVisAttributes(alVis);
+  busLogical->SetVisAttributes(alVis);
+  arcLogical->SetVisAttributes(alVis);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

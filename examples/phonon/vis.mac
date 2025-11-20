@@ -26,7 +26,7 @@
 /run/initialize
 /tracking/storeTrajectory 1
 /gun/number 20
-/run/beamOn 1
+# /run/beamOn 1
 #
 # Write event display to output files for analysis (face and side views)
 /vis/ogl/set/printFilename g4cmpPhonon
