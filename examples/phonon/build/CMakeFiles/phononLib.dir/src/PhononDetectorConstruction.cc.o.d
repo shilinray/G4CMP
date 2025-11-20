@@ -381,6 +381,18 @@ CMakeFiles/phononLib.dir/src/PhononDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/G4Visible.hh \
  /usr/local/include/Geant4/G4Visible.icc \
  /usr/local/include/Geant4/G4Box.icc \
+ /usr/local/include/Geant4/G4MultiUnion.hh \
+ /usr/local/include/Geant4/G4Vector3D.hh \
+ /usr/local/include/Geant4/G4SurfBits.hh \
+ /usr/local/include/Geant4/G4Voxelizer.hh \
+ /usr/local/include/Geant4/G4Box.hh /usr/local/include/Geant4/G4VFacet.hh \
+ /usr/local/include/Geant4/windefs.hh \
+ /usr/local/include/Geant4/G4Voxelizer.icc \
+ /usr/local/include/Geant4/G4SubtractionSolid.hh \
+ /usr/local/include/Geant4/G4BooleanSolid.hh \
+ /usr/local/include/Geant4/G4DisplacedSolid.hh \
+ /usr/local/include/Geant4/G4BooleanSolid.icc \
+ /usr/local/include/Geant4/G4Transform3D.hh \
  /usr/local/include/Geant4/G4Colour.hh \
  /usr/local/include/Geant4/G4GeometryManager.hh \
  /usr/local/include/Geant4/G4SmartVoxelStat.hh \
