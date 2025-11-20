@@ -219,12 +219,25 @@ void PhononDetectorConstruction::SetupGeometry()
   //                                        
   // Visualization attributes
   //
+  // World remains invisible
   worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
-  G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
-  simpleBoxVisAtt->SetVisibility(true);
-  fGermaniumLogical->SetVisAttributes(simpleBoxVisAtt);
-  fAluminumFeedlineLogical->SetVisAttributes(simpleBoxVisAtt);
-  fAluminumSensorLogical->SetVisAttributes(simpleBoxVisAtt);
+
+  // Germanium crystal: light gray, solid
+  G4VisAttributes* geVis = new G4VisAttributes(G4Colour(0.85,0.85,0.85));
+  geVis->SetForceSolid(true);
+  fGermaniumLogical->SetVisAttributes(geVis);
+
+  // Hide legacy feedline/sensor boxes (kept for compatibility)
+  fAluminumFeedlineLogical->SetVisAttributes(G4VisAttributes::Invisible);
+  fAluminumSensorLogical->SetVisAttributes(G4VisAttributes::Invisible);
+
+  // Aluminum patterned parts already assigned alVis earlier; ensure solid
+  // (reassert to be explicit)
+  // longTraceLogical, shortPadLogical, busLogical, arcLogical exist above
+  G4VisAttributes* alVis = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
+  alVis->SetForceSolid(true);
+  fAluminumSensorLogical->SetVisAttributes(alVis);
+  fAluminumFeedlineLogical->SetVisAttributes(alVis);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

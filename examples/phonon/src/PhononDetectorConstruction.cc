@@ -297,8 +297,8 @@ void PhononDetectorConstruction::SetupGeometry()
   G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
   simpleBoxVisAtt->SetVisibility(true);
   fGermaniumLogical->SetVisAttributes(simpleBoxVisAtt);
-  fAluminumFeedlineLogical->SetVisAttributes(simpleBoxVisAtt);
-  fAluminumSensorLogical->SetVisAttributes(simpleBoxVisAtt);
+  // fAluminumFeedlineLogical->SetVisAttributes(simpleBoxVisAtt);
+  // fAluminumSensorLogical->SetVisAttributes(simpleBoxVisAtt);
 
   G4VisAttributes* alVis = new G4VisAttributes(G4Colour(0.7,0.7,0.2));
   alVis->SetForceSolid(true);
