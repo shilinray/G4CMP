@@ -140,99 +140,31 @@ void PhononDetectorConstruction::SetupGeometry()
   //
   // Aluminum. This is where phonon hits are registered
 
-  // Aluminum meander: multiple long horizontal traces, plus left short pad comb,
-  // a top bus, and a bottom semicircular coupling arc; all lie in XY plane on top of Ge.
-  const G4double alHalfZ      = 0.05*mm;          // same thickness as before
-  const G4double zPos         = geHalfZ + alHalfZ;
-  // Meander long horizontal traces
-  const G4int    nLongTraces  = 24;
-  const G4double traceWidth   = 0.05*mm;          // full width = 0.10 mm
-  const G4double traceGap     = 0.05*mm;          // full gap between traces
-  const G4double traceHalfY   = traceWidth/2.;
-  const G4double longTraceHalfX = 3.0*mm;         // full length 6 mm
-  // Left comb short pads
-  const G4int    nShortPads   = 12;
-  const G4double shortPadHalfX = 0.6*mm;          // full length 1.2 mm
-  const G4double padPitch     = 0.30*mm;          // vertical spacing (center-to-center)
-  // Top bus
-  const G4double busHalfX     = 3.2*mm;
-  const G4double busHalfY     = 0.06*mm;
-  // Bottom coupling semicircle
-  const G4double arcInnerR    = 0.40*mm;
-  const G4double arcWidth     = 0.10*mm;
-  const G4double arcOuterR    = arcInnerR + arcWidth;
-  const G4double arcHalfZ     = alHalfZ;
-  const G4double arcPhiStart  = 180.*deg;
-  const G4double arcPhiSpan   = 180.*deg;
+  // Aluminum sensor
+  const G4double alSensorHalfXY = 0.5*mm;     // full side = 1.0 mm
+  const G4double alSensorHalfZ  = 0.05*mm;   // full thickness = 0.1 mm
+  G4VSolid* fAluminumSensorSolid = new G4Box("sensor", alSensorHalfXY, alSensorHalfXY, alSensorHalfZ);
+  G4LogicalVolume* fAluminumSensorLogical =
+    new G4LogicalVolume(fAluminumSensorSolid,fAluminum,"sensorLogical");
 
-  // Center offsets
-  const G4double patternCenterX = 0.*mm;
-  const G4double patternCenterY = 0.*mm;
+  // Aluminum feedline
+  const G4double alFeedlineHalfX = 0.5*cm;
+  const G4double alFeedlineHalfY = 0.05*mm;
+  const G4double alFeedlineHalfZ = 0.05*mm;
+  G4VSolid* fAluminumFeedlineSolid = new G4Box("feedline", alFeedlineHalfX, alFeedlineHalfY, alFeedlineHalfZ);
+  G4LogicalVolume* fAluminumFeedlineLogical =
+    new G4LogicalVolume(fAluminumFeedlineSolid,fAluminum,"feedlineLogical");
 
-  // Solids/logicals reused
-  G4VSolid* longTraceSolid =
-    new G4Box("longTraceSolid", longTraceHalfX, traceHalfY, alHalfZ);
-  G4LogicalVolume* longTraceLogical =
-    new G4LogicalVolume(longTraceSolid, fAluminum, "longTraceLogical");
+  G4VPhysicalVolume* aluminumFeedlinePhysical = new G4PVPlacement(
+    0, G4ThreeVector(0.,0., geHalfZ + alFeedlineHalfZ), fAluminumFeedlineLogical, "feedlinePhysical",
+    worldLogical, false, 0);
 
-  G4VSolid* shortPadSolid =
-    new G4Box("shortPadSolid", shortPadHalfX, traceHalfY, alHalfZ);
-  G4LogicalVolume* shortPadLogical =
-    new G4LogicalVolume(shortPadSolid, fAluminum, "shortPadLogical");
-
-  G4VSolid* busSolid =
-    new G4Box("busSolid", busHalfX, busHalfY, alHalfZ);
-  G4LogicalVolume* busLogical =
-    new G4LogicalVolume(busSolid, fAluminum, "busLogical");
-
-  G4VSolid* arcSolid =
-    new G4Tubs("couplingArcSolid", arcInnerR, arcOuterR, arcHalfZ,
-               arcPhiStart, arcPhiSpan);
-  G4LogicalVolume* arcLogical =
-    new G4LogicalVolume(arcSolid, fAluminum, "couplingArcLogical");
-
-  std::vector<G4VPhysicalVolume*> alPhysParts;
-
-  // Place long traces (stacked along +Y)
-  const G4double totalHeight =
-      nLongTraces*(2.*traceHalfY) + (nLongTraces-1)*traceGap;
-  const G4double firstTraceY =
-      patternCenterY - 0.5*totalHeight + traceHalfY;
-  for (G4int i = 0; i < nLongTraces; ++i) {
-    G4double y = firstTraceY + i*(2.*traceHalfY + traceGap);
-    G4String name = "longTracePhys_" + std::to_string(i);
-    alPhysParts.push_back(new G4PVPlacement(
-        0, G4ThreeVector(patternCenterX, y, zPos),
-        longTraceLogical, name, worldLogical, false, i));
-  }
-
-  // Place short pads (left comb), aligned roughly to upper section
-  const G4double combStartY = firstTraceY + 2.*mm; // shift start
-  for (G4int i = 0; i < nShortPads; ++i) {
-    G4double y = combStartY + i*padPitch;
-    G4String name = "shortPadPhys_" + std::to_string(i);
-    alPhysParts.push_back(new G4PVPlacement(
-        0, G4ThreeVector(patternCenterX - longTraceHalfX + shortPadHalfX - 0.4*mm,
-                         y, zPos),
-        shortPadLogical, name, worldLogical, false, i));
-  }
-
-  // Place top bus
-  G4VPhysicalVolume* busPhys = new G4PVPlacement(
-      0, G4ThreeVector(patternCenterX,
-                       firstTraceY + nLongTraces*(2.*traceHalfY + traceGap)/2. + busHalfY + 0.05*mm,
-                       zPos),
-      busLogical, "busPhys", worldLogical, false, 0);
-  alPhysParts.push_back(busPhys);
-
-  // Place bottom coupling semicircle
-  G4VPhysicalVolume* arcPhys = new G4PVPlacement(
-      0, G4ThreeVector(patternCenterX,
-                       firstTraceY - arcOuterR - 0.2*mm,
-                       zPos),
-      arcLogical, "couplingArcPhys", worldLogical, false, 0);
-  alPhysParts.push_back(arcPhys);
-
+  const G4double gaptosensor = .1*mm;
+  
+  G4VPhysicalVolume* aluminumSensorPhysical = new G4PVPlacement(
+    0, G4ThreeVector(0., alFeedlineHalfY + gaptosensor + alSensorHalfXY, geHalfZ + alFeedlineHalfZ), fAluminumSensorLogical, "sensorPhysical",
+    worldLogical, false, 0);
+  
   //
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
   // want a phonon sensitive detector, attached to Ge crystal
@@ -241,12 +173,6 @@ void PhononDetectorConstruction::SetupGeometry()
     electrodeSensitivity = new PhononSensitivity("PhononElectrode");
   SDman->AddNewDetector(electrodeSensitivity);
   fGermaniumLogical->SetSensitiveDetector(electrodeSensitivity);
-
-  // Assign SD to all aluminum logicals
-  longTraceLogical->SetSensitiveDetector(electrodeSensitivity);
-  shortPadLogical->SetSensitiveDetector(electrodeSensitivity);
-  busLogical->SetSensitiveDetector(electrodeSensitivity);
-  arcLogical->SetSensitiveDetector(electrodeSensitivity);
 
   //
   // surface between Al and Ge determines phonon reflection/absorption
@@ -283,12 +209,12 @@ void PhononDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  for (size_t i = 0; i < alPhysParts.size(); ++i) {
-    new G4CMPLogicalBorderSurface("AlCurveSurface_" + std::to_string(i),
-                                  GePhys, alPhysParts[i], topSurfProp);
-  }
-
-  // Remove old: new G4CMPLogicalBorderSurface("feedlineTop", ...), ("sensorTop", ...)
+  new G4CMPLogicalBorderSurface("feedlineTop", GePhys, aluminumFeedlinePhysical,
+				topSurfProp);
+  new G4CMPLogicalBorderSurface("sensorTop", GePhys, aluminumSensorPhysical,
+				topSurfProp);
+  new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys,
+				wallSurfProp);
 
   //                                        
   // Visualization attributes
@@ -299,13 +225,6 @@ void PhononDetectorConstruction::SetupGeometry()
   fGermaniumLogical->SetVisAttributes(simpleBoxVisAtt);
   fAluminumFeedlineLogical->SetVisAttributes(simpleBoxVisAtt);
   fAluminumSensorLogical->SetVisAttributes(simpleBoxVisAtt);
-
-  G4VisAttributes* alVis = new G4VisAttributes(G4Colour(0.7,0.7,0.2));
-  alVis->SetForceSolid(true);
-  longTraceLogical->SetVisAttributes(alVis);
-  shortPadLogical->SetVisAttributes(alVis);
-  busLogical->SetVisAttributes(alVis);
-  arcLogical->SetVisAttributes(alVis);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
