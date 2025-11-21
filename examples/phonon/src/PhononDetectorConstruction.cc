@@ -156,19 +156,6 @@ void PhononDetectorConstruction::SetupGeometry()
   G4Box* solidCenter = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, alFeedlineHalfZ);
   G4Box* solidOuter  = new G4Box("feedlineOuter",  alFeedlineHalfX, alOuterFeedlineHalfY, alFeedlineHalfZ);
 
-  // Create bottom feedline with cutout
-  // Cut 98um in Y, 723um in X. Leave 2um closest to center.
-  // Bottom feedline is at negative Y global. Local +Y is closest to center.
-  // Local Y range: [-50, 50]. Keep [48, 50]. Cut [-50, 48].
-  // Center of cut Y = -1.
-  G4double cutHalfX = 723.0*um / 2.0;
-  G4double cutHalfY = 98.0*um / 2.0;
-  G4double cutHalfZ = alFeedlineHalfZ; 
-  G4Box* solidCutout = new G4Box("feedlineCutout", cutHalfX, cutHalfY, cutHalfZ);
-
-  G4ThreeVector cutPos(0, -1.0*um, 0);
-  G4SubtractionSolid* solidBottom = new G4SubtractionSolid("feedlineBottom", solidOuter, solidCutout, 0, cutPos);
-
   G4MultiUnion* fAluminumFeedlineSolid = new G4MultiUnion("feedlineMultiUnion");
 
   G4RotationMatrix rot;
@@ -184,7 +171,7 @@ void PhononDetectorConstruction::SetupGeometry()
 
   G4ThreeVector posBot(0, -yOffset, 0);
   G4Transform3D trBot(rot, posBot);
-  fAluminumFeedlineSolid->AddNode(*solidBottom, trBot);
+  fAluminumFeedlineSolid->AddNode(*solidOuter, trBot);
 
   fAluminumFeedlineSolid->Voxelize();
 
@@ -211,7 +198,6 @@ void PhononDetectorConstruction::SetupGeometry()
     worldLogical, false, 0);
 
   // QPD
-  
   
   //
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
