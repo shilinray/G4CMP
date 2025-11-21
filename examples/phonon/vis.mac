@@ -11,7 +11,6 @@
 #
 # for drawing the tracks
 # (if too many tracks cause core dump => storeTrajectory 0)
-/tracking/verbose
 /tracking/storeTrajectory 1
 /vis/scene/endOfEventAction accumulate
 /vis/scene/add/trajectories
@@ -25,9 +24,10 @@
 #
 # Generate 2 phonons per event to populate display
 /run/initialize
+/tracking/verbose 1
 /tracking/storeTrajectory 1
 /gun/number 1
-/run/beamOn 5
+/run/beamOn 1
 #
 # Write event display to output files for analysis (face and side views)
 /vis/ogl/set/printFilename g4cmpPhonon

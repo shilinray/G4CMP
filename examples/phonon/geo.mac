@@ -3,7 +3,7 @@
 /vis/open OGL
 /vis/viewer/set/upVector 0 1 0
 /vis/viewer/set/viewpointVector 0 0 1
-/vis/viewer/zoom 100
+/vis/viewer/zoom 2
 /vis/drawVolume
 
 # Write event display to output files for analysis (face and side views)
