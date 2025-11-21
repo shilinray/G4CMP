@@ -253,7 +253,9 @@ void PhononDetectorConstruction::SetupGeometry()
   // Visualization attributes
   //
   // World remains invisible
-  worldLogical->SetVisAttributes(G4VisAttributes::Invisible);
+  G4VisAttributes* wrldVis = new G4VisAttributes(G4Colour(1.0,0.0,0.0));
+  wrldVis->SetForceSolid(true);
+  worldLogical->SetVisAttributes(wrldVis);
 
   // Germanium crystal: light gray, solid
   G4VisAttributes* geVis = new G4VisAttributes(G4Colour(0.85,0.85,0.85));
