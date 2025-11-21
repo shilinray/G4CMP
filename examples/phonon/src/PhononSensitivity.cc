@@ -63,6 +63,7 @@ void PhononSensitivity::EndOfEvent(G4HCofThisEvent* HCE) {
       output << runMan->GetCurrentRun()->GetRunID() << ','
              << runMan->GetCurrentEvent()->GetEventID() << ','
              << hit->GetTrackID() << ','
+             << hit->GetParentID() << ','
              << hit->GetParticleName() << ','
              << hit->GetStartEnergy()/eV << ','
              << hit->GetStartPosition().getX()/m << ','
