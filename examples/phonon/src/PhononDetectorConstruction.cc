@@ -253,7 +253,7 @@ void PhononDetectorConstruction::SetupGeometry()
   // Visualization attributes
   //
   // World remains invisible
-  G4VisAttributes* wrldVis = new G4VisAttributes(G4Colour(0,0,0.01));
+  G4VisAttributes* wrldVis = new G4VisAttributes(G4Colour(0,0,0.1));
   wrldVis->SetForceSolid(true);
   worldLogical->SetVisAttributes(wrldVis);
 
