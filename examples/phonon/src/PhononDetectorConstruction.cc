@@ -253,7 +253,7 @@ void PhononDetectorConstruction::SetupGeometry()
   // Visualization attributes
   //
   // World remains invisible
-  G4VisAttributes* wrldVis = new G4VisAttributes(G4Colour(1.0,0.0,0.0));
+  G4VisAttributes* wrldVis = new G4VisAttributes(G4Colour(0,0,0.01));
   wrldVis->SetForceSolid(true);
   worldLogical->SetVisAttributes(wrldVis);
 
@@ -263,7 +263,7 @@ void PhononDetectorConstruction::SetupGeometry()
   fGermaniumLogical->SetVisAttributes(geVis);
 
   // Aluminum patterned parts
-  G4VisAttributes* alVis = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
+  G4VisAttributes* alVis = new G4VisAttributes(G4Colour(1.0,0,0));
   alVis->SetForceSolid(true);
   fAluminumSensorLogical->SetVisAttributes(alVis);
   fAluminumFeedlineLogical->SetVisAttributes(alVis);
