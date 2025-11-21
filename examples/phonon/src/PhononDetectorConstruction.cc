@@ -106,7 +106,7 @@ void PhononDetectorConstruction::SetupGeometry()
   //     
   // World
   //
-  G4VSolid* worldSolid = new G4Box("World",16.*cm,16.*cm,16.*cm); // half (-16,16)
+  G4VSolid* worldSolid = new G4Box("World",8.*cm,8.*cm,8.*cm); // half (-16,16)
   G4LogicalVolume* worldLogical =
     new G4LogicalVolume(worldSolid,fLiquidHelium,"World");
   worldLogical->SetUserLimits(new G4UserLimits(10*mm, DBL_MAX, DBL_MAX, 0, 0));
