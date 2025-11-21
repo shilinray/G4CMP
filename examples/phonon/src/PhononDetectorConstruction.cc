@@ -260,13 +260,7 @@ void PhononDetectorConstruction::SetupGeometry()
   geVis->SetForceSolid(true);
   fGermaniumLogical->SetVisAttributes(geVis);
 
-  // Hide legacy feedline/sensor boxes (kept for compatibility)
-  fAluminumFeedlineLogical->SetVisAttributes(G4VisAttributes::Invisible);
-  fAluminumSensorLogical->SetVisAttributes(G4VisAttributes::Invisible);
-
-  // Aluminum patterned parts already assigned alVis earlier; ensure solid
-  // (reassert to be explicit)
-  // longTraceLogical, shortPadLogical, busLogical, arcLogical exist above
+  // Aluminum patterned parts
   G4VisAttributes* alVis = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
   alVis->SetForceSolid(true);
   fAluminumSensorLogical->SetVisAttributes(alVis);
