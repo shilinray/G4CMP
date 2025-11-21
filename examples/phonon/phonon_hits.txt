@@ -1021,3 +1021,14 @@ Run ID,Event ID,Track ID,Particle Name,Start Energy [eV],Start X [m],Start Y [m]
 0,0,57,phononTS,0.00485925,-7.02576e-06,-0.000100833,3.94036e-06,84.288,0.00485925,1,-4.02537e-05,-0.000136025,5e-05,106.009
 0,0,59,phononTS,0.0041691,-3.31325e-05,1.03718e-05,6.65084e-06,42.4268,0.00213011,1,-0.000235479,-3.10255e-05,5e-05,118.494
 0,0,3,phononTF,0.0075,0,0,0,0,0.00373607,1,-1.55374e-05,-5.63942e-05,5e-05,155.221
+Run ID,Event ID,Track ID,Particle Name,Start Energy [eV],Start X [m],Start Y [m],Start Z [m],Start Time [ns],Energy Deposited [eV],Track Weight,End X [m],End Y [m],End Z [m],Final Time [ns]
+0,0,1,phononL,0.0075,0,0,0,0,0.00339507,1,-4.58482e-05,2.93897e-05,5e-05,173.697
+0,0,19,phononTS,7.15121e-06,-4.58482e-05,2.93897e-05,4.9999e-05,173.697,7.15121e-06,1,-0.000111804,4.93313e-05,5e-05,296.678
+0,0,18,phononTF,0.000217743,-4.58482e-05,2.93897e-05,4.9999e-05,173.697,0.000217743,1,-4.76891e-05,0.000276585,5e-05,357.169
+0,0,15,phononTS,1.01082e-05,-4.58482e-05,2.93897e-05,4.9999e-05,173.697,1.01082e-05,1,-2.39474e-05,2.67163e-05,5e-05,236.21
+0,0,12,phononTS,9.38921e-06,-4.58482e-05,2.93897e-05,4.9999e-05,173.697,9.38921e-06,1,2.42117e-05,1.38696e-05,5e-05,296.178
+0,0,11,phononTS,0.000344054,-4.58482e-05,2.93897e-05,4.9999e-05,173.697,0.000344054,1,-1.20731e-05,-6.77853e-06,5e-05,239.426
+0,0,4,phononTF,6.69457e-05,-4.58482e-05,2.93897e-05,4.9999e-05,173.697,6.69457e-05,1,0.000516017,-8.82726e-06,5e-05,30846.3
+0,0,2,phononTF,0.000274399,-4.58482e-05,2.93897e-05,4.9999e-05,173.697,0.000274399,1,-0.000311525,1.83281e-05,5e-05,308.939
+Run ID,Event ID,Track ID,Particle Name,Start Energy [eV],Start X [m],Start Y [m],Start Z [m],Start Time [ns],Energy Deposited [eV],Track Weight,End X [m],End Y [m],End Z [m],Final Time [ns]
+Run ID,Event ID,Track ID,Particle Name,Start Energy [eV],Start X [m],Start Y [m],Start Z [m],Start Time [ns],Energy Deposited [eV],Track Weight,End X [m],End Y [m],End Z [m],Final Time [ns]

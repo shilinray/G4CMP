@@ -1,3 +1,4 @@
+/run/initialize
 
 /vis/open OGL
 /vis/viewer/set/upVector 0 1 0
@@ -6,7 +7,7 @@
 /vis/drawVolume
 
 # Write event display to output files for analysis (face and side views)
-/vis/ogl/set/printFilename g4cmpPhonon
+/vis/ogl/set/printFilename newg4cmpPhonon
 /vis/ogl/set/printMode pixmap
 /vis/ogl/printEPS
 

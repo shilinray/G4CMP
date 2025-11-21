@@ -1676,6 +1676,19 @@ CMakeFiles/phononLib.dir/src/PhononDetectorConstruction.cc.o: ../src/PhononDetec
   /usr/local/include/Geant4/G4Visible.hh \
   /usr/local/include/Geant4/G4Visible.icc \
   /usr/local/include/Geant4/G4Box.icc \
+  /usr/local/include/Geant4/G4MultiUnion.hh \
+  /usr/local/include/Geant4/G4Vector3D.hh \
+  /usr/local/include/Geant4/G4SurfBits.hh \
+  /usr/local/include/Geant4/G4Voxelizer.hh \
+  /usr/local/include/Geant4/G4Box.hh \
+  /usr/local/include/Geant4/G4VFacet.hh \
+  /usr/local/include/Geant4/windefs.hh \
+  /usr/local/include/Geant4/G4Voxelizer.icc \
+  /usr/local/include/Geant4/G4SubtractionSolid.hh \
+  /usr/local/include/Geant4/G4BooleanSolid.hh \
+  /usr/local/include/Geant4/G4DisplacedSolid.hh \
+  /usr/local/include/Geant4/G4BooleanSolid.icc \
+  /usr/local/include/Geant4/G4Transform3D.hh \
   /usr/local/include/Geant4/G4Colour.hh \
   /usr/local/include/Geant4/G4GeometryManager.hh \
   /usr/local/include/Geant4/G4SmartVoxelStat.hh \
@@ -2863,6 +2876,18 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 
 /usr/local/include/Geant4/G4Colour.hh:
 
+/usr/local/include/Geant4/G4BooleanSolid.icc:
+
+/usr/local/include/Geant4/G4DisplacedSolid.hh:
+
+/usr/local/include/Geant4/G4BooleanSolid.hh:
+
+/usr/local/include/Geant4/windefs.hh:
+
+/usr/local/include/Geant4/G4Vector3D.hh:
+
+/usr/local/include/Geant4/G4MultiUnion.hh:
+
 /usr/local/include/Geant4/G4Box.icc:
 
 /usr/local/include/Geant4/G4Visible.icc:
@@ -3227,6 +3252,8 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 
 /usr/include/c++/11/cstdio:
 
+/usr/local/include/Geant4/G4Voxelizer.hh:
+
 /usr/local/include/Geant4/G4UserTrackingAction.hh:
 
 /usr/include/c++/11/ctime:
@@ -3345,11 +3372,15 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 
 /usr/include/x86_64-linux-gnu/bits/timesize.h:
 
+/usr/local/include/Geant4/G4SurfBits.hh:
+
 /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
 
 /usr/include/c++/11/bits/range_access.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
+
+/usr/local/include/Geant4/G4Voxelizer.icc:
 
 /usr/local/include/Geant4/G4DataVector.icc:
 
@@ -3717,6 +3748,8 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 
 /usr/local/include/Geant4/G4GPILSelection.hh:
 
+/usr/local/include/Geant4/G4SubtractionSolid.hh:
+
 /usr/local/include/Geant4/G4PDefManager.hh:
 
 /usr/local/include/Geant4/CLHEP/Random/RandGamma.icc:
@@ -3868,6 +3901,8 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 /usr/local/include/Geant4/G4VHitsCollection.hh:
 
 /usr/local/include/Geant4/CLHEP/Random/RandGauss.h:
+
+/usr/local/include/Geant4/G4VFacet.hh:
 
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
 
