@@ -12,3 +12,6 @@
 /vis/ogl/set/printMode pixmap
 
 /vis/ogl/printEPS
+
+/vis/view/set/style wireframe
+/vis/view/set/hiddenMarker
