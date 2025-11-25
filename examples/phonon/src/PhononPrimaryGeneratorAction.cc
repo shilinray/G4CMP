@@ -44,7 +44,8 @@ PhononPrimaryGeneratorAction::~PhononPrimaryGeneratorAction() {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
- 
+// creates initial phonons at the right ratio of modes
+// should the ratio of modes depend on the initial energy?? 
 void PhononPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent) {
   if (fParticleGun->GetParticleDefinition() == G4Geantino::Definition()) {
     G4double selector = G4UniformRand();

@@ -153,49 +153,27 @@ void PhononDetectorConstruction::SetupGeometry()
   const G4double alOuterFeedlineHalfY = 50.0*um;
   const G4double feedlineGap = 2.0*um;
 
-  G4Box* solidCenter = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, alFeedlineHalfZ);
-  G4Box* solidOuter  = new G4Box("feedlineOuter",  alFeedlineHalfX, alOuterFeedlineHalfY, alFeedlineHalfZ);
-
-  G4MultiUnion* fAluminumFeedlineSolid = new G4MultiUnion("feedlineMultiUnion");
-
-  G4RotationMatrix rot;
-  G4ThreeVector posCenter(0, 0, 0);
-  G4Transform3D trCenter(rot, posCenter);
-  fAluminumFeedlineSolid->AddNode(*solidCenter, trCenter);
-
-  G4double yOffset = alFeedlineHalfY + feedlineGap + alOuterFeedlineHalfY;
-
-  G4ThreeVector posTop(0, yOffset, 0);
-  G4Transform3D trTop(rot, posTop);
-  fAluminumFeedlineSolid->AddNode(*solidOuter, trTop);
-
-  G4ThreeVector posBot(0, -yOffset, 0);
-  G4Transform3D trBot(rot, posBot);
-  fAluminumFeedlineSolid->AddNode(*solidOuter, trBot);
-
-  fAluminumFeedlineSolid->Voxelize();
-
-  G4LogicalVolume* fAluminumFeedlineLogical =
-    new G4LogicalVolume(fAluminumFeedlineSolid,fAluminum,"feedlineLogical");
-
-  G4VPhysicalVolume* aluminumFeedlinePhysical = new G4PVPlacement(
-    0, G4ThreeVector(0.,0., geHalfZ + alFeedlineHalfZ), fAluminumFeedlineLogical, "feedlinePhysical",
-    worldLogical, false, 0);
-
-  // Aluminum sensor
-  const G4double alSensorHalfXY = 0.5*mm;     // full side = 1.0 mm
-  const G4double alSensorHalfZ  = 0.1*um;  
-  const G4double gaptosensor = .1*mm;
-
-  G4VSolid* fAluminumSensorSolid = new G4Box("sensor", alSensorHalfXY, alSensorHalfXY, alSensorHalfZ);
-  G4LogicalVolume* fAluminumSensorLogical =
-    new G4LogicalVolume(fAluminumSensorSolid,fAluminum,"sensorLogical");
+  G4Box* feedline = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, alFeedlineHalfZ);
+  G4Box* uppergroundplane  = new G4Box("feedlineOuter",  alFeedlineHalfX, alOuterFeedlineHalfY, alFeedlineHalfZ);
+  G4Box* lowergroundplane  = new G4Box("feedlineOuter",  alFeedlineHalfX, alOuterFeedlineHalfY, alFeedlineHalfZ);
   
-  G4double ycentertosensor = yOffset + alOuterFeedlineHalfY + gaptosensor + alSensorHalfXY;
+  G4LogicalVolume* alFLlogical = new G4LogicalVolume(feedline,fAluminum,"alFLlogical"); // logical feedline
+  G4LogicalVolume* alUGPlogical = new G4LogicalVolume(uppergroundplane,fAluminum,"alUGPlogical"); // logical feedline
+  G4LogicalVolume* alLGPlogical = new G4LogicalVolume(lowergroundplane,fAluminum,"alLGPlogical"); // logical feedline
 
-  G4VPhysicalVolume* aluminumSensorPhysical = new G4PVPlacement(
-    0, G4ThreeVector(0., ycentertosensor, geHalfZ + alSensorHalfZ), fAluminumSensorLogical, "sensorPhysical",
-    worldLogical, false, 0);
+  G4VPhysicalVolume* alFLphysical = new G4PVPlacement(
+    0, G4ThreeVector(0.,0., geHalfZ + alFeedlineHalfZ), alFLlogical, "alFLPhysical",
+    worldLogical, false, 0); // physical feedline
+  
+  G4double yoffset = alFeedlineHalfY + feedlineGap + alOuterFeedlineHalfY
+
+  G4VPhysicalVolume* alUGPphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., yoffset, geHalfZ + alFeedlineHalfZ), alUGPlogical, "alUGPphysical",
+    worldLogical, false, 0); // physical UPG
+  G4VPhysicalVolume* alLGPphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., -yoffset, geHalfZ + alFeedlineHalfZ), alLGPlogical, "alLGPphysical",
+    worldLogical, false, 0); // physical LGP
+
 
   // QPD
   
@@ -230,8 +208,6 @@ void PhononDetectorConstruction::SetupGeometry()
 					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
     AttachPhononSensor(topSurfProp);
 
-    botSurfProp = 0;
-
     wallSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
 					    	          0.0, 1.0, 0.0, 0.0);
     wallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
@@ -242,9 +218,7 @@ void PhononDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  new G4CMPLogicalBorderSurface("feedlineTop", GePhys, aluminumFeedlinePhysical,
-				topSurfProp);
-  new G4CMPLogicalBorderSurface("sensorTop", GePhys, aluminumSensorPhysical,
+  new G4CMPLogicalBorderSurface("feedlineTop", GePhys, alFLPhysical,
 				topSurfProp);
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys,
 				wallSurfProp);
@@ -266,7 +240,7 @@ void PhononDetectorConstruction::SetupGeometry()
   G4VisAttributes* alVis = new G4VisAttributes(G4Colour(1.0,0,0));
   alVis->SetForceSolid(true);
   fAluminumSensorLogical->SetVisAttributes(alVis);
-  fAluminumFeedlineLogical->SetVisAttributes(alVis);
+  alFLlogical->SetVisAttributes(alVis);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
