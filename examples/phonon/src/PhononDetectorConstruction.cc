@@ -147,36 +147,80 @@ void PhononDetectorConstruction::SetupGeometry()
   // Aluminum feedline
   const G4double alFeedlineHalfX = 0.5*cm;
   const G4double alFeedlineHalfY = 1.5*um;
-  const G4double alFeedlineHalfZ = 0.1*um;
+  const G4double thickness = 0.1*um;
 
   // Outer feedline dimensions (100um width)
-  const G4double alOuterFeedlineHalfY = 50.0*um;
+  const G4double alUPGhalfy = 50.0*um;
+  const G4double alLPGhalfy = 2.0*um;
   const G4double feedlineGap = 2.0*um;
 
-  G4Box* feedline = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, alFeedlineHalfZ);
-  G4Box* uppergroundplane  = new G4Box("uppergroundplane",  alFeedlineHalfX, alOuterFeedlineHalfY, alFeedlineHalfZ);
-  G4Box* lowergroundplane  = new G4Box("lowergroundplane",  alFeedlineHalfX, alOuterFeedlineHalfY, alFeedlineHalfZ);
+  G4Box* feedline = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, thickness);
+  G4Box* uppergroundplane  = new G4Box("uppergroundplane",  alFeedlineHalfX, alUPGhalfy, thickness);
+  G4Box* lowergroundplane  = new G4Box("lowergroundplane",  alFeedlineHalfX, alLPGhalfy, thickness);
   
   G4LogicalVolume* alFLlogical = new G4LogicalVolume(feedline,fAluminum,"alFLlogical"); // logical feedline
   G4LogicalVolume* alUGPlogical = new G4LogicalVolume(uppergroundplane,fAluminum,"alUGPlogical"); // logical feedline
   G4LogicalVolume* alLGPlogical = new G4LogicalVolume(lowergroundplane,fAluminum,"alLGPlogical"); // logical feedline
 
   G4VPhysicalVolume* alFLphysical = new G4PVPlacement(
-    0, G4ThreeVector(0.,0., geHalfZ + alFeedlineHalfZ), alFLlogical, "alFLphysical",
+    0, G4ThreeVector(0.,0., geHalfZ + thickness), alFLlogical, "alFLphysical",
     worldLogical, false, 0); // physical feedline
   
-  G4double yoffset = alFeedlineHalfY + feedlineGap + alOuterFeedlineHalfY;
+  G4double yUGPoffset = alFeedlineHalfY + feedlineGap + alUPGhalfy;
+  G4double yLGPoffset = alFeedlineHalfY + feedlineGap + alLPGhalfy;
 
   G4VPhysicalVolume* alUGPphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., yoffset, geHalfZ + alFeedlineHalfZ), alUGPlogical, "alUGPphysical",
+    0, G4ThreeVector(0., yUGPoffset, geHalfZ + thickness), alUGPlogical, "alUGPphysical",
     worldLogical, false, 0); // physical UPG
   G4VPhysicalVolume* alLGPphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., -yoffset, geHalfZ + alFeedlineHalfZ), alLGPlogical, "alLGPphysical",
+    0, G4ThreeVector(0., -yLGPoffset, geHalfZ + thickness), alLGPlogical, "alLGPphysical",
     worldLogical, false, 0); // physical LGP
 
 
   // QPD
+
+  // coupling capacitor
+  const couplCapy = 3.0*um
+  const couplCapx = 373.75*um
+  const G4double couplCapgap = 2.0*um;
+
+  G4Box* couplCap = new G4Box("couplCap", couplCapx, couplCapy, thickness);
+  G4LogicalVolume* couplCaplogical = new G4LogicalVolume(couplCap,fAluminum,"couplCaplogical");
+
+  G4double ycouplcapoffset = yLGPoffset + alLPGhalfy + couplCapgap+ couplCapy;
+
+  G4VPhysicalVolume* couplCapphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., -ycouplcapoffset, geHalfZ + thickness), couplCaplogical, "couplCapphysical",
+    worldLogical, false, 0);
+
+  // connector
+  const connectory = 5.0*um
+  const connectorx = 3.0*um
+
+  G4Box* connector = new G4Box("connector", connectorx, connectory, thickness);
+  G4LogicalVolume* connectorlogical = new G4LogicalVolume(connector,fAluminum,"connectorlogical");
+
+  G4double yconnectoroffset = ycouplcapoffset + couplCapy + connectory
+
+  G4VPhysicalVolume* connectorphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., -yconnectoroffset, geHalfZ + thickness), connectorlogical, "connectorphysical",
+    worldLogical, false, 0);
+
+  // cap ind vol
+  const capindvoly = 175.0*um
+  const capindvolx = 202.5*um
+
+  G4Box* capindvol = new G4Box("capindvol", capindvolx, capindvoly, thickness);
+  G4LogicalVolume* capindvollogical = new G4LogicalVolume(capindvol,fAluminum,"capindvollogical");
+
+  G4double ycapindvoloffset = yconnectoroffset + connectory + capindvoly
+
+  G4VPhysicalVolume* capindvolphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., -ycapindvoloffset, geHalfZ + thickness), capindvollogical, "capindvolphysical",
+    worldLogical, false, 0);
   
+  
+
   //
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
   // want a phonon sensitive detector, attached to Ge crystal
@@ -221,6 +265,9 @@ void PhononDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, couplCaplogical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, connectorlogical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, couplCaplogical, topSurfProp);
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys, wallSurfProp);
 
   //                                        
@@ -242,6 +289,9 @@ void PhononDetectorConstruction::SetupGeometry()
   alUGPlogical->SetVisAttributes(alVis);
   alLGPlogical->SetVisAttributes(alVis);
   alFLlogical->SetVisAttributes(alVis);
+  connectorlogical->SetVisAttributes(alVis);
+  couplCaplogical->SetVisAttributes(alVis);
+  capindvolphysical->SetVisAttributes(alVis);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
