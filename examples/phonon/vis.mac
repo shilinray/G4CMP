@@ -6,7 +6,8 @@
 /vis/open OGL
 /vis/viewer/set/upVector 0 1 0
 /vis/viewer/set/viewpointVector 0 0 1
-/vis/viewer/zoom 1.4
+# /vis/viewer/zoom 1.4
+/vis/viewer/zoom 14
 /vis/drawVolume
 #
 # for drawing the tracks
