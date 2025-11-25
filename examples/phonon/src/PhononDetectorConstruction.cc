@@ -162,7 +162,7 @@ void PhononDetectorConstruction::SetupGeometry()
   G4LogicalVolume* alLGPlogical = new G4LogicalVolume(lowergroundplane,fAluminum,"alLGPlogical"); // logical feedline
 
   G4VPhysicalVolume* alFLphysical = new G4PVPlacement(
-    0, G4ThreeVector(0.,0., geHalfZ + alFeedlineHalfZ), alFLlogical, "alFLPhysical",
+    0, G4ThreeVector(0.,0., geHalfZ + alFeedlineHalfZ), alFLlogical, "alFLphysical",
     worldLogical, false, 0); // physical feedline
   
   G4double yoffset = alFeedlineHalfY + feedlineGap + alOuterFeedlineHalfY
@@ -218,7 +218,7 @@ void PhononDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  new G4CMPLogicalBorderSurface("Al", GePhys, alFLPhysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys, wallSurfProp);
