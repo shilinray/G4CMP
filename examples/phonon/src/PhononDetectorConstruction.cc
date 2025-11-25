@@ -277,11 +277,14 @@ void PhononDetectorConstruction::SetupGeometry()
   G4VisAttributes* wrldVis = new G4VisAttributes(G4Colour(0,0,0.1));
   wrldVis->SetForceSolid(true);
   worldLogical->SetVisAttributes(wrldVis);
+  wrldVis->SetVisibility(true);
 
   // Germanium crystal: light gray, solid
   G4VisAttributes* geVis = new G4VisAttributes(G4Colour(0.85,0.85,0.85));
   geVis->SetForceSolid(true);
   fGermaniumLogical->SetVisAttributes(geVis);
+  geVis->SetVisibility(true);
+  
 
   // Aluminum patterned parts
   G4VisAttributes* alVis = new G4VisAttributes(G4Colour(1.0,0,0));
@@ -293,10 +296,6 @@ void PhononDetectorConstruction::SetupGeometry()
   couplCaplogical->SetVisAttributes(alVis);
   capindvollogical->SetVisAttributes(alVis);
 
-  G4VisAttributes* siliconChipVisAtt
-    = new G4VisAttributes(G4Colour(0.5,0.5,0.5));
-  siliconChipVisAtt->SetVisibility(true);
-  log_siliconChip->SetVisAttributes(siliconChipVisAtt);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
