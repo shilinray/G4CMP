@@ -180,8 +180,8 @@ void PhononDetectorConstruction::SetupGeometry()
   // QPD
 
   // coupling capacitor
-  const couplCapy = 3.0*um;
-  const couplCapx = 373.75*um;
+  const G4double couplCapy = 3.0*um;
+  const G4double couplCapx = 373.75*um;
   const G4double couplCapgap = 2.0*um;
 
   G4Box* couplCap = new G4Box("couplCap", couplCapx, couplCapy, thickness);
@@ -194,8 +194,8 @@ void PhononDetectorConstruction::SetupGeometry()
     worldLogical, false, 0);
 
   // connector
-  const connectory = 5.0*um;
-  const connectorx = 3.0*um;
+  const G4double connectory = 5.0*um;
+  const G4double connectorx = 3.0*um;
 
   G4Box* connector = new G4Box("connector", connectorx, connectory, thickness);
   G4LogicalVolume* connectorlogical = new G4LogicalVolume(connector,fAluminum,"connectorlogical");
@@ -207,8 +207,8 @@ void PhononDetectorConstruction::SetupGeometry()
     worldLogical, false, 0);
 
   // cap ind vol
-  const capindvoly = 175.0*um;
-  const capindvolx = 202.5*um;
+  const G4double capindvoly = 175.0*um;
+  const G4double capindvolx = 202.5*um;
 
   G4Box* capindvol = new G4Box("capindvol", capindvolx, capindvoly, thickness);
   G4LogicalVolume* capindvollogical = new G4LogicalVolume(capindvol,fAluminum,"capindvollogical");
