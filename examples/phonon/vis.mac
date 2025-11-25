@@ -7,7 +7,7 @@
 /vis/viewer/set/upVector 0 1 0
 /vis/viewer/set/viewpointVector 0 0 1
 # /vis/viewer/zoom 1.4
-/vis/viewer/zoom 14
+/vis/viewer/zoom 1.4
 /vis/drawVolume
 #
 # for drawing the tracks
@@ -28,7 +28,7 @@
 /tracking/verbose 1
 /tracking/storeTrajectory 1
 /gun/number 1
-/run/beamOn 1
+/run/beamOn 100
 #
 # Write event display to output files for analysis (face and side views)
 /vis/ogl/set/printFilename g4cmpPhonon
