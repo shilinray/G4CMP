@@ -292,6 +292,11 @@ void PhononDetectorConstruction::SetupGeometry()
   connectorlogical->SetVisAttributes(alVis);
   couplCaplogical->SetVisAttributes(alVis);
   capindvollogical->SetVisAttributes(alVis);
+
+  G4VisAttributes* siliconChipVisAtt
+    = new G4VisAttributes(G4Colour(0.5,0.5,0.5));
+  siliconChipVisAtt->SetVisibility(true);
+  log_siliconChip->SetVisAttributes(siliconChipVisAtt);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
