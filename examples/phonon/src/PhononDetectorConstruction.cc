@@ -265,9 +265,9 @@ void PhononDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, couplCaplogical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, connectorlogical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, couplCaplogical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, capindvolphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys, wallSurfProp);
 
   //                                        
@@ -291,7 +291,7 @@ void PhononDetectorConstruction::SetupGeometry()
   alFLlogical->SetVisAttributes(alVis);
   connectorlogical->SetVisAttributes(alVis);
   couplCaplogical->SetVisAttributes(alVis);
-  capindvolphysical->SetVisAttributes(alVis);
+  capindvollogical->SetVisAttributes(alVis);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
