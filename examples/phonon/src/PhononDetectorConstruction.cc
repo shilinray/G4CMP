@@ -165,7 +165,7 @@ void PhononDetectorConstruction::SetupGeometry()
     0, G4ThreeVector(0.,0., geHalfZ + alFeedlineHalfZ), alFLlogical, "alFLphysical",
     worldLogical, false, 0); // physical feedline
   
-  G4double yoffset = alFeedlineHalfY + feedlineGap + alOuterFeedlineHalfY
+  G4double yoffset = alFeedlineHalfY + feedlineGap + alOuterFeedlineHalfY;
 
   G4VPhysicalVolume* alUGPphysical = new G4PVPlacement(
     0, G4ThreeVector(0., yoffset, geHalfZ + alFeedlineHalfZ), alUGPlogical, "alUGPphysical",
