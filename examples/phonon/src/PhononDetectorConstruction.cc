@@ -239,7 +239,8 @@ void PhononDetectorConstruction::SetupGeometry()
   // Aluminum patterned parts
   G4VisAttributes* alVis = new G4VisAttributes(G4Colour(1.0,0,0));
   alVis->SetForceSolid(true);
-  fAluminumSensorLogical->SetVisAttributes(alVis);
+  alUGPlogical->SetVisAttributes(alVis);
+  alLGPlogical->SetVisAttributes(alVis);
   alFLlogical->SetVisAttributes(alVis);
 }
 
