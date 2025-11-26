@@ -8,7 +8,12 @@
 /vis/viewer/set/viewpointVector 0 0 1
 # /vis/viewer/zoom 1.4
 /vis/viewer/zoom 100
+/vis/viewer/set/style surface
+/vis/geometry/set/colour connectorlogical 0 0.7 0.7 0.7 0.3
+/vis/geometry/set/colour capindvollogical 0 0.7 0.7 0.7 0.3
 /vis/drawVolume
+
+
 #
 # for drawing the tracks
 # (if too many tracks cause core dump => storeTrajectory 0)
