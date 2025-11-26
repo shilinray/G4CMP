@@ -16,6 +16,7 @@
 /vis/scene/endOfEventAction accumulate
 #/vis/scene/add/trajectories
 /vis/scene/add/hits
+/vis/viewer/set/globalMarkerScale 0.2
 #
 # Make phonon polarization modes distinguishable
 #/vis/modeling/trajectories/create/drawByParticleID
