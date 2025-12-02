@@ -324,6 +324,34 @@ void PhononDetectorConstruction::SetupGeometry()
     }
   }
 
+  // leftcapwall
+  const G4double leftcapwally = 143.5*um
+  const G4double leftcapwallx = 1*um
+
+  G4Box* leftcapwall = new G4Box("leftcapwall", leftcapwallx, leftcapwally, thickness);
+  G4LogicalVolume* leftcapwalllogical = new G4LogicalVolume(leftcapwall, fAluminum, "leftcapwalllogical")
+  
+  G4double xleftcapwalloffset = -128.5*um
+  G4double yleftcapwalloffset = -156.5*um
+
+  G4VPhysicalVolume* leftcapwallphysical = new G4PVPlacement(
+    0, G4ThreeVector(xleftcapwalloffset, yleftcapwalloffset, geHalfZ + thickness), leftcapwalllogical, "leftcapwallphysical",
+    worldLogical, false, 0);
+
+  // rightcapwall
+  const G4double rightcapwally = 165*um
+  const G4double rightcapwallx = 3*um
+
+  G4Box* rightcapwall = new G4Box("rightcapwall", rightcapwallx, rightcapwally, thickness);
+  G4LogicalVolume* rightcapwalllogical = new G4LogicalVolume(rightcapwall, fAluminum, "rightcapwalllogical")
+  
+  G4double xrightcapwalloffset = 201.5*um
+  G4double yrightcapwalloffset = -168*um
+
+  G4VPhysicalVolume* rightcapwallphysical = new G4PVPlacement(
+    0, G4ThreeVector(xrightcapwalloffset, yrightcapwalloffset, geHalfZ + thickness), rightcapwalllogical, "rightcapwallphysical",
+    worldLogical, false, 0);
+
   
   // 
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
@@ -381,6 +409,9 @@ void PhononDetectorConstruction::SetupGeometry()
     new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
   }
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys, wallSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, leftcapwallphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, rightcapwallphysical, topSurfProp);
+
 
   //                                        
   // Visualization attributes
@@ -413,6 +444,8 @@ void PhononDetectorConstruction::SetupGeometry()
   for (auto log : inductorLog) {
     log->SetVisAttributes(alVis);
   }
+  leftcapwalllogical->SetVisAttributes(alVis);
+  rightcapwalllogical->SetVisAttributes(alVis);
 
 }
 
