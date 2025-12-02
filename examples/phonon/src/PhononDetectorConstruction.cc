@@ -206,22 +206,126 @@ void PhononDetectorConstruction::SetupGeometry()
     0, G4ThreeVector(0., -yconnectoroffset, geHalfZ + thickness), connectorlogical, "connectorphysical",
     worldLogical, false, 0);
 
-  // cap ind vol
-  const G4double capindvoly = 175.0*um;
-  const G4double capindvolx = 202.5*um;
+  // cap ind connector
+  const G4double capindconnectory = 3.0*um;
+  const G4double capindconnectorx = 202.5*um;
 
-  G4Box* capindvol = new G4Box("capindvol", capindvolx, capindvoly, thickness);
-  G4LogicalVolume* capindvollogical = new G4LogicalVolume(capindvol,fAluminum,"capindvollogical");
+  G4Box* capindconnector = new G4Box("capindconnector", capindconnectorx, capindconnectory, thickness);
+  G4LogicalVolume* capindconnectorlogical = new G4LogicalVolume(capindconnector,fAluminum,"capindconnectorlogical");
 
-  G4double ycapindvoloffset = yconnectoroffset + connectory + capindvoly;
+  G4double ycapindconnectoroffset = yconnectoroffset + connectory + capindconnectory;
 
-  G4VPhysicalVolume* capindvolphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., -ycapindvoloffset, geHalfZ + thickness), capindvollogical, "capindvolphysical",
+  G4VPhysicalVolume* capindconnectorphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., -ycapindconnectoroffset, geHalfZ + thickness), capindconnectorlogical, "capindconnectorphysical",
+    worldLogical, false, 0); 
+    
+  // indvert1 
+  const G4double indcenter = -175.5*um;
+
+  const G4double indhorzx = 23*um;
+  const G4double indhorzy = 1.0*um;
+
+  const G4double indvertx = 1.0*um;
+  const G4double indverty = 9.0*um;
+
+  G4Box* indvert1 = new G4Box("indvert1", indvertx, indverty, thickness);
+  G4LogicalVolume* indvert1logical = new G4LogicalVolume(indvert1, fAluminum, "indvert1logical");
+  
+  G4double xindvert1offset = indcenter - indhorzx - indvertx;
+  G4double yindvert1offset = ycapindconnectoroffset + capindconnectory + indverty;
+
+  G4VPhysicalVolume* indvert1physical = new G4PVPlacement(
+    0, G4ThreeVector(xindvert1offset, -yindvert1offset, geHalfZ + thickness), indvert1logical, "indvert1physical",
     worldLogical, false, 0);
-  
-  
 
-  //
+  // indhorz1
+  G4Box* indhorz1 = new G4Box("indhorz1", indhorzx, indhorzy, thickness);
+  G4LogicalVolume* indhorz1logical = new G4LogicalVolume(indhorz1, fAluminum, "indhorz1logical");
+
+  G4double xindhorz1offset = indcenter;
+  G4double yindhorz1offset = yindvert1offset + indverty - indhorzy;
+
+  G4VPhysicalVolume* indhorz1physical = new G4PVPlacement(
+    0, G4ThreeVector(xindhorz1offset, -yindhorz1offset, geHalfZ + thickness), indhorz1logical, "indhorz1physical",
+    worldLogical, false, 0);
+
+  // indvert2
+  G4Box* indvert2 = new G4Box("indvert2", indvertx, indverty, thickness);
+  G4LogicalVolume* indvert2logical = new G4LogicalVolume(indvert2, fAluminum, "indvert2logical");
+
+  G4double xindvert2offset = indcenter + indhorzx + indvertx;
+  G4double yindvert2offset = yindhorz1offset - indhorzy + indverty;
+
+  G4VPhysicalVolume* indvert2physical = new G4PVPlacement(
+    0, G4ThreeVector(xindvert2offset, -yindvert2offset, geHalfZ + thickness), indvert2logical, "indvert2physical",
+    worldLogical, false, 0);
+
+  // indhorz2
+  G4Box* indhorz2 = new G4Box("indhorz2", indhorzx, indhorzy, thickness);
+  G4LogicalVolume* indhorz2logical = new G4LogicalVolume(indhorz2, fAluminum, "indhorz2logical");
+
+  G4double xindhorz2offset = indcenter;
+  G4double yindhorz2offset = yindvert2offset + indverty - indhorzy;
+
+  G4VPhysicalVolume* indhorz2physical = new G4PVPlacement(
+    0, G4ThreeVector(xindhorz2offset, -yindhorz2offset, geHalfZ + thickness), indhorz2logical, "indhorz2physical",
+    worldLogical, false, 0);
+
+  // indvert3
+  G4Box* indvert3 = new G4Box("indvert3", indvertx, indverty, thickness);
+  G4LogicalVolume* indvert3logical = new G4LogicalVolume(indvert3, fAluminum, "indvert3logical");
+
+  G4double xindvert3offset = xindvert1offset;
+  G4double yindvert3offset = yindhorz2offset - indhorzy + indverty;
+
+  G4VPhysicalVolume* indvert3physical = new G4PVPlacement(
+    0, G4ThreeVector(xindvert3offset, -yindvert3offset, geHalfZ + thickness), indvert3logical, "indvert3physical",
+    worldLogical, false, 0);
+
+  // Generate meandering inductor pattern from indhorz3 to indhorz18
+  std::vector<G4VPhysicalVolume*> inductorPhys;
+  std::vector<G4LogicalVolume*> inductorLog;
+
+  G4double currentYVertOffset = yindvert3offset;
+
+  for (int i = 3; i <= 18; ++i) {
+    // indhorz_i
+    G4String hName = "indhorz" + std::to_string(i);
+    G4Box* solidH = new G4Box(hName, indhorzx, indhorzy, thickness);
+    G4LogicalVolume* logicH = new G4LogicalVolume(solidH, fAluminum, hName + "logical");
+    inductorLog.push_back(logicH);
+
+    G4double yHorzOffset = currentYVertOffset + indverty - indhorzy;
+    
+    G4VPhysicalVolume* physH = new G4PVPlacement(
+      0, G4ThreeVector(indcenter, -yHorzOffset, geHalfZ + thickness), 
+      logicH, hName + "physical", worldLogical, false, 0);
+    inductorPhys.push_back(physH);
+
+    // indvert_{i+1}
+    if (i < 18) {
+      int nextVertIdx = i + 1;
+      G4String vName = "indvert" + std::to_string(nextVertIdx);
+      G4Box* solidV = new G4Box(vName, indvertx, indverty, thickness);
+      G4LogicalVolume* logicV = new G4LogicalVolume(solidV, fAluminum, vName + "logical");
+      inductorLog.push_back(logicV);
+
+      G4double xVertOffset = (nextVertIdx % 2 == 0) ? 
+                             (indcenter + indhorzx + indvertx) : // Even -> Right
+                             (indcenter - indhorzx - indvertx);  // Odd -> Left
+      
+      G4double yVertOffset = yHorzOffset - indhorzy + indverty;
+      currentYVertOffset = yVertOffset; 
+
+      G4VPhysicalVolume* physV = new G4PVPlacement(
+        0, G4ThreeVector(xVertOffset, -yVertOffset, geHalfZ + thickness), 
+        logicV, vName + "physical", worldLogical, false, 0);
+      inductorPhys.push_back(physV);
+    }
+  }
+
+  
+  // 
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
   // want a phonon sensitive detector, attached to Ge crystal
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
@@ -265,9 +369,17 @@ void PhononDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, capindvolphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, indhorz1physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, indvert2physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, indhorz2physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, indvert3physical, topSurfProp);
+  for (auto phys : inductorPhys) {
+    new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
+  }
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys, wallSurfProp);
 
   //                                        
@@ -292,7 +404,15 @@ void PhononDetectorConstruction::SetupGeometry()
   alFLlogical->SetVisAttributes(alVis);
   connectorlogical->SetVisAttributes(alVis);
   couplCaplogical->SetVisAttributes(alVis);
-  capindvollogical->SetVisAttributes(alVis);
+  capindconnectorlogical->SetVisAttributes(alVis);
+  indvert1logical->SetVisAttributes(alVis);
+  indhorz1logical->SetVisAttributes(alVis);
+  indvert2logical->SetVisAttributes(alVis);
+  indhorz2logical->SetVisAttributes(alVis);
+  indvert3logical->SetVisAttributes(alVis);
+  for (auto log : inductorLog) {
+    log->SetVisAttributes(alVis);
+  }
 
 }
 
