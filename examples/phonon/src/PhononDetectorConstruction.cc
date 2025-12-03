@@ -287,6 +287,7 @@ void PhononDetectorConstruction::SetupGeometry()
   std::vector<G4LogicalVolume*> inductorLog;
 
   G4double currentYVertOffset = yindvert3offset;
+  G4double yIndHorz18Pos = 0.0;
 
   for (int i = 3; i <= 18; ++i) {
     // indhorz_i
@@ -296,6 +297,7 @@ void PhononDetectorConstruction::SetupGeometry()
     inductorLog.push_back(logicH);
 
     G4double yHorzOffset = currentYVertOffset + indverty - indhorzy;
+    if (i == 18) yIndHorz18Pos = yHorzOffset;
     
     G4VPhysicalVolume* physH = new G4PVPlacement(
       0, G4ThreeVector(indcenter, -yHorzOffset, geHalfZ + thickness), 
@@ -379,6 +381,22 @@ void PhononDetectorConstruction::SetupGeometry()
     idcPhys.push_back(phys);
   }
 
+  // botcapindconnector1
+  const G4double botcapindconnector1x = 1*um;
+  const G4double botcapindconnector1y = 21.5*um;
+
+  G4Box* botcapindconnector1 = new G4Box("botcapindconnector1", botcapindconnector1x, botcapindconnector1y, thickness);
+  G4LogicalVolume* botcapindconnector1logical = new G4LogicalVolume(botcapindconnector1, fAluminum, "botcapindconnector1logical");
+  
+  G4double xbotcapindconnector1offset = xindvert1offset;
+  G4double ybotcapindconnector1offset = yIndHorz18Pos + 20.5*um;
+
+  G4VPhysicalVolume* botcapindconnector1physical = new G4PVPlacement(
+    0, G4ThreeVector(xbotcapindconnector1offset, -ybotcapindconnector1offset, geHalfZ + thickness), 
+    botcapindconnector1logical, "botcapindconnector1physical",
+    worldLogical, false, 0);
+
+
   // 
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
   // want a phonon sensitive detector, attached to Ge crystal
@@ -440,6 +458,7 @@ void PhononDetectorConstruction::SetupGeometry()
   for (auto phys : idcPhys) {
     new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
   }
+  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, topSurfProp);
 
 
   //                                        
@@ -478,6 +497,7 @@ void PhononDetectorConstruction::SetupGeometry()
   for (auto log : idcLog) {
     log->SetVisAttributes(alVis);
   }
+  botcapindconnector1logical->SetVisAttributes(alVis);
 
 }
 
