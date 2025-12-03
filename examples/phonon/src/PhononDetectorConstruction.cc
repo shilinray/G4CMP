@@ -325,34 +325,60 @@ void PhononDetectorConstruction::SetupGeometry()
   }
 
   // leftcapwall
-  const G4double leftcapwally = 143.5*um
-  const G4double leftcapwallx = 1*um
+  const G4double leftcapwally = 143.5*um;
+  const G4double leftcapwallx = 1*um;
 
   G4Box* leftcapwall = new G4Box("leftcapwall", leftcapwallx, leftcapwally, thickness);
-  G4LogicalVolume* leftcapwalllogical = new G4LogicalVolume(leftcapwall, fAluminum, "leftcapwalllogical")
+  G4LogicalVolume* leftcapwalllogical = new G4LogicalVolume(leftcapwall, fAluminum, "leftcapwalllogical");
   
-  G4double xleftcapwalloffset = -128.5*um
-  G4double yleftcapwalloffset = -156.5*um
+  G4double xleftcapwalloffset = 0 - 128.5*um;
+  G4double yleftcapwalloffset = ycapindconnectoroffset + 156.5*um;
 
   G4VPhysicalVolume* leftcapwallphysical = new G4PVPlacement(
-    0, G4ThreeVector(xleftcapwalloffset, yleftcapwalloffset, geHalfZ + thickness), leftcapwalllogical, "leftcapwallphysical",
+    0, G4ThreeVector(xleftcapwalloffset, -yleftcapwalloffset, geHalfZ + thickness), leftcapwalllogical, "leftcapwallphysical",
     worldLogical, false, 0);
 
   // rightcapwall
-  const G4double rightcapwally = 165*um
-  const G4double rightcapwallx = 3*um
+  const G4double rightcapwally = 165*um;
+  const G4double rightcapwallx = 3*um;
 
   G4Box* rightcapwall = new G4Box("rightcapwall", rightcapwallx, rightcapwally, thickness);
-  G4LogicalVolume* rightcapwalllogical = new G4LogicalVolume(rightcapwall, fAluminum, "rightcapwalllogical")
+  G4LogicalVolume* rightcapwalllogical = new G4LogicalVolume(rightcapwall, fAluminum, "rightcapwalllogical");
   
-  G4double xrightcapwalloffset = 201.5*um
-  G4double yrightcapwalloffset = -168*um
+  G4double xrightcapwalloffset = 0 + 201.5*um;
+  G4double yrightcapwalloffset = ycapindconnectoroffset + 168*um;
 
   G4VPhysicalVolume* rightcapwallphysical = new G4PVPlacement(
-    0, G4ThreeVector(xrightcapwalloffset, yrightcapwalloffset, geHalfZ + thickness), rightcapwalllogical, "rightcapwallphysical",
+    0, G4ThreeVector(xrightcapwalloffset, -yrightcapwalloffset, geHalfZ + thickness), rightcapwalllogical, "rightcapwallphysical",
     worldLogical, false, 0);
 
-  
+  // Interdigitated Capacitor (IDC) Fingers: caphorz1 to caphorz24
+  const G4double xcapcenter = 0 + 35.5*um;
+  const G4double xcapoffset = 3*um;
+  const G4double caphorzy = 1*um;
+  const G4double caphorzx = 160*um;
+  const G4double captocapgap = 8*um;
+  const G4double ycapstart = ycapindconnectoroffset + 14*um;
+
+  std::vector<G4VPhysicalVolume*> idcPhys;
+  std::vector<G4LogicalVolume*> idcLog;
+
+  for (int i = 1; i <= 24; ++i) {
+    G4String name = "caphorz" + std::to_string(i);
+    G4Box* solid = new G4Box(name, caphorzx, caphorzy, thickness);
+    G4LogicalVolume* logic = new G4LogicalVolume(solid, fAluminum, name + "logical");
+    idcLog.push_back(logic);
+
+    // Odd indices shift left, Even indices shift right
+    G4double xpos = (i % 2 != 0) ? (xcapcenter - xcapoffset) : (xcapcenter + xcapoffset);
+    G4double ypos = ycapstart + (i - 1) * captocapgap;
+
+    G4VPhysicalVolume* phys = new G4PVPlacement(
+      0, G4ThreeVector(xpos, -ypos, geHalfZ + thickness), 
+      logic, name + "physical", worldLogical, false, 0);
+    idcPhys.push_back(phys);
+  }
+
   // 
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
   // want a phonon sensitive detector, attached to Ge crystal
@@ -411,6 +437,9 @@ void PhononDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys, wallSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, leftcapwallphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, rightcapwallphysical, topSurfProp);
+  for (auto phys : idcPhys) {
+    new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
+  }
 
 
   //                                        
@@ -446,6 +475,9 @@ void PhononDetectorConstruction::SetupGeometry()
   }
   leftcapwalllogical->SetVisAttributes(alVis);
   rightcapwalllogical->SetVisAttributes(alVis);
+  for (auto log : idcLog) {
+    log->SetVisAttributes(alVis);
+  }
 
 }
 
