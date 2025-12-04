@@ -393,6 +393,59 @@ void PhononDetectorConstruction::SetupGeometry()
     capjunctconnectlogical, "capjunctconnectphysical",
     worldLogical, false, 0);
 
+  // junct1
+  const G4double junct1x = 5.0*um; // 10um / 2
+  const G4double junct1y = 0.05*um; // 0.1um / 2
+
+  const G4double capjunctconnectjunct1gap = 0.25*um;
+
+  G4Box* junct1 = new G4Box("junct1", junct1x, junct1y, thickness);
+  G4LogicalVolume* junct1logical = new G4LogicalVolume(junct1, fAluminum, "junct1logical");
+
+  G4double xjunct1offset = 2.0*um;
+  // 0.25um below capjunctconnect
+  G4double yjunct1offset = ycapjunctconnectoffset + capjunctconnecty + capjunctconnectjunct1gap + junct1y;
+
+  G4VPhysicalVolume* junct1physical = new G4PVPlacement(
+    0, G4ThreeVector(xjunct1offset, -yjunct1offset, geHalfZ + thickness),
+    junct1logical, "junct1physical",
+    worldLogical, false, 0);
+
+  // junct2
+  const G4double junct2x = 0.05*um; // 0.1um / 2
+  const G4double junct2y = 0.5*um;  // 1.0um / 2
+
+  G4Box* junct2 = new G4Box("junct2", junct2x, junct2y, thickness);
+  G4LogicalVolume* junct2logical = new G4LogicalVolume(junct2, fAluminum, "junct2logical");
+
+  G4double xjunct2offset = xjunct1offset;
+  // Connects to center of junct1 and extends downward
+  G4double yjunct2offset = yjunct1offset + junct2y;
+
+  G4VPhysicalVolume* junct2physical = new G4PVPlacement(
+    0, G4ThreeVector(xjunct2offset, -yjunct2offset, geHalfZ + thickness),
+    junct2logical, "junct2physical",
+    worldLogical, false, 0);
+
+  // junct3
+  const G4double junct3x = 1.0*um; // 2.0um / 2
+  const G4double junct3y = 0.05*um; // 0.1um / 2
+
+  G4Box* junct3 = new G4Box("junct3", junct3x, junct3y, thickness);
+  G4LogicalVolume* junct3logical = new G4LogicalVolume(junct3, fAluminum, "junct3logical");
+
+  // Left side at x=0 -> Center at +1.0um
+  G4double xjunct3offset = 1.0*um;
+  // Intersect junct2 0.2um above bottom of junct2
+  // Bottom of junct2 is at -(yjunct2offset + junct2y)
+  // Target Y is -(yjunct2offset + junct2y - 0.2*um)
+  G4double yjunct3offset = yjunct2offset + junct2y - 0.2*um;
+
+  G4VPhysicalVolume* junct3physical = new G4PVPlacement(
+    0, G4ThreeVector(xjunct3offset, -yjunct3offset, geHalfZ + thickness),
+    junct3logical, "junct3physical",
+    worldLogical, false, 0);
+
 
   // 
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
@@ -454,6 +507,9 @@ void PhononDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector2physical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct1physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct2physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct3physical, topSurfProp);
 
 
   //                                        
@@ -491,6 +547,9 @@ void PhononDetectorConstruction::SetupGeometry()
   botcapindconnector1logical->SetVisAttributes(alVis);
   botcapindconnector2logical->SetVisAttributes(alVis);
   capjunctconnectlogical->SetVisAttributes(alVis);
+  junct1logical->SetVisAttributes(alVis);
+  junct2logical->SetVisAttributes(alVis);
+  junct3logical->SetVisAttributes(alVis);
 
 }
 
