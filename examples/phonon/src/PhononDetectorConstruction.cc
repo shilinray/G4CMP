@@ -310,7 +310,7 @@ void PhononDetectorConstruction::SetupGeometry()
   G4LogicalVolume* rightcapwalllogical = new G4LogicalVolume(rightcapwall, fAluminum, "rightcapwalllogical");
   
   G4double xrightcapwalloffset = 0 + 167*um;
-  G4double yrightcapwalloffset = ycapindconnectoroffset + 302*um;
+  G4double yrightcapwalloffset = ycapindconnectoroffset + 294*um;
 
   G4VPhysicalVolume* rightcapwallphysical = new G4PVPlacement(
     0, G4ThreeVector(xrightcapwalloffset, -yrightcapwalloffset, geHalfZ + thickness), rightcapwalllogical, "rightcapwallphysical",
@@ -328,14 +328,14 @@ void PhononDetectorConstruction::SetupGeometry()
   std::vector<G4VPhysicalVolume*> idcPhys;
   std::vector<G4LogicalVolume*> idcLog;
 
-  for (int i = 1; i <= 24; ++i) {
+  for (int i = 1; i <= 57; ++i) {
     G4String name = "caphorz" + std::to_string(i);
     G4Box* solid = new G4Box(name, caphorzx, caphorzy, thickness);
     G4LogicalVolume* logic = new G4LogicalVolume(solid, fAluminum, name + "logical");
     idcLog.push_back(logic);
 
     // Odd indices shift left, Even indices shift right
-    G4double xpos = (i % 2 != 0) ? (xcapcenter - xcapoffset) : (xcapcenter + xcapoffset);
+    G4double xpos = (i % 2 != 0) ? (xcapcenter) : (xcapcenter + xcapoffset);
     G4double ypos = ycapstart + (i - 1) * captocapgap;
 
     G4VPhysicalVolume* phys = new G4PVPlacement(
@@ -346,50 +346,51 @@ void PhononDetectorConstruction::SetupGeometry()
 
   // botcapindconnector1
   const G4double botcapindconnector1x = 1*um;
-  const G4double botcapindconnector1y = 22.5*um;
+  const G4double botcapindconnector1y = 8*um;
 
   G4Box* botcapindconnector1 = new G4Box("botcapindconnector1", botcapindconnector1x, botcapindconnector1y, thickness);
   G4LogicalVolume* botcapindconnector1logical = new G4LogicalVolume(botcapindconnector1, fAluminum, "botcapindconnector1logical");
   
   G4double xbotcapindconnector1offset = xindvert1offset;
-  G4double ybotcapindconnector1offset = yIndHorzLastPos + 21.5*um;
+  G4double ybotcapindconnector1offset = yIndHorzLastPos + 7*um;
 
   G4VPhysicalVolume* botcapindconnector1physical = new G4PVPlacement(
     0, G4ThreeVector(xbotcapindconnector1offset, -ybotcapindconnector1offset, geHalfZ + thickness), 
     botcapindconnector1logical, "botcapindconnector1physical",
     worldLogical, false, 0);
 
-  // botcapconnectrect
-  const G4double botcapconnectrectx = 34.5*um; // 69um / 2
-  const G4double botcapconnectrecty = 1.0*um;  // 2um / 2
+  // botcapindconnector2
+  // Connects botcapindconnector1 and leftcapwall
+  const G4double botcapindconnector2x = 34.5*um; // 69um / 2
+  const G4double botcapindconnector2y = 1.0*um;  // 2um / 2
 
-  G4Box* botcapconnectrect = new G4Box("botcapconnectrect", botcapconnectrectx, botcapconnectrecty, thickness);
-  G4LogicalVolume* botcapconnectrectlogical = new G4LogicalVolume(botcapconnectrect, fAluminum, "botcapconnectrectlogical");
+  G4Box* botcapindconnector2 = new G4Box("botcapindconnector2", botcapindconnector2x, botcapindconnector2y, thickness);
+  G4LogicalVolume* botcapindconnector2logical = new G4LogicalVolume(botcapindconnector2, fAluminum, "botcapindconnector2logical");
 
-  G4double xbotcapconnectrectoffset = (xleftcapwalloffset + xbotcapindconnector1offset) / 2.0;
-  // Align bottom edge with leftcapwall bottom edge (which is at yleftcapwalloffset + leftcapwally)
-  G4double ybotcapconnectrectoffset = (yleftcapwalloffset + leftcapwally) - botcapconnectrecty;
+  G4double xbotcapindconnector2offset = (xleftcapwalloffset + xbotcapindconnector1offset) / 2.0;
+  // Align bottom edge with botcapindconnector1 bottom edge to ensure connection
+  G4double ybotcapindconnector2offset = (ybotcapindconnector1offset + botcapindconnector1y) - botcapindconnector2y;
 
-  G4VPhysicalVolume* botcapconnectrectphysical = new G4PVPlacement(
-    0, G4ThreeVector(xbotcapconnectrectoffset, -ybotcapconnectrectoffset, geHalfZ + thickness),
-    botcapconnectrectlogical, "botcapconnectrectphysical",
+  G4VPhysicalVolume* botcapindconnector2physical = new G4PVPlacement(
+    0, G4ThreeVector(xbotcapindconnector2offset, -ybotcapindconnector2offset, geHalfZ + thickness),
+    botcapindconnector2logical, "botcapindconnector2physical",
     worldLogical, false, 0);
 
-  // botcapconnectrect2
-  const G4double botcapconnectrect2x = 204.5*um; // 409um / 2
-  const G4double botcapconnectrect2y = 3.0*um;   // 6um / 2
+  // capjunctconnect
+  const G4double capjunctconnectx = 150*um; 
+  const G4double capjunctconnecty = 1.0*um; 
 
-  G4Box* botcapconnectrect2 = new G4Box("botcapconnectrect2", botcapconnectrect2x, botcapconnectrect2y, thickness);
-  G4LogicalVolume* botcapconnectrect2logical = new G4LogicalVolume(botcapconnectrect2, fAluminum, "botcapconnectrect2logical");
+  G4Box* capjunctconnect = new G4Box("capjunctconnect", capjunctconnectx, capjunctconnecty, thickness);
+  G4LogicalVolume* capjunctconnectlogical = new G4LogicalVolume(capjunctconnect, fAluminum, "capjunctconnectlogical");
 
-  // Right align with rightcapwall: (xrightcapwalloffset + rightcapwallx) - botcapconnectrect2x
-  // Top align with rightcapwall bottom: (yrightcapwalloffset + rightcapwally) + botcapconnectrect2y
-  G4double xbotcapconnectrect2offset = (xrightcapwalloffset + rightcapwallx) - botcapconnectrect2x;
-  G4double ybotcapconnectrect2offset = (yrightcapwalloffset + rightcapwally) + botcapconnectrect2y;
+  // Right align with rightcapwall: (xrightcapwalloffset + rightcapwallx) - capjunctconnectx
+  // Top align with rightcapwall bottom: (yrightcapwalloffset + rightcapwally) + capjunctconnecty
+  G4double xcapjunctconnectoffset = (xrightcapwalloffset + rightcapwallx) - capjunctconnectx;
+  G4double ycapjunctconnectoffset = (yrightcapwalloffset + rightcapwally) + capjunctconnecty;
 
-  G4VPhysicalVolume* botcapconnectrect2physical = new G4PVPlacement(
-    0, G4ThreeVector(xbotcapconnectrect2offset, -ybotcapconnectrect2offset, geHalfZ + thickness),
-    botcapconnectrect2logical, "botcapconnectrect2physical",
+  G4VPhysicalVolume* capjunctconnectphysical = new G4PVPlacement(
+    0, G4ThreeVector(xcapjunctconnectoffset, -ycapjunctconnectoffset, geHalfZ + thickness),
+    capjunctconnectlogical, "capjunctconnectphysical",
     worldLogical, false, 0);
 
 
@@ -451,8 +452,8 @@ void PhononDetectorConstruction::SetupGeometry()
     new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
   }
   new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, botcapconnectrectphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, botcapconnectrect2physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector2physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, topSurfProp);
 
 
   //                                        
@@ -488,8 +489,8 @@ void PhononDetectorConstruction::SetupGeometry()
     log->SetVisAttributes(alVis);
   }
   botcapindconnector1logical->SetVisAttributes(alVis);
-  botcapconnectrectlogical->SetVisAttributes(alVis);
-  botcapconnectrect2logical->SetVisAttributes(alVis);
+  botcapindconnector2logical->SetVisAttributes(alVis);
+  capjunctconnectlogical->SetVisAttributes(alVis);
 
 }
 

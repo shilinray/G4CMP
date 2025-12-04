@@ -6,7 +6,7 @@
 /vis/open OGL
 /vis/viewer/set/upVector 0 1 0
 /vis/viewer/set/viewpointVector 0 0 1
-/vis/viewer/zoom 15
+/vis/viewer/zoom 10
 /vis/viewer/set/style surface
 /vis/geometry/set/colour connectorlogical 0 0.7 0.7 0.7 0.3
 /vis/geometry/set/colour capindvollogical 0 0.7 0.7 0.7 0.3
