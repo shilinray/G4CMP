@@ -446,6 +446,55 @@ void PhononDetectorConstruction::SetupGeometry()
     junct3logical, "junct3physical",
     worldLogical, false, 0);
 
+  // junct4
+  const G4double junct4x = 0.05*um; // 0.1um / 2
+  const G4double junct4y = 1.0*um;  // 2.0um / 2
+
+  G4Box* junct4 = new G4Box("junct4", junct4x, junct4y, thickness);
+  G4LogicalVolume* junct4logical = new G4LogicalVolume(junct4, fAluminum, "junct4logical");
+
+  // Left align with junct3: (xjunct3offset - junct3x) + junct4x
+  G4double xjunct4offset = (xjunct3offset - junct3x) + junct4x;
+  // Top connects to bottom of junct3: (yjunct3offset + junct3y) + junct4y
+  G4double yjunct4offset = yjunct3offset + junct3y + junct4y;
+
+  G4VPhysicalVolume* junct4physical = new G4PVPlacement(
+    0, G4ThreeVector(xjunct4offset, -yjunct4offset, geHalfZ + thickness),
+    junct4logical, "junct4physical",
+    worldLogical, false, 0);
+
+  // junct5
+  const G4double junct5x = 0.5*um; // 1.0um / 2
+  const G4double junct5y = 1.0*um; // 2.0um / 2
+
+  G4Box* junct5 = new G4Box("junct5", junct5x, junct5y, thickness);
+  G4LogicalVolume* junct5logical = new G4LogicalVolume(junct5, fAluminum, "junct5logical");
+
+  // Centered with junct4
+  G4double xjunct5offset = xjunct4offset;
+  // Top connects to bottom of junct4
+  G4double yjunct5offset = yjunct4offset + junct4y + junct5y;
+
+  G4VPhysicalVolume* junct5physical = new G4PVPlacement(
+    0, G4ThreeVector(xjunct5offset, -yjunct5offset, geHalfZ + thickness),
+    junct5logical, "junct5physical",
+    worldLogical, false, 0);
+
+  // absorber
+  const G4double absorberRadius = 50.0*um;
+  // Semicircle extending downwards (180 to 360 degrees)
+  G4Tubs* absorber = new G4Tubs("absorber", 0.0, absorberRadius, thickness, 180.0*deg, 180.0*deg);
+  G4LogicalVolume* absorberlogical = new G4LogicalVolume(absorber, fAluminum, "absorberlogical");
+
+  G4double xabsorberoffset = xjunct5offset;
+  // Flat face connects to bottom of junct5
+  G4double yabsorberoffset = yjunct5offset + junct5y;
+
+  G4VPhysicalVolume* absorberphysical = new G4PVPlacement(
+    0, G4ThreeVector(xabsorberoffset, -yabsorberoffset, geHalfZ + thickness),
+    absorberlogical, "absorberphysical",
+    worldLogical, false, 0);
+
 
   // 
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
@@ -510,6 +559,9 @@ void PhononDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", GePhys, junct1physical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, junct2physical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, junct3physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct4physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct5physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, absorberphysical, topSurfProp);
 
 
   //                                        
@@ -550,6 +602,9 @@ void PhononDetectorConstruction::SetupGeometry()
   junct1logical->SetVisAttributes(alVis);
   junct2logical->SetVisAttributes(alVis);
   junct3logical->SetVisAttributes(alVis);
+  junct4logical->SetVisAttributes(alVis);
+  junct5logical->SetVisAttributes(alVis);
+  absorberlogical->SetVisAttributes(alVis);
 
 }
 
