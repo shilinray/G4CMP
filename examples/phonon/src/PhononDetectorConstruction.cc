@@ -181,7 +181,7 @@ void PhononDetectorConstruction::SetupGeometry()
 
   // coupling capacitor
   const G4double couplCapy = 3.0*um;
-  const G4double couplCapx = 373.75*um;
+  const G4double couplCapx = 300*um;
   const G4double couplCapgap = 2.0*um;
 
   G4Box* couplCap = new G4Box("couplCap", couplCapx, couplCapy, thickness);
@@ -208,19 +208,20 @@ void PhononDetectorConstruction::SetupGeometry()
 
   // cap ind connector
   const G4double capindconnectory = 3.0*um;
-  const G4double capindconnectorx = 202.5*um;
+  const G4double capindconnectorx = 200.5*um;
 
   G4Box* capindconnector = new G4Box("capindconnector", capindconnectorx, capindconnectory, thickness);
   G4LogicalVolume* capindconnectorlogical = new G4LogicalVolume(capindconnector,fAluminum,"capindconnectorlogical");
 
   G4double ycapindconnectoroffset = yconnectoroffset + connectory + capindconnectory;
+  G4double xcapindconnectoroffset = -32.5*um;
 
   G4VPhysicalVolume* capindconnectorphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., -ycapindconnectoroffset, geHalfZ + thickness), capindconnectorlogical, "capindconnectorphysical",
+    0, G4ThreeVector(xcapindconnectoroffset, -ycapindconnectoroffset, geHalfZ + thickness), capindconnectorlogical, "capindconnectorphysical",
     worldLogical, false, 0); 
     
   // indvert1 
-  const G4double indcenter = -175.5*um;
+  const G4double indcenter = 0 - 208*um;
 
   const G4double indhorzx = 23*um;
   const G4double indhorzy = 1.0*um;
@@ -238,63 +239,19 @@ void PhononDetectorConstruction::SetupGeometry()
     0, G4ThreeVector(xindvert1offset, -yindvert1offset, geHalfZ + thickness), indvert1logical, "indvert1physical",
     worldLogical, false, 0);
 
-  // indhorz1
-  G4Box* indhorz1 = new G4Box("indhorz1", indhorzx, indhorzy, thickness);
-  G4LogicalVolume* indhorz1logical = new G4LogicalVolume(indhorz1, fAluminum, "indhorz1logical");
-
-  G4double xindhorz1offset = indcenter;
-  G4double yindhorz1offset = yindvert1offset + indverty - indhorzy;
-
-  G4VPhysicalVolume* indhorz1physical = new G4PVPlacement(
-    0, G4ThreeVector(xindhorz1offset, -yindhorz1offset, geHalfZ + thickness), indhorz1logical, "indhorz1physical",
-    worldLogical, false, 0);
-
-  // indvert2
-  G4Box* indvert2 = new G4Box("indvert2", indvertx, indverty, thickness);
-  G4LogicalVolume* indvert2logical = new G4LogicalVolume(indvert2, fAluminum, "indvert2logical");
-
-  G4double xindvert2offset = indcenter + indhorzx + indvertx;
-  G4double yindvert2offset = yindhorz1offset - indhorzy + indverty;
-
-  G4VPhysicalVolume* indvert2physical = new G4PVPlacement(
-    0, G4ThreeVector(xindvert2offset, -yindvert2offset, geHalfZ + thickness), indvert2logical, "indvert2physical",
-    worldLogical, false, 0);
-
-  // indhorz2
-  G4Box* indhorz2 = new G4Box("indhorz2", indhorzx, indhorzy, thickness);
-  G4LogicalVolume* indhorz2logical = new G4LogicalVolume(indhorz2, fAluminum, "indhorz2logical");
-
-  G4double xindhorz2offset = indcenter;
-  G4double yindhorz2offset = yindvert2offset + indverty - indhorzy;
-
-  G4VPhysicalVolume* indhorz2physical = new G4PVPlacement(
-    0, G4ThreeVector(xindhorz2offset, -yindhorz2offset, geHalfZ + thickness), indhorz2logical, "indhorz2physical",
-    worldLogical, false, 0);
-
-  // indvert3
-  G4Box* indvert3 = new G4Box("indvert3", indvertx, indverty, thickness);
-  G4LogicalVolume* indvert3logical = new G4LogicalVolume(indvert3, fAluminum, "indvert3logical");
-
-  G4double xindvert3offset = xindvert1offset;
-  G4double yindvert3offset = yindhorz2offset - indhorzy + indverty;
-
-  G4VPhysicalVolume* indvert3physical = new G4PVPlacement(
-    0, G4ThreeVector(xindvert3offset, -yindvert3offset, geHalfZ + thickness), indvert3logical, "indvert3physical",
-    worldLogical, false, 0);
-
-  // Generate meandering inductor pattern from indhorz3 to indhorz18
+  // Generate meandering inductor pattern from indhorz1 to indhorz40
   std::vector<G4VPhysicalVolume*> inductorPhys;
   std::vector<G4LogicalVolume*> inductorLog;
 
-  G4double currentYVertOffset = yindvert3offset;
-  G4double yIndHorz18Pos = 0.0;
+  G4double currentYVertOffset = yindvert1offset;
+  G4double yIndHorzLastPos = 0.0;
 
-  // Total Inductor Height (Top of indhorz1 to Bottom of indhorz18):
+  // Total Inductor Height (Top of indhorz1 to Bottom of indhorz40):
   // Pitch = 2 * (indverty - indhorzy) = 2 * (8.0 - 1.0) = 14.0 um
-  // Distance = 17 * Pitch + 2 * indhorzy
-  //          = 17 * 14.0 + 2 * 1.0 = 240.0 um
+  // Distance = 39 * Pitch + 2 * indhorzy
+  //          = 39 * 14.0 + 2 * 1.0 = 548.0 um
 
-  for (int i = 3; i <= 18; ++i) {
+  for (int i = 1; i <= 40; ++i) {
     // indhorz_i
     G4String hName = "indhorz" + std::to_string(i);
     G4Box* solidH = new G4Box(hName, indhorzx, indhorzy, thickness);
@@ -302,7 +259,7 @@ void PhononDetectorConstruction::SetupGeometry()
     inductorLog.push_back(logicH);
 
     G4double yHorzOffset = currentYVertOffset + indverty - indhorzy;
-    if (i == 18) yIndHorz18Pos = yHorzOffset;
+    if (i == 40) yIndHorzLastPos = yHorzOffset;
     
     G4VPhysicalVolume* physH = new G4PVPlacement(
       0, G4ThreeVector(indcenter, -yHorzOffset, geHalfZ + thickness), 
@@ -310,7 +267,7 @@ void PhononDetectorConstruction::SetupGeometry()
     inductorPhys.push_back(physH);
 
     // indvert_{i+1}
-    if (i < 18) {
+    if (i < 40) {
       int nextVertIdx = i + 1;
       G4String vName = "indvert" + std::to_string(nextVertIdx);
       G4Box* solidV = new G4Box(vName, indvertx, indverty, thickness);
@@ -332,40 +289,40 @@ void PhononDetectorConstruction::SetupGeometry()
   }
 
   // leftcapwall
-  const G4double leftcapwally = 143.5*um;
+  const G4double leftcapwally = 284*um;
   const G4double leftcapwallx = 1*um;
 
   G4Box* leftcapwall = new G4Box("leftcapwall", leftcapwallx, leftcapwally, thickness);
   G4LogicalVolume* leftcapwalllogical = new G4LogicalVolume(leftcapwall, fAluminum, "leftcapwalllogical");
   
-  G4double xleftcapwalloffset = 0 - 128.5*um;
-  G4double yleftcapwalloffset = ycapindconnectoroffset + 156.5*um;
+  G4double xleftcapwalloffset = 0 - 161*um;
+  G4double yleftcapwalloffset = ycapindconnectoroffset + 305*um;
 
   G4VPhysicalVolume* leftcapwallphysical = new G4PVPlacement(
     0, G4ThreeVector(xleftcapwalloffset, -yleftcapwalloffset, geHalfZ + thickness), leftcapwalllogical, "leftcapwallphysical",
     worldLogical, false, 0);
 
   // rightcapwall
-  const G4double rightcapwally = 165*um;
-  const G4double rightcapwallx = 3*um;
+  const G4double rightcapwally = 291*um;
+  const G4double rightcapwallx = 1*um;
 
   G4Box* rightcapwall = new G4Box("rightcapwall", rightcapwallx, rightcapwally, thickness);
   G4LogicalVolume* rightcapwalllogical = new G4LogicalVolume(rightcapwall, fAluminum, "rightcapwalllogical");
   
-  G4double xrightcapwalloffset = 0 + 201.5*um;
-  G4double yrightcapwalloffset = ycapindconnectoroffset + 168*um;
+  G4double xrightcapwalloffset = 0 + 167*um;
+  G4double yrightcapwalloffset = ycapindconnectoroffset + 302*um;
 
   G4VPhysicalVolume* rightcapwallphysical = new G4PVPlacement(
     0, G4ThreeVector(xrightcapwalloffset, -yrightcapwalloffset, geHalfZ + thickness), rightcapwalllogical, "rightcapwallphysical",
     worldLogical, false, 0);
 
   // Interdigitated Capacitor (IDC) Fingers: caphorz1 to caphorz24
-  const G4double xcapcenter = 0 + 35.5*um;
-  const G4double xcapoffset = 3*um;
+  const G4double xcapcenter = 0 + 0;
+  const G4double xcapoffset = 6*um;
   const G4double caphorzy = 1*um;
   const G4double caphorzx = 160*um;
   const G4double captocapgap = 8*um;
-  const G4double ycapstart = ycapindconnectoroffset + 14*um;
+  const G4double ycapstart = ycapindconnectoroffset + 22*um;
   // Total IDC height (top of 1 to bottom of 24) = 2*caphorzy + 23*captocapgap = 186.0 um
 
   std::vector<G4VPhysicalVolume*> idcPhys;
@@ -395,7 +352,7 @@ void PhononDetectorConstruction::SetupGeometry()
   G4LogicalVolume* botcapindconnector1logical = new G4LogicalVolume(botcapindconnector1, fAluminum, "botcapindconnector1logical");
   
   G4double xbotcapindconnector1offset = xindvert1offset;
-  G4double ybotcapindconnector1offset = yIndHorz18Pos + 21.5*um;
+  G4double ybotcapindconnector1offset = yIndHorzLastPos + 21.5*um;
 
   G4VPhysicalVolume* botcapindconnector1physical = new G4PVPlacement(
     0, G4ThreeVector(xbotcapindconnector1offset, -ybotcapindconnector1offset, geHalfZ + thickness), 
@@ -484,10 +441,6 @@ void PhononDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, indhorz1physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, indvert2physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, indhorz2physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, indvert3physical, topSurfProp);
   for (auto phys : inductorPhys) {
     new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
   }
@@ -526,10 +479,6 @@ void PhononDetectorConstruction::SetupGeometry()
   couplCaplogical->SetVisAttributes(alVis);
   capindconnectorlogical->SetVisAttributes(alVis);
   indvert1logical->SetVisAttributes(alVis);
-  indhorz1logical->SetVisAttributes(alVis);
-  indvert2logical->SetVisAttributes(alVis);
-  indhorz2logical->SetVisAttributes(alVis);
-  indvert3logical->SetVisAttributes(alVis);
   for (auto log : inductorLog) {
     log->SetVisAttributes(alVis);
   }
