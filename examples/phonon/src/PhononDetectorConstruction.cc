@@ -193,6 +193,38 @@ void PhononDetectorConstruction::SetupGeometry()
     0, G4ThreeVector(0., -ycouplcapoffset, geHalfZ + thickness), couplCaplogical, "couplCapphysical",
     worldLogical, false, 0);
 
+  // Side Ground Planes
+  const G4double sideGroundx = 10.0*um; // 20um / 2
+  const G4double sideGroundy = 343.0*um; // 686um / 2
+  const G4double sideGroundGapX = 30.0*um;
+  const G4double sideGroundGapY = 2.0*um;
+
+  G4Box* sideGround = new G4Box("sideGround", sideGroundx, sideGroundy, thickness);
+  G4LogicalVolume* sideGroundlogical = new G4LogicalVolume(sideGround, fAluminum, "sideGroundlogical");
+
+  // Left Rectangle
+  // Right edge is 30um left of couplCap left edge (-300um) -> Right edge at -330um
+  // Center at -340um
+  G4double xLeftGround = -(couplCapx + sideGroundGapX + sideGroundx);
+  
+  // Right Rectangle
+  // Left edge is 30um right of couplCap right edge (+300um) -> Left edge at +330um
+  // Center at +340um
+  G4double xRightGround = (couplCapx + sideGroundGapX + sideGroundx);
+
+  // Top edge is 2um below bottom of couplCap
+  G4double ySideGround = ycouplcapoffset + couplCapy + sideGroundGapY + sideGroundy;
+
+  G4VPhysicalVolume* leftSideGroundPhysical = new G4PVPlacement(
+    0, G4ThreeVector(xLeftGround, -ySideGround, geHalfZ + thickness), 
+    sideGroundlogical, "leftSideGroundPhysical",
+    worldLogical, false, 0);
+
+  G4VPhysicalVolume* rightSideGroundPhysical = new G4PVPlacement(
+    0, G4ThreeVector(xRightGround, -ySideGround, geHalfZ + thickness), 
+    sideGroundlogical, "rightSideGroundPhysical",
+    worldLogical, false, 0);
+
   // connector
   const G4double connectory = 5.0*um;
   const G4double connectorx = 3.0*um;
@@ -543,6 +575,8 @@ void PhononDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, topSurfProp);
   for (auto phys : inductorPhys) {
     new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
@@ -586,6 +620,7 @@ void PhononDetectorConstruction::SetupGeometry()
   alFLlogical->SetVisAttributes(alVis);
   connectorlogical->SetVisAttributes(alVis);
   couplCaplogical->SetVisAttributes(alVis);
+  sideGroundlogical->SetVisAttributes(alVis);
   capindconnectorlogical->SetVisAttributes(alVis);
   indvert1logical->SetVisAttributes(alVis);
   for (auto log : inductorLog) {
