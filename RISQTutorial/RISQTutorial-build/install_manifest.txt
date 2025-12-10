@@ -1,0 +1,2 @@
+/sdf/home/s/shilin/RISQTutorial/RISQTutorial-install/lib/libg4cmpRISQTutorial.so
+/sdf/home/s/shilin/RISQTutorial/RISQTutorial-install/bin/RISQTutorial
