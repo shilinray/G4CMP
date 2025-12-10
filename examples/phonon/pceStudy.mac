@@ -1,0 +1,25 @@
+/run/initialize
+/tracking/verbose 0
+/run/printProgress 1000
+
+# Generate 1 phonon per event. Place uniformly throughout the chip
+/gps/number 1
+/gps/particle phononL
+
+/g4cmp/phononBounces 1000
+
+#Now we generate from a volume instead of a point
+/gps/pos/type Volume
+/gps/pos/shape Para
+/random/setSeeds 1
+/gps/ang/type iso
+# Match geometry in RISQTutorialDetectorConstruction (centered at 0, half-z 0.05mm)
+/gps/pos/centre 0.0 0.0 0.0 cm 
+/gps/pos/halfx 4.0 mm  #Chip half-width
+/gps/pos/halfy 4.0 mm  #Chip half-width
+/gps/pos/halfz 0.04 mm #Chip half-thickness (must be < 0.05mm)
+
+#Select energies
+/gps/ene/type Mono
+/gps/energy 0.004 eV 
+/run/beamOn 2000000
