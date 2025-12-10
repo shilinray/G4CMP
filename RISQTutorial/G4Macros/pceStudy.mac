@@ -13,10 +13,11 @@
 /gps/pos/shape Para
 /random/setSeeds 1
 /gps/ang/type iso
-/gps/pos/centre 0.0 0.0 0.48095 cm # halfway between bottom and top of chip # Default
+# Match geometry in RISQTutorialDetectorConstruction (centered at 0, half-z 0.05mm)
+/gps/pos/centre 0.0 0.0 0.0 cm 
 /gps/pos/halfx 4.0 mm  #Chip half-width
 /gps/pos/halfy 4.0 mm  #Chip half-width
-/gps/pos/halfz 0.19 mm #Chip half-thickness
+/gps/pos/halfz 0.04 mm #Chip half-thickness (must be < 0.05mm)
 
 #Select energies
 /gps/ene/type Mono
