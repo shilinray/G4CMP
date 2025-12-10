@@ -10,7 +10,7 @@
 
 #Now we generate from a volume instead of a point
 /gps/pos/type Volume
-/gps/pos/shape Para
+/gps/pos/shape Box
 /random/setSeeds 1
 /gps/ang/type iso
 # Match geometry in RISQTutorialDetectorConstruction (centered at 0, half-z 0.05mm)
