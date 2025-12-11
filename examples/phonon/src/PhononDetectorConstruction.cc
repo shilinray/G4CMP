@@ -537,28 +537,7 @@ void PhononDetectorConstruction::SetupGeometry()
   SDman->AddNewDetector(electrodeSensitivity);
   fGermaniumLogical->SetSensitiveDetector(electrodeSensitivity);
 
-  // Attach SD to all Al volumes to ensure hits are recorded
-  alFLlogical->SetSensitiveDetector(electrodeSensitivity);
-  alUGPlogical->SetSensitiveDetector(electrodeSensitivity);
-  alLGPlogical->SetSensitiveDetector(electrodeSensitivity);
-  couplCaplogical->SetSensitiveDetector(electrodeSensitivity);
-  connectorlogical->SetSensitiveDetector(electrodeSensitivity);
-  capindconnectorlogical->SetSensitiveDetector(electrodeSensitivity);
-  indvert1logical->SetSensitiveDetector(electrodeSensitivity);
-  for (auto log : inductorLog) log->SetSensitiveDetector(electrodeSensitivity);
-  leftcapwalllogical->SetSensitiveDetector(electrodeSensitivity);
-  rightcapwalllogical->SetSensitiveDetector(electrodeSensitivity);
-  for (auto log : idcLog) log->SetSensitiveDetector(electrodeSensitivity);
-  botcapindconnector1logical->SetSensitiveDetector(electrodeSensitivity);
-  botcapindconnector2logical->SetSensitiveDetector(electrodeSensitivity);
-  capjunctconnectlogical->SetSensitiveDetector(electrodeSensitivity);
-  junct1logical->SetSensitiveDetector(electrodeSensitivity);
-  junct2logical->SetSensitiveDetector(electrodeSensitivity);
-  junct3logical->SetSensitiveDetector(electrodeSensitivity);
-  junct4logical->SetSensitiveDetector(electrodeSensitivity);
-  junct5logical->SetSensitiveDetector(electrodeSensitivity);
-  absorberlogical->SetSensitiveDetector(electrodeSensitivity);
-
+ 
   //
   // surface between Al and Ge determines phonon reflection/absorption
   //
