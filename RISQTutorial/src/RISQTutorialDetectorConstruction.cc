@@ -672,7 +672,7 @@ AttachPhononSensor(G4CMPSurfaceProperty *surfProp) {
   sensorProp->AddConstProperty("subgapAbsorption", 0.1);
 
   // Attach electrode object to handle KaplanQP interface
-  surfProp->SetPhononElectrode(new G4CMPPhononElectrode);
+  surfProp->SetPhononElectrode(new G4CMPPhononElectrode(fSuperconductorSensitivity));
 }
 
 
