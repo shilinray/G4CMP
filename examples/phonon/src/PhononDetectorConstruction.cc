@@ -193,7 +193,7 @@ void PhononDetectorConstruction::SetupGeometry()
   junction->SetScale(1e-3);
  	G4VSolid* junction_solid = junction->GetSolid();
 
-  G3ThreeVector pMin, pMax;
+  G4ThreeVector pMin, pMax;
   junction_solid->BoundingLimits(pMin, pMax);
   G4ThreeVector size = pMax - pMin;
   G4cout << "junction_solid bbox min=" << (pMin/mm) << " mm"
