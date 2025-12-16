@@ -21,10 +21,10 @@
 /vis/viewer/set/globalMarkerScale 0.2
 #
 # Make phonon polarization modes distinguishable
-#/vis/modeling/trajectories/create/drawByParticleID
-#/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
-#/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
-#/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
+/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
 #
 # Generate 2 phonons per event to populate display
 /run/initialize
