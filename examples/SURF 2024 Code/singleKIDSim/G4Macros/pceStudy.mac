@@ -1,0 +1,18 @@
+/run/initialize
+/tracking/verbose 0
+/run/printProgress 10
+
+/gps/number 1
+/gps/particle phononL
+
+/g4cmp/phononBounces 1000000000
+
+#Generate from a point
+/gps/pos/type Point
+/gps/ang/type iso
+/gps/pos/centre 0.0 0.0 -0.0025 cm 
+
+#Select energies
+/gps/ene/type Mono
+/gps/energy 0.5 eV 
+/run/beamOn 50

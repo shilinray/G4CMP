@@ -1,0 +1,13 @@
+# Particle generation
+/run/initialize
+/tracking/verbose 0
+/run/printProgress 1000
+
+/gps/number 1
+/gps/particle phononL
+/gps/pos/type Point
+/gps/ang/type iso
+/gps/pos/centre 0.0 0.0 0.48095 cm # halfway between bottom and top of chip
+/gps/ene/type Mono
+/gps/energy 0.5 eV
+/run/beamOn 10
