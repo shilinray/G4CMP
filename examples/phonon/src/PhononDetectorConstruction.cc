@@ -171,6 +171,15 @@ void PhononDetectorConstruction::SetupGeometry()
   auto righttrap = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE2.STL");
   righttrap->SetScale(1e-3);
  	G4VSolid* righttrap_solid = righttrap->GetSolid();
+
+  G4ThreeVector pMin, pMax;
+  righttrap_solid->BoundingLimits(pMin, pMax);
+  G4ThreeVector size = pMax - pMin;
+  G4cout << "righttrap_solid bbox min=" << (pMin/mm) << " mm"
+        << " max=" << (pMax/mm) << " mm"
+        << " size=" << (size/mm) << " mm" << G4endl;
+  G4cout << "righttrap_solid volume=" << (righttrap_solid->GetCubicVolume()/mm3) << " mm^3" << G4endl;
+
   G4LogicalVolume* righttraplogical = new G4LogicalVolume(righttrap_solid,fAluminum,"righttraplogical"); 
   G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, G4ThreeVector(5*um, -feedlineGap, geHalfZ + trap_thickness), righttraplogical, "righttrapphysical", worldLogical, false, 0);
 
@@ -183,12 +192,30 @@ void PhononDetectorConstruction::SetupGeometry()
   auto junction = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE4.STL");
   junction->SetScale(1e-3);
  	G4VSolid* junction_solid = junction->GetSolid();
+
+  G3ThreeVector pMin, pMax;
+  junction_solid->BoundingLimits(pMin, pMax);
+  G4ThreeVector size = pMax - pMin;
+  G4cout << "junction_solid bbox min=" << (pMin/mm) << " mm"
+        << " max=" << (pMax/mm) << " mm"
+        << " size=" << (size/mm) << " mm" << G4endl;
+  G4cout << "junction_solid volume=" << (junction_solid->GetCubicVolume()/mm3) << " mm^3" << G4endl;
+
   G4LogicalVolume* junctionlogical = new G4LogicalVolume(junction_solid,fAluminum,"junctionlogical"); 
   G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, G4ThreeVector(0., -feedlineGap, geHalfZ + trap_thickness), junctionlogical, "junctionphysical", worldLogical, false, 0);
 
   auto rightabs = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE5.STL");
   rightabs->SetScale(1e-3);
  	G4VSolid* rightabs_solid = rightabs->GetSolid();
+  
+  G4ThreeVector pMin, pMax;
+  rightabs_solid->BoundingLimits(pMin, pMax);
+  G4ThreeVector size = pMax - pMin;
+  G4cout << "rightabs_solid bbox min=" << (pMin/mm) << " mm"
+        << " max=" << (pMax/mm) << " mm"
+        << " size=" << (size/mm) << " mm" << G4endl;
+  G4cout << "rightabs_solid volume=" << (rightabs_solid->GetCubicVolume()/mm3) << " mm^3" << G4endl;
+
   G4LogicalVolume* rightabslogical = new G4LogicalVolume(rightabs_solid,fAluminum,"rightabslogical"); 
   G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(0, G4ThreeVector(60*um, -feedlineGap, geHalfZ + abs_thickness), rightabslogical, "rightabsphysical", worldLogical, false, 0);
 
