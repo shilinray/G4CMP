@@ -1859,7 +1859,18 @@ CMakeFiles/phononLib.dir/src/PhononDetectorConstruction.cc.o: ../src/PhononDetec
   /usr/local/include/Geant4/graphics_reps_defs.hh \
   /usr/local/include/Geant4/G4Colour.hh \
   /usr/local/include/Geant4/G4Color.hh \
-  /usr/local/include/Geant4/G4VisAttributes.icc
+  /usr/local/include/Geant4/G4VisAttributes.icc \
+  ../include/CADMesh.hh \
+  /usr/local/include/Geant4/G4String.hh \
+  /usr/local/include/Geant4/G4TriangularFacet.hh \
+  /usr/local/include/Geant4/G4AssemblyVolume.hh \
+  /usr/local/include/Geant4/G4AssemblyTriplet.hh \
+  /usr/local/include/Geant4/G4AssemblyTriplet.icc \
+  /usr/local/include/Geant4/G4AssemblyVolume.icc \
+  /usr/local/include/Geant4/G4TessellatedSolid.hh \
+  /usr/local/include/Geant4/G4Tet.hh \
+  /usr/local/include/Geant4/G4UIcommand.hh \
+  /usr/local/include/Geant4/Randomize.hh
 
 CMakeFiles/phononLib.dir/src/PhononPrimaryGeneratorAction.cc.o: ../src/PhononPrimaryGeneratorAction.cc \
   /usr/include/stdc-predef.h \
@@ -2826,6 +2837,14 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 
 /usr/local/include/Geant4/G4Geantino.hh:
 
+/usr/local/include/Geant4/G4Tet.hh:
+
+/usr/local/include/Geant4/G4AssemblyVolume.icc:
+
+/usr/local/include/Geant4/G4TriangularFacet.hh:
+
+../include/CADMesh.hh:
+
 /usr/local/include/Geant4/G4VisAttributes.icc:
 
 /usr/local/include/Geant4/G4Color.hh:
@@ -2859,6 +2878,8 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 /usr/local/include/Geant4/G4PhysicsFreeVector.hh:
 
 /usr/local/include/Geant4/G4LPhysicsFreeVector.hh:
+
+/usr/local/include/Geant4/G4AssemblyTriplet.hh:
 
 /usr/local/include/Geant4/G4NistManager.hh:
 
@@ -3290,6 +3311,8 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 
 /usr/include/c++/11/bits/stl_tempbuf.h:
 
+/usr/local/include/Geant4/G4TessellatedSolid.hh:
+
 /usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
 
 /usr/include/c++/11/bits/std_function.h:
@@ -3457,6 +3480,8 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 /usr/include/c++/11/cwchar:
 
 /usr/local/include/Geant4/CLHEP/Random/RandBreitWigner.h:
+
+/usr/local/include/Geant4/G4AssemblyTriplet.icc:
 
 /usr/include/x86_64-linux-gnu/bits/floatn-common.h:
 
@@ -3821,6 +3846,8 @@ CMakeFiles/phononLib.dir/src/PhononSensitivity.cc.o: ../src/PhononSensitivity.cc
 /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h:
 
 /usr/include/c++/11/bits/fstream.tcc:
+
+/usr/local/include/Geant4/G4AssemblyVolume.hh:
 
 /usr/local/include/Geant4/G4PhysicsVectorType.hh:
 
