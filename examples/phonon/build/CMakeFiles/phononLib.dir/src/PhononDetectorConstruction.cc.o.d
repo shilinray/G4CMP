@@ -560,4 +560,15 @@ CMakeFiles/phononLib.dir/src/PhononDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/graphics_reps_defs.hh \
  /usr/local/include/Geant4/G4Colour.hh \
  /usr/local/include/Geant4/G4Color.hh \
- /usr/local/include/Geant4/G4VisAttributes.icc
+ /usr/local/include/Geant4/G4VisAttributes.icc \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/phonon/include/CADMesh.hh \
+ /usr/local/include/Geant4/G4String.hh \
+ /usr/local/include/Geant4/G4TriangularFacet.hh \
+ /usr/local/include/Geant4/G4AssemblyVolume.hh \
+ /usr/local/include/Geant4/G4AssemblyTriplet.hh \
+ /usr/local/include/Geant4/G4AssemblyTriplet.icc \
+ /usr/local/include/Geant4/G4AssemblyVolume.icc \
+ /usr/local/include/Geant4/G4TessellatedSolid.hh \
+ /usr/local/include/Geant4/G4Tet.hh \
+ /usr/local/include/Geant4/G4UIcommand.hh \
+ /usr/local/include/Geant4/Randomize.hh
