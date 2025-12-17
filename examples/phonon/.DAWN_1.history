@@ -1,0 +1,16 @@
+# DAWN history file for automatic EPS generation
+# Place this file in the directory where you run your Geant4 simulation
+#
+# Format: Each non-comment line is read sequentially by dawn
+#
+1           # Device: 0=X11, 1=PostScript, 2=XFIG
+0           # Merge: 0=no merge, 1=merge primitives
+0           # EPS: 0=EPS format, 1=PS format
+0.0 0.0 1.0 # View direction (Vx, Vy, Vz) - looking along +Z axis
+0.0 1.0 0.0 # Up vector (Ux, Uy, Uz) - +Y is up
+25.0        # Zoom factor (matches /vis/viewer/zoom 25 in vis.mac)
+0.0 0.0     # Shift (Sx, Sy) - no shift
+0           # Clipping: 0=off, 1=on
+1           # Draw edges: 0=no, 1=yes
+1           # Hidden line/surface removal: 0=no, 1=yes
+0           # Automatic viewpoint adjustment: 0=off, 1=on

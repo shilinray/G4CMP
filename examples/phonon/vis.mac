@@ -3,13 +3,22 @@
 # Create a scene handler for a specific graphics system
 # (Edit the next line(s) to choose another graphic system)
 #
-/vis/open OGL
+# Option 1: OpenGL for interactive viewing
+#/vis/open OGL
+#/vis/viewer/set/upVector 0 1 0
+#/vis/viewer/set/viewpointVector 0 0 1
+#/vis/viewer/zoom 25
+#/vis/viewer/set/style surface
+#/vis/drawVolume
+
+# Option 2: DAWNFILE for EPS output
+# This creates a .prim file that dawn converts to .eps
+/vis/open DAWNFILE
 /vis/viewer/set/upVector 0 1 0
 /vis/viewer/set/viewpointVector 0 0 1
 /vis/viewer/zoom 25
 /vis/viewer/set/style surface
 /vis/drawVolume
-
 
 #
 # for drawing the tracks
@@ -32,6 +41,10 @@
 /tracking/storeTrajectory 1
 /gun/number 1
 /run/beamOn 100
+
+# Flush the DAWNFILE output - this writes the .prim file
+/vis/viewer/flush
+
 #
 # Write event display to output files for analysis (face and side views)
 #/vis/ogl/set/printFilename g4cmpPhonon
