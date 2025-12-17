@@ -169,48 +169,83 @@ void PhononDetectorConstruction::SetupGeometry()
     G4cout << label << " volume=" << (solid->GetCubicVolume()/mm3) << " mm^3" << G4endl;
   };
 
-  // SQUAT
+  // SQUAT - Load all STL parts first
   const G4double trap_thickness = .02*um;
-  const G4double feedlineGap = 200.0*um;
 
-  auto leftabs = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE1.STL");
+  auto leftabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE1.STL");
   leftabs->SetScale(1e-3);
- 	G4VSolid* leftabs_solid = leftabs->GetSolid();
-  G4LogicalVolume* leftabslogical = new G4LogicalVolume(leftabs_solid,fAluminum,"leftabslogical"); 
-  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(0, G4ThreeVector(-60*um, -feedlineGap, geHalfZ + abs_thickness), leftabslogical, "leftabsphysical", worldLogical, false, 0);
+  G4VSolid* leftabs_solid = leftabs->GetSolid();
 
-  auto righttrap = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE2.STL");
+  auto righttrap = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE2.STL");
   righttrap->SetScale(1e-3);
- 	G4VSolid* righttrap_solid = righttrap->GetSolid();
+  G4VSolid* righttrap_solid = righttrap->GetSolid();
 
-  
-
-  printSolidInfo("righttrap_solid", righttrap_solid);
-
-  G4LogicalVolume* righttraplogical = new G4LogicalVolume(righttrap_solid,fAluminum,"righttraplogical"); 
-  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, G4ThreeVector(5*um, -feedlineGap, geHalfZ + trap_thickness), righttraplogical, "righttrapphysical", worldLogical, false, 0);
-
-  auto lefttrap = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE3.STL");
+  auto lefttrap = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE3.STL");
   lefttrap->SetScale(1e-3);
- 	G4VSolid* lefttrap_solid = lefttrap->GetSolid();
-  G4LogicalVolume* lefttraplogical = new G4LogicalVolume(lefttrap_solid,fAluminum,"lefttraplogical"); 
-  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(0, G4ThreeVector(-5*um, -feedlineGap, geHalfZ + trap_thickness), lefttraplogical, "lefttrapphysical", worldLogical, false, 0);
+  G4VSolid* lefttrap_solid = lefttrap->GetSolid();
 
-  auto junction = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE4.STL");
+  auto junction = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE4.STL");
   junction->SetScale(1e-3);
- 	G4VSolid* junction_solid = junction->GetSolid();
-  printSolidInfo("junction_solid", junction_solid);
+  G4VSolid* junction_solid = junction->GetSolid();
 
-  G4LogicalVolume* junctionlogical = new G4LogicalVolume(junction_solid,fAluminum,"junctionlogical"); 
-  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, G4ThreeVector(0., -feedlineGap, geHalfZ + trap_thickness), junctionlogical, "junctionphysical", worldLogical, false, 0);
-
-  auto rightabs = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE5.STL");
+  auto rightabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE5.STL");
   rightabs->SetScale(1e-3);
- 	G4VSolid* rightabs_solid = rightabs->GetSolid();
+  G4VSolid* rightabs_solid = rightabs->GetSolid();
+
+  // Compute overall bounding box of all SQUAT parts to find the center
+  std::vector<G4VSolid*> squatSolids = {leftabs_solid, righttrap_solid, lefttrap_solid, 
+                                         junction_solid, rightabs_solid};
+  G4ThreeVector overallMin(DBL_MAX, DBL_MAX, DBL_MAX);
+  G4ThreeVector overallMax(-DBL_MAX, -DBL_MAX, -DBL_MAX);
+  for (auto* solid : squatSolids) {
+    G4ThreeVector pMin, pMax;
+    solid->BoundingLimits(pMin, pMax);
+    overallMin.setX(std::min(overallMin.x(), pMin.x()));
+    overallMin.setY(std::min(overallMin.y(), pMin.y()));
+    overallMin.setZ(std::min(overallMin.z(), pMin.z()));
+    overallMax.setX(std::max(overallMax.x(), pMax.x()));
+    overallMax.setY(std::max(overallMax.y(), pMax.y()));
+    overallMax.setZ(std::max(overallMax.z(), pMax.z()));
+  }
+  G4ThreeVector stlCenter = 0.5 * (overallMin + overallMax);
+  
+  G4cout << "SQUAT overall bbox min=" << (overallMin/um) << " um"
+         << " max=" << (overallMax/um) << " um" << G4endl;
+  G4cout << "SQUAT STL center=" << (stlCenter/um) << " um" << G4endl;
+
+  // Compute offset to place SQUAT center at desired position
+  // Target Z: bottom of SQUAT sits on top of Ge surface (at z = geHalfZ)
+  const G4double targetCenterX = 0.0*um;    // Desired X position of SQUAT center
+  const G4double targetCenterY = -200.0*um; // Desired Y position: 200um below feedline
+  const G4double targetCenterZ = geHalfZ + (overallMax.z() - overallMin.z()) / 2.0; // Bottom of SQUAT at Ge surface
+  const G4ThreeVector squatOffset(targetCenterX - stlCenter.x(), 
+                                   targetCenterY - stlCenter.y(), 
+                                   targetCenterZ - stlCenter.z());
+
+  G4cout << "SQUAT placement offset=" << (squatOffset/um) << " um" << G4endl;
+
+  // Print individual solid info
+  printSolidInfo("leftabs_solid", leftabs_solid);
+  printSolidInfo("righttrap_solid", righttrap_solid);
+  printSolidInfo("lefttrap_solid", lefttrap_solid);
+  printSolidInfo("junction_solid", junction_solid);
   printSolidInfo("rightabs_solid", rightabs_solid);
 
+  // Create logical volumes and place physical volumes
+  G4LogicalVolume* leftabslogical = new G4LogicalVolume(leftabs_solid,fAluminum,"leftabslogical"); 
+  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, abs_thickness), leftabslogical, "leftabsphysical", worldLogical, false, 0);
+
+  G4LogicalVolume* righttraplogical = new G4LogicalVolume(righttrap_solid,fAluminum,"righttraplogical"); 
+  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, trap_thickness), righttraplogical, "righttrapphysical", worldLogical, false, 0);
+
+  G4LogicalVolume* lefttraplogical = new G4LogicalVolume(lefttrap_solid,fAluminum,"lefttraplogical"); 
+  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, abs_thickness), lefttraplogical, "lefttrapphysical", worldLogical, false, 0);
+
+  G4LogicalVolume* junctionlogical = new G4LogicalVolume(junction_solid,fAluminum,"junctionlogical"); 
+  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, trap_thickness), junctionlogical, "junctionphysical", worldLogical, false, 0);
+
   G4LogicalVolume* rightabslogical = new G4LogicalVolume(rightabs_solid,fAluminum,"rightabslogical"); 
-  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(0, G4ThreeVector(60*um, -feedlineGap, geHalfZ + abs_thickness), rightabslogical, "rightabsphysical", worldLogical, false, 0);
+  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, abs_thickness), rightabslogical, "rightabsphysical", worldLogical, false, 0);
 
 
 
