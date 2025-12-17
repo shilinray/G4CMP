@@ -2458,7 +2458,24 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: ../src
   /usr/local/include/Geant4/graphics_reps_defs.hh \
   /usr/local/include/Geant4/G4Colour.hh \
   /usr/local/include/Geant4/G4Color.hh \
-  /usr/local/include/Geant4/G4VisAttributes.icc
+  /usr/local/include/Geant4/G4VisAttributes.icc \
+  ../include/CADMesh.hh \
+  /usr/local/include/Geant4/G4String.hh \
+  /usr/local/include/Geant4/G4TriangularFacet.hh \
+  /usr/local/include/Geant4/G4VFacet.hh \
+  /usr/local/include/Geant4/windefs.hh \
+  /usr/local/include/Geant4/G4AssemblyVolume.hh \
+  /usr/local/include/Geant4/G4AssemblyTriplet.hh \
+  /usr/local/include/Geant4/G4AssemblyTriplet.icc \
+  /usr/local/include/Geant4/G4AssemblyVolume.icc \
+  /usr/local/include/Geant4/G4TessellatedSolid.hh \
+  /usr/local/include/Geant4/G4Voxelizer.hh \
+  /usr/local/include/Geant4/G4SurfBits.hh \
+  /usr/local/include/Geant4/G4Box.hh \
+  /usr/local/include/Geant4/G4Voxelizer.icc \
+  /usr/local/include/Geant4/G4Tet.hh \
+  /usr/local/include/Geant4/G4UIcommand.hh \
+  /usr/local/include/Geant4/Randomize.hh
 
 CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialPad.cc.o: ../src/RISQTutorialPad.cc \
   /usr/include/stdc-predef.h \
@@ -7021,6 +7038,14 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 
 /usr/local/include/Geant4/G4Geantino.hh:
 
+/usr/local/include/Geant4/G4Tet.hh:
+
+/usr/local/include/Geant4/G4AssemblyVolume.icc:
+
+/usr/local/include/Geant4/windefs.hh:
+
+../include/CADMesh.hh:
+
 /usr/local/include/Geant4/G4UserLimits.icc:
 
 /usr/local/include/Geant4/G4Field.hh:
@@ -7117,6 +7142,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 
 /usr/local/include/Geant4/G4Orb.icc:
 
+/usr/local/include/Geant4/G4TriangularFacet.hh:
+
 /usr/local/include/Geant4/G4Cons.icc:
 
 /usr/local/include/Geant4/G4Box.icc:
@@ -7136,6 +7163,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 /usr/local/include/Geant4/G4Pow.hh:
 
 /usr/local/include/Geant4/G4PhysicsFreeVector.hh:
+
+/usr/local/include/Geant4/G4AssemblyTriplet.hh:
 
 /usr/local/include/Geant4/G4NistManager.hh:
 
@@ -7477,6 +7506,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 
 /usr/include/c++/11/bits/stl_tempbuf.h:
 
+/usr/local/include/Geant4/G4TessellatedSolid.hh:
+
 /usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
 
 /usr/include/c++/11/bits/std_function.h:
@@ -7488,6 +7519,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 /usr/local/include/Geant4/G4Cache.hh:
 
 /usr/include/c++/11/cstdio:
+
+/usr/local/include/Geant4/G4Voxelizer.hh:
 
 /usr/local/include/Geant4/G4UserTrackingAction.hh:
 
@@ -7599,11 +7632,15 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 
 /usr/include/x86_64-linux-gnu/bits/timesize.h:
 
+/usr/local/include/Geant4/G4SurfBits.hh:
+
 /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
 
 /usr/include/c++/11/bits/range_access.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
+
+/usr/local/include/Geant4/G4Voxelizer.icc:
 
 /usr/local/include/Geant4/G4DataVector.icc:
 
@@ -7654,6 +7691,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 /usr/local/include/Geant4/G4ParameterisedNavigation.hh:
 
 /usr/local/include/Geant4/G4VParticleChange.hh:
+
+/usr/local/include/Geant4/G4AssemblyTriplet.icc:
 
 /usr/include/x86_64-linux-gnu/bits/floatn-common.h:
 
@@ -8061,6 +8100,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 
 /usr/local/include/Geant4/G4PhysicsVector.hh:
 
+/usr/local/include/Geant4/G4AssemblyVolume.hh:
+
 /usr/local/include/Geant4/G4PhysicsVectorType.hh:
 
 /usr/local/include/Geant4/G4PhysicsVector.icc:
@@ -8152,6 +8193,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 /usr/local/include/Geant4/G4VHitsCollection.hh:
 
 /usr/local/include/Geant4/CLHEP/Random/RandGauss.h:
+
+/usr/local/include/Geant4/G4VFacet.hh:
 
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
 

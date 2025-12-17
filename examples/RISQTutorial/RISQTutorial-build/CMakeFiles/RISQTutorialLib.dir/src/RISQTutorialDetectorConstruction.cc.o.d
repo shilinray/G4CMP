@@ -567,4 +567,21 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/graphics_reps_defs.hh \
  /usr/local/include/Geant4/G4Colour.hh \
  /usr/local/include/Geant4/G4Color.hh \
- /usr/local/include/Geant4/G4VisAttributes.icc
+ /usr/local/include/Geant4/G4VisAttributes.icc \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/CADMesh.hh \
+ /usr/local/include/Geant4/G4String.hh \
+ /usr/local/include/Geant4/G4TriangularFacet.hh \
+ /usr/local/include/Geant4/G4VFacet.hh \
+ /usr/local/include/Geant4/windefs.hh \
+ /usr/local/include/Geant4/G4AssemblyVolume.hh \
+ /usr/local/include/Geant4/G4AssemblyTriplet.hh \
+ /usr/local/include/Geant4/G4AssemblyTriplet.icc \
+ /usr/local/include/Geant4/G4AssemblyVolume.icc \
+ /usr/local/include/Geant4/G4TessellatedSolid.hh \
+ /usr/local/include/Geant4/G4Voxelizer.hh \
+ /usr/local/include/Geant4/G4SurfBits.hh \
+ /usr/local/include/Geant4/G4Box.hh \
+ /usr/local/include/Geant4/G4Voxelizer.icc \
+ /usr/local/include/Geant4/G4Tet.hh \
+ /usr/local/include/Geant4/G4UIcommand.hh \
+ /usr/local/include/Geant4/Randomize.hh
