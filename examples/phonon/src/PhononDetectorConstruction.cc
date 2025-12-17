@@ -172,23 +172,23 @@ void PhononDetectorConstruction::SetupGeometry()
   // SQUAT - Load all STL parts first
   const G4double trap_thickness = .02*um;
 
-  auto leftabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE1.STL");
+  auto leftabs = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE1.STL");
   leftabs->SetScale(1e-3);
   G4VSolid* leftabs_solid = leftabs->GetSolid();
 
-  auto righttrap = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE2.STL");
+  auto righttrap = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE2.STL");
   righttrap->SetScale(1e-3);
   G4VSolid* righttrap_solid = righttrap->GetSolid();
 
-  auto lefttrap = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE3.STL");
+  auto lefttrap = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE3.STL");
   lefttrap->SetScale(1e-3);
   G4VSolid* lefttrap_solid = lefttrap->GetSolid();
 
-  auto junction = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE4.STL");
+  auto junction = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE4.STL");
   junction->SetScale(1e-3);
   G4VSolid* junction_solid = junction->GetSolid();
 
-  auto rightabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE5.STL");
+  auto rightabs = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE5.STL");
   rightabs->SetScale(1e-3);
   G4VSolid* rightabs_solid = rightabs->GetSolid();
 
