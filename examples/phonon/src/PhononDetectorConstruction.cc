@@ -217,35 +217,35 @@ void PhononDetectorConstruction::SetupGeometry()
   // Target Z: bottom of SQUAT sits on top of Ge surface (at z = geHalfZ)
   const G4double targetCenterX = 0.0*um;    // Desired X position of SQUAT center
   const G4double targetCenterY = -200.0*um; // Desired Y position: 200um below feedline
-  const G4double targetCenterZ = geHalfZ + (overallMax.z() - overallMin.z()) / 2.0; // Bottom of SQUAT at Ge surface
-  const G4ThreeVector squatOffset(targetCenterX - stlCenter.x(), 
-                                   targetCenterY - stlCenter.y(), 
-                                   targetCenterZ - stlCenter.z());
+  const G4double targetCenterZ = geHalfZ + (overallMax.z() - overallMin.z()) / 2.0;
 
-  G4cout << "SQUAT placement offset=" << (squatOffset/um) << " um" << G4endl;
+  // Rotation: 90 degrees around Z axis, centered on stlCenter
+  G4RotationMatrix* squatRotation = new G4RotationMatrix();
+  squatRotation->rotateZ(90.0*deg);
 
-  // Print individual solid info
-  printSolidInfo("leftabs_solid", leftabs_solid);
-  printSolidInfo("righttrap_solid", righttrap_solid);
-  printSolidInfo("lefttrap_solid", lefttrap_solid);
-  printSolidInfo("junction_solid", junction_solid);
-  printSolidInfo("rightabs_solid", rightabs_solid);
+  // Use G4Transform3D: rotate around STL center, then translate to target
+  G4ThreeVector targetCenter(targetCenterX, targetCenterY, targetCenterZ);
+  G4Transform3D squatTransform = G4Translate3D(targetCenter) 
+                                * G4Rotate3D(*squatRotation) 
+                                * G4Translate3D(-stlCenter);
 
-  // Create logical volumes and place physical volumes
+  G4cout << "SQUAT target center=" << (targetCenter/um) << " um, rotated 90 deg around Z" << G4endl;
+
+  // Create logical volumes and place with transform
   G4LogicalVolume* leftabslogical = new G4LogicalVolume(leftabs_solid,fAluminum,"leftabslogical"); 
-  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, abs_thickness), leftabslogical, "leftabsphysical", worldLogical, false, 0);
+  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(squatTransform * G4Translate3D(0, 0, abs_thickness), leftabslogical, "leftabsphysical", worldLogical, false, 0);
 
   G4LogicalVolume* righttraplogical = new G4LogicalVolume(righttrap_solid,fAluminum,"righttraplogical"); 
-  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, trap_thickness), righttraplogical, "righttrapphysical", worldLogical, false, 0);
+  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(squatTransform * G4Translate3D(0, 0, trap_thickness), righttraplogical, "righttrapphysical", worldLogical, false, 0);
 
   G4LogicalVolume* lefttraplogical = new G4LogicalVolume(lefttrap_solid,fAluminum,"lefttraplogical"); 
-  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, abs_thickness), lefttraplogical, "lefttrapphysical", worldLogical, false, 0);
+  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(squatTransform * G4Translate3D(0, 0, abs_thickness), lefttraplogical, "lefttrapphysical", worldLogical, false, 0);
 
   G4LogicalVolume* junctionlogical = new G4LogicalVolume(junction_solid,fAluminum,"junctionlogical"); 
-  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, trap_thickness), junctionlogical, "junctionphysical", worldLogical, false, 0);
+  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(squatTransform * G4Translate3D(0, 0, trap_thickness), junctionlogical, "junctionphysical", worldLogical, false, 0);
 
   G4LogicalVolume* rightabslogical = new G4LogicalVolume(rightabs_solid,fAluminum,"rightabslogical"); 
-  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, abs_thickness), rightabslogical, "rightabsphysical", worldLogical, false, 0);
+  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(squatTransform * G4Translate3D(0, 0, abs_thickness), rightabslogical, "rightabsphysical", worldLogical, false, 0);
 
 
 
