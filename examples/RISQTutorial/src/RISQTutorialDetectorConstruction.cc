@@ -168,33 +168,33 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   const G4double trap_thickness = .02*um;
   const G4double feedlineGap = 200.0*um;
 
-  auto leftabs = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE1.STL");
+  auto leftabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE1.STL");
   leftabs->SetScale(1e-3);
   G4VSolid* leftabs_solid = leftabs->GetSolid();
   G4LogicalVolume* leftabslogical = new G4LogicalVolume(leftabs_solid,fAluminum,"leftabslogical"); 
   G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(0, G4ThreeVector(-60*um, -feedlineGap, geHalfZ + abs_thickness), leftabslogical, "leftabsphysical", worldLogical, false, 0);
 
-  auto righttrap = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE2.STL");
+  auto righttrap = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE2.STL");
   righttrap->SetScale(1e-3);
   G4VSolid* righttrap_solid = righttrap->GetSolid();
   printSolidInfo("righttrap_solid", righttrap_solid);
   G4LogicalVolume* righttraplogical = new G4LogicalVolume(righttrap_solid,fAluminum,"righttraplogical"); 
   G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, G4ThreeVector(5*um, -feedlineGap, geHalfZ + trap_thickness), righttraplogical, "righttrapphysical", worldLogical, false, 0);
 
-  auto lefttrap = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE3.STL");
+  auto lefttrap = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE3.STL");
   lefttrap->SetScale(1e-3);
   G4VSolid* lefttrap_solid = lefttrap->GetSolid();
   G4LogicalVolume* lefttraplogical = new G4LogicalVolume(lefttrap_solid,fAluminum,"lefttraplogical"); 
   G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(0, G4ThreeVector(-5*um, -feedlineGap, geHalfZ + trap_thickness), lefttraplogical, "lefttrapphysical", worldLogical, false, 0);
 
-  auto junction = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE4.STL");
+  auto junction = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE4.STL");
   junction->SetScale(1e-3);
   G4VSolid* junction_solid = junction->GetSolid();
   printSolidInfo("junction_solid", junction_solid);
   G4LogicalVolume* junctionlogical = new G4LogicalVolume(junction_solid,fAluminum,"junctionlogical"); 
   G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, G4ThreeVector(0., -feedlineGap, geHalfZ + trap_thickness), junctionlogical, "junctionphysical", worldLogical, false, 0);
 
-  auto rightabs = CADMesh::TessellatedMesh::FromSTL("../single_squat/single_squat_BE5.STL");
+  auto rightabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE5.STL");
   rightabs->SetScale(1e-3);
   G4VSolid* rightabs_solid = rightabs->GetSolid();
   printSolidInfo("rightabs_solid", rightabs_solid);
