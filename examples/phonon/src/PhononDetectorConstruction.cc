@@ -157,6 +157,17 @@ void PhononDetectorConstruction::SetupGeometry()
     0, G4ThreeVector(0.,0., geHalfZ + abs_thickness), alFLlogical, "alFLphysical",
     worldLogical, false, 0); // physical feedline
 
+  // Helper to print bounding box + volume for CADMesh tessellated solids
+  const auto printSolidInfo = [](const char* label, G4VSolid* solid) {
+    G4ThreeVector pMin, pMax;
+    solid->BoundingLimits(pMin, pMax);
+    const G4ThreeVector size = pMax - pMin;
+
+    G4cout << label << " bbox min=" << (pMin/mm) << " mm"
+           << " max=" << (pMax/mm) << " mm"
+           << " size=" << (size/mm) << " mm" << G4endl;
+    G4cout << label << " volume=" << (solid->GetCubicVolume()/mm3) << " mm^3" << G4endl;
+  };
 
   // SQUAT
   const G4double trap_thickness = .02*um;
@@ -172,17 +183,7 @@ void PhononDetectorConstruction::SetupGeometry()
   righttrap->SetScale(1e-3);
  	G4VSolid* righttrap_solid = righttrap->GetSolid();
 
-  // Helper to print bounding box + volume for CADMesh tessellated solids
-  const auto printSolidInfo = [](const char* label, G4VSolid* solid) {
-    G4ThreeVector pMin, pMax;
-    solid->BoundingLimits(pMin, pMax);
-    const G4ThreeVector size = pMax - pMin;
-
-    G4cout << label << " bbox min=" << (pMin/mm) << " mm"
-           << " max=" << (pMax/mm) << " mm"
-           << " size=" << (size/mm) << " mm" << G4endl;
-    G4cout << label << " volume=" << (solid->GetCubicVolume()/mm3) << " mm^3" << G4endl;
-  };
+  
 
   printSolidInfo("righttrap_solid", righttrap_solid);
 
