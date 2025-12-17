@@ -6,7 +6,7 @@
 /vis/open OGL
 /vis/viewer/set/upVector 0 1 0
 /vis/viewer/set/viewpointVector 0 0 1
-/vis/viewer/zoom 10
+/vis/viewer/zoom 25
 /vis/viewer/set/style surface
 /vis/drawVolume
 
@@ -21,24 +21,24 @@
 /vis/viewer/set/globalMarkerScale 0.2
 #
 # Make phonon polarization modes distinguishable
-/vis/modeling/trajectories/create/drawByParticleID
-/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
-/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
-/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
+#/vis/modeling/trajectories/create/drawByParticleID
+#/vis/modeling/trajectories/drawByParticleID-0/set phononTS Red 
+#/vis/modeling/trajectories/drawByParticleID-0/set phononTF Green
+#/vis/modeling/trajectories/drawByParticleID-0/set phononL Blue
 #
 # Generate 2 phonons per event to populate display
 /run/initialize
 /tracking/verbose 0
 /tracking/storeTrajectory 1
-/gun/number 2
-/run/beamOn 1000
+/gun/number 1
+/run/beamOn 100
 #
 # Write event display to output files for analysis (face and side views)
-/vis/ogl/set/printFilename g4cmpPhonon
-/vis/ogl/set/printMode pixmap
-/vis/ogl/printEPS
+#/vis/ogl/set/printFilename g4cmpPhonon
+#/vis/ogl/set/printMode pixmap
+#/vis/ogl/printEPS
 
-/vis/viewer/set/upVector 0 0 1
-/vis/viewer/set/viewpointVector 0 1 0
-/vis/viewer/zoomTo 3
-/vis/ogl/printEPS
+#/vis/viewer/set/upVector 0 0 1
+#/vis/viewer/set/viewpointVector 0 1 0
+#/vis/viewer/zoomTo 3
+#/vis/ogl/printEPS
