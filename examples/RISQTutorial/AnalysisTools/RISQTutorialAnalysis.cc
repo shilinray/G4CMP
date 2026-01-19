@@ -62,6 +62,27 @@ struct Event
 };
 
 //Forward declarations
+/**
+ * @brief Read and merge G4CMP primary-particle and hit information from two text files into a list of events.
+ *
+ * This routine is intended to parse two companion text outputs:
+ *  - a "hit" text file containing detector/step hit records, and
+ *  - a "primary" text file containing primary particle records,
+ * and then associate the records by event (and any other identifiers used by the file formats) to produce
+ * a unified collection of @c Event objects.
+ *
+ * @param hitTextFilename     Path to the text file containing hit records.
+ * @param primaryTextFilename Path to the text file containing primary/vertex records.
+ * @return std::vector<Event> A vector of reconstructed events containing merged primary + hit data.
+ *
+ * @throws std::runtime_error (or another exception) if either file cannot be opened, is malformed, or if the
+ *         contents cannot be consistently associated into events (implementation-defined).
+ *
+ * @note From the snippet provided, this function is only *declared* in
+ *       @c /Users/shilinray/Library/CloudStorage/OneDrive-CaliforniaInstituteofTechnology/Research/G4CMP/examples/RISQTutorial/AnalysisTools/RISQTutorialAnalysis.cc.
+ *       Its *definition* is not shown; to locate it, search the codebase for
+ *       @c "ReadInG4CMPPrimaryAndHitFiles(" (it may be defined later in the same .cc file or in another translation unit).
+ */
 std::vector<Event> ReadInG4CMPPrimaryAndHitFiles(std::string hitTextFilename, std::string primaryTextFilename);
 std::map<int,std::vector<Hit> > ParseHitTextFileForHits(std::string filename);
 std::map<int,PrimaryInfo> ParsePrimaryTextFileForPrimaries(std::string filename);

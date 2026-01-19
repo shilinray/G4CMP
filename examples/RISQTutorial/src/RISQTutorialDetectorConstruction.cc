@@ -266,14 +266,17 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
     const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
 
-    topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 1.0, 0.0, 0.0, 0.0,  
-					  	        0.5, 1.0, 0.0, 0.0);   // absorption and reflection are the first two, opposite for the wall
+    double pAbsProbAlSi = 0.488;
+    double pAbsProbSideWallSi = 0.0;
+
+    topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 0.0, 1.0, 0.0, 0.0,
+                                                      pAbsProbAlSi, 1.0, 0.0, 0.0);
     topSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
     AttachPhononSensor(topSurfProp);
 
     wallSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
-					    	          0.0, 1.0, 0.0, 0.0);
+                                                      pAbsProbSideWallSi, 1.0, 0.0, 0.0 );
     wallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					  diffCoeffs, specCoeffs, GHz, GHz,GHz);
 
