@@ -4,7 +4,7 @@
 # (Edit the next line(s) to choose another graphic system)
 #
 # Option 1: OpenGL for interactive viewing
-/vis/open OGL
+/vis/open OGLI
 /vis/viewer/set/upVector 0 1 0
 /vis/viewer/set/viewpointVector 0 0 1
 /vis/viewer/zoom 20
@@ -40,7 +40,7 @@
 /tracking/verbose 0
 /tracking/storeTrajectory 1
 /gun/number 1
-/run/beamOn 100
+/run/beamOn 10
 
 # Flush the DAWNFILE output - this writes the .prim file
 #/vis/viewer/flush
