@@ -174,8 +174,8 @@ G4bool RISQTutorialSensitivity::IsHit(const G4Step* step,
       G4double eDep = step->GetTotalEnergyDeposit();
 
       // DEBUG: Print what we found
-      G4cout << "DEBUG HIT: Volume=" << volName 
-             << " Energy=" << G4BestUnit(eDep, "Energy") << G4endl;
+      //G4cout << "DEBUG HIT: Volume=" << volName 
+            // << " Energy=" << eDep << G4endl;
 
       // Force TRUE for now to ensure file writing works
       return true; 

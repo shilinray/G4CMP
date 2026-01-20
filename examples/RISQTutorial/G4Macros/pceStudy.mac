@@ -1,5 +1,5 @@
 /run/initialize
-/tracking/verbose 1
+/tracking/verbose 0
 /run/printProgress 1000
 
 # Generate 1 phonon per event. Place uniformly throughout the chip
