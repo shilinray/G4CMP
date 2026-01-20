@@ -285,13 +285,16 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  new G4CMPLogicalBorderSurface("Al", alFLphysical, GePhys, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", leftabsphysical, GePhys, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", righttrapphysical, GePhys, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", lefttrapphysical, GePhys, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", junctionphysical, GePhys, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", rightabsphysical, GePhys, topSurfProp);
-  new G4CMPLogicalBorderSurface("wall", fWorldPhys, GePhys, wallSurfProp);
+  // Ge -> Al (phonons start in Ge and enter Al)
+  new G4CMPLogicalBorderSurface("GeToAl_FL", GePhys, alFLphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_LA", GePhys, leftabsphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_RT", GePhys, righttrapphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_LT", GePhys, lefttrapphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_JN", GePhys, junctionphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_RA", GePhys, rightabsphysical, topSurfProp);
+
+  // Ge -> World (bare Ge where there is no Al coverage)
+  new G4CMPLogicalBorderSurface("GeToWorld", GePhys, fWorldPhys, wallSurfProp);
 
 //                                        
 // Visualization attributes
