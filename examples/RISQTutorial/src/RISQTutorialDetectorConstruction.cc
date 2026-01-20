@@ -291,11 +291,13 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", lefttrapphysical, GePhys, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", junctionphysical, GePhys, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", rightabsphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("wall", fWorldPhys, GePhys, wallSurfProp);
+
+//                                        
+// Visualization attributes
+//
 
 
-  //                                        
-  // Visualization attributes
-  //
   // World remains invisible
   G4VisAttributes* wrldVis = new G4VisAttributes(G4Colour(0.0, 0.0, 0.1, 0.1));
   wrldVis->SetVisibility(false);

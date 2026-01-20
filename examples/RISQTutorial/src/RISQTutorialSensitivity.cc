@@ -146,7 +146,7 @@ G4bool RISQTutorialSensitivity::IsHit(const G4Step* step,
                          postStepPoint->GetStepStatus() == fGeomBoundary && 
                          step->GetNonIonizingEnergyDeposit() > 0.;
 
-  G4bool landedOnTargetSurface = (postStepPoint->GetPhysicalVolume()->GetName().find("alFLphysical") != std::string::npos);
+  G4bool landedOnTargetSurface = (postStepPoint->GetPhysicalVolume()->GetName().find("shunt") != std::string::npos);
 
   //Now select which critera matter:
   //Option one: a phonon that is stopped and killed at a boundary with a
