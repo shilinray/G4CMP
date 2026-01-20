@@ -228,19 +228,19 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
   // Create logical volumes and place physical volumes
   G4LogicalVolume* leftabslogical = new G4LogicalVolume(leftabs_solid,fAluminum,"leftabslogical"); 
-  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, abs_thickness), leftabslogical, "leftabsphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(0, squatOffset, leftabslogical, "leftabsphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* righttraplogical = new G4LogicalVolume(righttrap_solid,fAluminum,"righttraplogical"); 
-  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, trap_thickness), righttraplogical, "righttrapphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, squatOffset, righttraplogical, "righttrapphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* lefttraplogical = new G4LogicalVolume(lefttrap_solid,fAluminum,"lefttraplogical"); 
-  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, abs_thickness), lefttraplogical, "lefttrapphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(0, squatOffset, lefttraplogical, "lefttrapphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* junctionlogical = new G4LogicalVolume(junction_solid,fAluminum,"junctionlogical"); 
-  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, trap_thickness), junctionlogical, "junctionphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, squatOffset, junctionlogical, "junctionphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* rightabslogical = new G4LogicalVolume(rightabs_solid,fAluminum,"rightabslogical"); 
-  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(0, squatOffset + G4ThreeVector(0, 0, abs_thickness), rightabslogical, "rightabsphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(0, squatOffset, rightabslogical, "rightabsphysicalshunt", worldLogical, false, 0);
 
 
   // 
