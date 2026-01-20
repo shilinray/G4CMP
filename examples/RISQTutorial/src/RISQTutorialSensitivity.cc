@@ -123,39 +123,63 @@ void RISQTutorialSensitivity::SetPrimaryOutputFile(const G4String &fn) {
 }
 
 
-G4bool RISQTutorialSensitivity::IsHit(const G4Step* step,
-                                const G4TouchableHistory*) const
-{
+// G4bool RISQTutorialSensitivity::IsHit(const G4Step* step,
+//                                 const G4TouchableHistory*) const
+// {
   
-  //Establish track/step information
-  const G4Track* track = step->GetTrack();
-  const G4StepPoint* postStepPoint = step->GetPostStepPoint();
-  const G4ParticleDefinition* particle = track->GetDefinition();
+//   //Establish track/step information
+//   const G4Track* track = step->GetTrack();
+//   const G4StepPoint* postStepPoint = step->GetPostStepPoint();
+//   const G4ParticleDefinition* particle = track->GetDefinition();
 
-  //-------------------------------------------------------------------
-  //Set criteion for what counts as a "hit" that should be recorded.
-  bool selectTargetVolumes = true;
+//   //-------------------------------------------------------------------
+//   //Set criteion for what counts as a "hit" that should be recorded.
+//   bool selectTargetVolumes = true;
 
-  //Option one: a phonon that is stopped and killed at a boundary with a
-  //nonzero energy deposition.
-  G4bool correctParticle = particle == G4PhononLong::Definition() ||
-                           particle == G4PhononTransFast::Definition() ||
-                           particle == G4PhononTransSlow::Definition();
+//   //Option one: a phonon that is stopped and killed at a boundary with a
+//   //nonzero energy deposition.
+//   G4bool correctParticle = particle == G4PhononLong::Definition() ||
+//                            particle == G4PhononTransFast::Definition() ||
+//                            particle == G4PhononTransSlow::Definition();
   
-  G4bool correctStatus = step->GetTrack()->GetTrackStatus() == fStopAndKill &&
-                         postStepPoint->GetStepStatus() == fGeomBoundary && step->GetTotalEnergyDeposit() > 0.;
-                         // step->GetNonIonizingEnergyDeposit() > 0.;
+//   G4bool correctStatus = step->GetTrack()->GetTrackStatus() == fStopAndKill &&
+//                          postStepPoint->GetStepStatus() == fGeomBoundary && 
+//                          step->GetNonIonizingEnergyDeposit() > 0.;
 
-  G4bool landedOnTargetSurface = (postStepPoint->GetPhysicalVolume()->GetName().find("shunt") != std::string::npos);
+//   G4bool landedOnTargetSurface = (postStepPoint->GetPhysicalVolume()->GetName().find("shunt") != std::string::npos);
 
-  //Now select which critera matter:
-  //Option one: a phonon that is stopped and killed at a boundary with a
-  //nonzero energy deposition.  
-  if( !selectTargetVolumes ){ return correctParticle && correctStatus; }
+//   //Now select which critera matter:
+//   //Option one: a phonon that is stopped and killed at a boundary with a
+//   //nonzero energy deposition.  
+//   if( !selectTargetVolumes ){ return correctParticle && correctStatus; }
     
-  //Option two: a phonon that satisfies all of the above things, but also landed in a specific
-  //volume name. Here, we're looking for a volume that contains the words "shuntConductor", which
-  //in this tutorial's geometry is one of the qubit crosses. (Can also just put this info in
-  //the output file and sort through this in analysis, but this helps us minimize output filesize.)
-  else{ return correctParticle && correctStatus && landedOnTargetSurface; }
+//   //Option two: a phonon that satisfies all of the above things, but also landed in a specific
+//   //volume name. Here, we're looking for a volume that contains the words "shuntConductor", which
+//   //in this tutorial's geometry is one of the qubit crosses. (Can also just put this info in
+//   //the output file and sort through this in analysis, but this helps us minimize output filesize.)
+//   else{ return correctParticle && correctStatus && landedOnTargetSurface; }
+// }
+
+G4bool RISQTutorialSensitivity::IsHit(const G4Step* step,
+                                      const G4TouchableHistory*) const
+{
+  const G4Track* track = step->GetTrack();
+  
+  // Only look at phonons dying at a boundary (standard Kaplan signature)
+  if (track->GetTrackStatus() == fStopAndKill && 
+      step->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) 
+  {
+      auto vol = step->GetPostStepPoint()->GetPhysicalVolume();
+      G4String volName = vol ? vol->GetName() : "Unknown";
+      G4double eDep = step->GetTotalEnergyDeposit();
+
+      // DEBUG: Print what we found
+      G4cout << "DEBUG HIT: Volume=" << volName 
+             << " Energy=" << G4BestUnit(eDep, "Energy") << G4endl;
+
+      // Force TRUE for now to ensure file writing works
+      return true; 
+  }
+
+  return false;
 }
