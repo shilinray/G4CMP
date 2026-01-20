@@ -285,12 +285,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, leftabsphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, righttrapphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, lefttrapphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junctionphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, rightabsphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", alFLphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", leftabsphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", righttrapphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", lefttrapphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", junctionphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", rightabsphysical, GePhys, topSurfProp);
 
 
   //                                        
