@@ -143,8 +143,8 @@ G4bool RISQTutorialSensitivity::IsHit(const G4Step* step,
                            particle == G4PhononTransSlow::Definition();
   
   G4bool correctStatus = step->GetTrack()->GetTrackStatus() == fStopAndKill &&
-                         postStepPoint->GetStepStatus() == fGeomBoundary &&
-                         step->GetNonIonizingEnergyDeposit() > 0.;
+                         postStepPoint->GetStepStatus() == fGeomBoundary && step->GetTotalEnergyDeposit() > 0.;
+                         // step->GetNonIonizingEnergyDeposit() > 0.;
 
   G4bool landedOnTargetSurface = (postStepPoint->GetPhysicalVolume()->GetName().find("shunt") != std::string::npos);
 
