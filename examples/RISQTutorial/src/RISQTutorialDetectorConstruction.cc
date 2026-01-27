@@ -142,7 +142,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
   G4Box* feedline = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, fl_thickness);
   G4LogicalVolume* alFLlogical = new G4LogicalVolume(feedline,fAluminum,"alFLlogical"); // logical feedline
-  G4VPhysicalVolume* alFLphysical = new G4PVPlacement(0, G4ThreeVector(0.,0., geHalfZ + fl_thickness), alFLlogical, "alFLphysicalshunt", worldLogical, false, 0); 
+  G4VPhysicalVolume* alFLphysical = new G4PVPlacement(0, G4ThreeVector(0.,0., geHalfZ + fl_thickness), alFLlogical, "alFLphysical", worldLogical, false, 0); 
   // physical feedline
 
   // Helper to print bounding box + volume for CADMesh tessellated solids

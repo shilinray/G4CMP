@@ -134,7 +134,7 @@ G4bool RISQTutorialSensitivity::IsHit(const G4Step* step,
 
   //-------------------------------------------------------------------
   //Set criteion for what counts as a "hit" that should be recorded.
-  bool selectTargetVolumes = false;
+  bool selectTargetVolumes = true;
 
   //Option one: a phonon that is stopped and killed at a boundary with a
   //nonzero energy deposition.
