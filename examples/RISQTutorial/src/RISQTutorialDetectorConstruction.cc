@@ -102,8 +102,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // World
   //
   G4VSolid* worldSolid = new G4Box("World",8.*cm,8.*cm,8.*cm); // half (-16,16)
-  G4LogicalVolume* worldLogical =
-    new G4LogicalVolume(worldSolid,fLiquidHelium,"World");
+  G4LogicalVolume* worldLogical = new G4LogicalVolume(worldSolid,fLiquidHelium,"World");
   worldLogical->SetUserLimits(new G4UserLimits(10*mm, DBL_MAX, DBL_MAX, 0, 0));
   fWorldPhys = new G4PVPlacement(0,G4ThreeVector(),worldLogical,"World",0,
                                  false,0); // physical placement
@@ -112,13 +111,10 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Germanium cylinder - this is the volume in which we will propagate phonons
   //  
   const G4double geHalfZ = 0.05*mm;
-  G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", 0.5*cm, 0.5*cm,
-                                         geHalfZ);
-  G4LogicalVolume* fGermaniumLogical =
-    new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
-  G4VPhysicalVolume* GePhys = 
-    new G4PVPlacement(0,G4ThreeVector(),fGermaniumLogical,"fGermaniumPhysical",
-                      worldLogical,false,0); // placing physical volume at center of world logical
+  G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", 0.5*cm, 0.5*cm, geHalfZ);
+  G4LogicalVolume* fGermaniumLogical = new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
+  G4VPhysicalVolume* GePhys = new G4PVPlacement(0,G4ThreeVector(),fGermaniumLogical,"fGermaniumPhysical", worldLogical,false,0); 
+  // placing physical volume at center of world logical
 
   //
   //Germanium lattice information
@@ -142,15 +138,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Aluminum feedline
   const G4double alFeedlineHalfX = 0.5*cm;
   const G4double alFeedlineHalfY = 4.5*um;
-  const G4double abs_thickness = 0.2*um;
+  const G4double fl_thickness = 0.2*um;
 
-  G4Box* feedline = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, abs_thickness);
- 
+  G4Box* feedline = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, fl_thickness);
   G4LogicalVolume* alFLlogical = new G4LogicalVolume(feedline,fAluminum,"alFLlogical"); // logical feedline
-
-  G4VPhysicalVolume* alFLphysical = new G4PVPlacement(
-    0, G4ThreeVector(0.,0., geHalfZ + abs_thickness), alFLlogical, "alFLphysical",
-    worldLogical, false, 0); // physical feedline
+  G4VPhysicalVolume* alFLphysical = new G4PVPlacement(0, G4ThreeVector(0.,0., geHalfZ + fl_thickness), alFLlogical, "alFLphysicalshunt", worldLogical, false, 0); 
+  // physical feedline
 
   // Helper to print bounding box + volume for CADMesh tessellated solids
   const auto printSolidInfo = [](const char* label, G4VSolid* solid) {
@@ -187,7 +180,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   rightabs->SetScale(1e-3);
   G4VSolid* rightabs_solid = rightabs->GetSolid();
 
-  // Compute overall bounding box of all SQUAT parts to find the center
+  // Compute overall max and min of all SQUAT parts to find the center
   std::vector<G4VSolid*> squatSolids = {leftabs_solid, righttrap_solid, lefttrap_solid, 
                                          junction_solid, rightabs_solid};
   G4ThreeVector overallMin(DBL_MAX, DBL_MAX, DBL_MAX);
@@ -328,8 +321,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
 // Attach material properties and electrode/sensor handler to surface
 
-void RISQTutorialDetectorConstruction::
-AttachPhononSensor(G4CMPSurfaceProperty *surfProp) {
+void RISQTutorialDetectorConstruction::AttachPhononSensor(G4CMPSurfaceProperty *surfProp) {
   if (!surfProp) return;		// No surface, nothing to do
 
   // Specify properties of aluminum sensor, same on both detector faces
