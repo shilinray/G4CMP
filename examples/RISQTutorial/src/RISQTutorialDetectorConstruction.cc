@@ -267,6 +267,11 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     topSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
     AttachPhononSensor(topSurfProp);
+    
+    botSurfProp = new G4CMPSurfaceProperty("botSurfProp", 0.0, 1.0, 0.0, 0.0,
+                                                      pAbsProbAlSi, 1.0, 0.0, 0.0);
+    botSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
 
     wallSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbSideWallSi, 1.0, 0.0, 0.0 );
@@ -279,7 +284,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
   // Ge -> Al (phonons start in Ge and enter Al)
-  new G4CMPLogicalBorderSurface("GeToAl_FL", GePhys, alFLphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_FL", GePhys, alFLphysical, botSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_LA", GePhys, leftabsphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_RT", GePhys, righttrapphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_LT", GePhys, lefttrapphysical, topSurfProp);

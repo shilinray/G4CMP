@@ -14,6 +14,10 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
 
 //ROOT includes
 #include "TH2F.h"
@@ -87,6 +91,7 @@ std::vector<Event> ReadInG4CMPPrimaryAndHitFiles(std::string hitTextFilename, st
 std::map<int,std::vector<Hit> > ParseHitTextFileForHits(std::string filename);
 std::map<int,PrimaryInfo> ParsePrimaryTextFileForPrimaries(std::string filename);
 int FindClosestQubitID(double hitX_mm, double hitY_mm);
+
   
 void AnalyzeMuonEvent(std::string primariesFilename, std::string hitsFilename,double scaleFactorEHPairs)
 {
@@ -249,6 +254,34 @@ void PCEStudy(std::string primariesFilename, std::string hitsFilename)
   //Write stuff currently established
   fOut->Write();
 
+}
+
+void PrintPhononCollectionEfficiency(std::string primariesFilename, std::string hitsFilename)
+{
+  const std::map<int,PrimaryInfo> primaryInfo = ParsePrimaryTextFileForPrimaries(primariesFilename);
+  const std::map<int,std::vector<Hit> > hitInfo = ParseHitTextFileForHits(hitsFilename);
+
+  double totalPrimaryEnergy_eV = 0.0;
+  for (const auto& kv : primaryInfo) {
+    totalPrimaryEnergy_eV += kv.second.energy_eV;
+  }
+
+  double totalHitEnergy_eV = 0.0;
+  for (const auto& kv : hitInfo) {
+    for (const Hit& h : kv.second) {
+      totalHitEnergy_eV += h.eDep_eV;
+    }
+  }
+
+  const double pce = (totalPrimaryEnergy_eV > 0.0) ? (totalHitEnergy_eV / totalPrimaryEnergy_eV) : 0.0;
+
+  std::cout << "\n=== Phonon Collection Efficiency (PCE) ===\n"
+            << "Primaries file: " << primariesFilename << "\n"
+            << "Hits file:      " << hitsFilename << "\n"
+            << "Total primary phonon energy: " << totalPrimaryEnergy_eV << " eV\n"
+            << "Total hit phonon energy:     " << totalHitEnergy_eV << " eV\n"
+            << "PCE = " << (100.0 * pce) << " %\n"
+            << "========================================\n";
 }
 
   
