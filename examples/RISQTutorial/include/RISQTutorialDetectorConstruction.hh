@@ -36,6 +36,7 @@ private:
   
 private:
   G4Material* fLiquidHelium;
+  G4Material* fVacuum;
   G4Material* fGermanium;
   G4Material* fAluminum;
   G4Material* fTungsten;

@@ -44,7 +44,7 @@ using namespace RISQTutorialDetectorParameters;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 RISQTutorialDetectorConstruction::RISQTutorialDetectorConstruction()
-  : fLiquidHelium(0), fGermanium(0), fAluminum(0), fTungsten(0),
+  : fLiquidHelium(0), fVacuum(0), fGermanium(0), fAluminum(0), fTungsten(0),
     fWorldPhys(0), topSurfProp(0), botSurfProp(0), wallSurfProp(0), 
     fSuperconductorSensitivity(0), fConstructed(false) {;}
 
@@ -89,6 +89,13 @@ void RISQTutorialDetectorConstruction::DefineMaterials()
   G4NistManager* nistManager = G4NistManager::Instance();
 
   fLiquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected
+  fVacuum = new G4Material("VACUUM", 
+        1.,
+		1.008*CLHEP::g/CLHEP::mole,
+		1.0e-25*CLHEP::g/CLHEP::cm3,
+		kStateGas,
+		0.01*CLHEP::kelvin,
+	    3.0e-18*pascal);
   fGermanium = nistManager->FindOrBuildMaterial("G4_Ge");
   fAluminum = nistManager->FindOrBuildMaterial("G4_Al");
   fTungsten = nistManager->FindOrBuildMaterial("G4_W");
@@ -102,7 +109,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // World
   //
   G4VSolid* worldSolid = new G4Box("World",8.*cm,8.*cm,8.*cm); // half (-16,16)
-  G4LogicalVolume* worldLogical = new G4LogicalVolume(worldSolid,fLiquidHelium,"World");
+  G4LogicalVolume* worldLogical = new G4LogicalVolume(worldSolid,fVacuum,"World");
   worldLogical->SetUserLimits(new G4UserLimits(10*mm, DBL_MAX, DBL_MAX, 0, 0));
   fWorldPhys = new G4PVPlacement(0,G4ThreeVector(),worldLogical,"World",0,
                                  false,0); // physical placement
@@ -158,7 +165,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   };
 
   // SQUAT - Load all STL parts first
-  const G4double trap_thickness = .02*um;
+  // const G4double trap_thickness = .02*um;
 
   auto leftabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE1.STL");
   leftabs->SetScale(1e-3);
@@ -267,11 +274,6 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     topSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
     AttachPhononSensor(topSurfProp);
-    
-    botSurfProp = new G4CMPSurfaceProperty("botSurfProp", 0.0, 1.0, 0.0, 0.0,
-                                                      pAbsProbAlSi, 1.0, 0.0, 0.0);
-    botSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
-					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
 
     wallSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbSideWallSi, 1.0, 0.0, 0.0 );
@@ -284,12 +286,19 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
   // Ge -> Al (phonons start in Ge and enter Al)
-  new G4CMPLogicalBorderSurface("GeToAl_FL", GePhys, alFLphysical, botSurfProp);
-  new G4CMPLogicalBorderSurface("GeToAl_LA", GePhys, leftabsphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("GeToAl_RT", GePhys, righttrapphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("GeToAl_LT", GePhys, lefttrapphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("GeToAl_JN", GePhys, junctionphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("GeToAl_RA", GePhys, rightabsphysical, topSurfProp);
+  // new G4CMPLogicalBorderSurface("GeToAl_FL", GePhys, alFLphysical, topSurfProp);
+  // new G4CMPLogicalBorderSurface("GeToAl_LA", GePhys, leftabsphysical, topSurfProp);
+  // new G4CMPLogicalBorderSurface("GeToAl_RT", GePhys, righttrapphysical, topSurfProp);
+  // new G4CMPLogicalBorderSurface("GeToAl_LT", GePhys, lefttrapphysical, topSurfProp);
+  // new G4CMPLogicalBorderSurface("GeToAl_JN", GePhys, junctionphysical, topSurfProp);
+  // new G4CMPLogicalBorderSurface("GeToAl_RA", GePhys, rightabsphysical, topSurfProp);
+
+  new G4CMPLogicalBorderSurface("GeToAl_FL", alFLphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_LA", leftabsphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_RT", righttrapphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_LT", lefttrapphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_JN", junctionphysical, GePhys, topSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_RA", rightabsphysical, GePhys, topSurfProp);
 
   // Ge -> World (bare Ge where there is no Al coverage)
   new G4CMPLogicalBorderSurface("GeToWorld", GePhys, fWorldPhys, wallSurfProp);
@@ -332,16 +341,18 @@ void RISQTutorialDetectorConstruction::AttachPhononSensor(G4CMPSurfaceProperty *
   // Specify properties of aluminum sensor, same on both detector faces
   // See G4CMPPhononElectrode.hh or README.md for property keys
 
+  // if I want KaplanQP set filmAbsorption to the other value and set pAbsProbAlSi to zero. 
+
   // Properties must be added to existing surface-property table
   auto sensorProp = surfProp->GetPhononMaterialPropertiesTablePointer();
-  sensorProp->AddConstProperty("filmAbsorption", 0); // 0.745
-  sensorProp->AddConstProperty("filmThickness", 600.*nm);
+  sensorProp->AddConstProperty("filmAbsorption", 0); // 0.745, taking Eric's p_abs value
+  sensorProp->AddConstProperty("filmThickness", 100.*nm);
   sensorProp->AddConstProperty("gapEnergy", 173.715e-6*eV);
-  sensorProp->AddConstProperty("lowQPLimit", 3.);
+  sensorProp->AddConstProperty("lowQPLimit", 3.); //Minimum QP energy to radiate phonons
   sensorProp->AddConstProperty("phononLifetime", 242.*ps);
-  sensorProp->AddConstProperty("phononLifetimeSlope", 0.29);
+  sensorProp->AddConstProperty("phononLifetimeSlope", 0.29); //Lifetime vs. energy
   sensorProp->AddConstProperty("vSound", 3.26*km/s);
-  sensorProp->AddConstProperty("subgapAbsorption", 0.1);
+  sensorProp->AddConstProperty("subgapAbsorption", 0.1); // Absorption below 2*bandgap
 
   // Attach electrode object to handle KaplanQP interface
   surfProp->SetPhononElectrode(new G4CMPPhononElectrode);
