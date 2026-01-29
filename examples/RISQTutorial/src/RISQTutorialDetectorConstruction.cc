@@ -227,6 +227,26 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     sideGroundlogical, "rightSideGroundPhysical",
     worldLogical, false, 0);
 
+  // Bottom bridge connecting left/right side grounds
+  const G4double sideGroundBridgeHalfY = 1.0*um;
+  const G4double sideGroundBridgeHalfX = xRightGround + sideGroundx;
+
+  G4Box* sideGroundBridge = new G4Box("sideGroundBridge",
+                                     sideGroundBridgeHalfX,
+                                     sideGroundBridgeHalfY,
+                                     thickness);
+  G4LogicalVolume* sideGroundBridgeLogical =
+    new G4LogicalVolume(sideGroundBridge, fAluminum, "sideGroundBridgeLogical");
+
+  // Place bridge so its top face touches the bottoms of the side grounds
+  const G4double ySideGroundBottom = ySideGround + sideGroundy;
+  const G4double ySideGroundBridge = ySideGroundBottom + sideGroundBridgeHalfY;
+
+  G4VPhysicalVolume* sideGroundBridgePhysical = new G4PVPlacement(
+    0, G4ThreeVector(0., -ySideGroundBridge, geHalfZ + thickness),
+    sideGroundBridgeLogical, "sideGroundBridgePhysical",
+    worldLogical, false, 0);
+
   // connector
   const G4double connectory = 5.0*um;
   const G4double connectorx = 3.0*um;
@@ -580,6 +600,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, sideGroundBridgePhysical, topSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, topSurfProp);
   for (auto phys : inductorPhys) {
     new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
@@ -624,6 +645,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   connectorlogical->SetVisAttributes(alVis);
   couplCaplogical->SetVisAttributes(alVis);
   sideGroundlogical->SetVisAttributes(alVis);
+  sideGroundBridgeLogical->SetVisAttributes(alVis);
   capindconnectorlogical->SetVisAttributes(alVis);
   indvert1logical->SetVisAttributes(alVis);
   for (auto log : inductorLog) {
