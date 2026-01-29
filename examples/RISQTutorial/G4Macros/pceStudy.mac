@@ -11,7 +11,7 @@
 #Now we generate from a volume instead of a point
 /gps/pos/type Volume
 /gps/pos/shape Para
-/random/setSeeds 1
+/random/setSeeds 2
 /gps/ang/type iso
 /gps/pos/centre 0.0 0.0 0.0 cm # halfway between bottom and top of chip # Default
 /gps/pos/halfx 0.5 cm  #Chip half-width

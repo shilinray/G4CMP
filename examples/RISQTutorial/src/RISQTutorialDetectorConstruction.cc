@@ -266,7 +266,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
     const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
 
-    double pAbsProbAlSi = 0.488;
+    double pAbsProbAlSi = 0; //.488
     double pAbsProbSideWallSi = 0.0;
 
     topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 0.0, 1.0, 0.0, 0.0,
@@ -339,7 +339,7 @@ void RISQTutorialDetectorConstruction::AttachPhononSensor(G4CMPSurfaceProperty *
 
   // Properties must be added to existing surface-property table
   auto sensorProp = surfProp->GetPhononMaterialPropertiesTablePointer();
-  sensorProp->AddConstProperty("filmAbsorption", 0); // 0.745, taking Eric's p_abs value
+  sensorProp->AddConstProperty("filmAbsorption", 0.795); // 0.795, taking Eric's p_abs value
   sensorProp->AddConstProperty("filmThickness", 100.*nm);
   sensorProp->AddConstProperty("gapEnergy", 173.715e-6*eV);
   sensorProp->AddConstProperty("lowQPLimit", 3.); //Minimum QP energy to radiate phonons
