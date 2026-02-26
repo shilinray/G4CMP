@@ -8,6 +8,7 @@
 #include "RISQTutorialStraightFluxLine.hh"
 #include "RISQTutorialCornerFluxLine.hh"
 #include "RISQTutorialResonatorAssembly.hh"
+#include "RISQConfigManager.hh"
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPElectrodeSensitivity.hh"
 #include "G4CMPLogicalBorderSurface.hh"
@@ -45,13 +46,13 @@ using namespace RISQTutorialDetectorParameters;
 
 RISQTutorialDetectorConstruction::RISQTutorialDetectorConstruction()
   : fLiquidHelium(0), fVacuum(0), fGermanium(0), fAluminum(0), fTungsten(0),
-    fWorldPhys(0), topSurfProp(0), botSurfProp(0), wallSurfProp(0), 
+    fWorldPhys(0), AlSurfProp(0), botSurfProp(0), wallSurfProp(0), 
     fSuperconductorSensitivity(0), fConstructed(false) {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 RISQTutorialDetectorConstruction::~RISQTutorialDetectorConstruction() {
-  delete topSurfProp;
+  delete AlSurfProp;
   delete botSurfProp;
   delete wallSurfProp;
 }
@@ -576,11 +577,17 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     double pAbsProbAlSi = 0; //.488
     double pAbsProbSideWallSi = 0.0;
 
-    topSurfProp = new G4CMPSurfaceProperty("TopAlSurf", 0.0, 1.0, 0.0, 0.0,
+    AlSurfProp = new G4CMPSurfaceProperty("AlSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbAlSi, 1.0, 0.0, 0.0);
-    topSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+    AlSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
-    AttachPhononSensor(topSurfProp);
+    AttachPhononSensor_Al(AlSurfProp);
+
+    NbSurfProp = new G4CMPSurfaceProperty("NbSurf", 0.0, 1.0, 0.0, 0.0,
+                                                      pAbsProbAlSi, 1.0, 0.0, 0.0);
+    NbSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
+    AttachPhononSensor_Nb(NbSurfProp);
 
     wallSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbSideWallSi, 1.0, 0.0, 0.0 );
@@ -592,34 +599,34 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, sideGroundBridgePhysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, sideGroundBridgePhysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, NbSurfProp);
   for (auto phys : inductorPhys) {
-    new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, phys, NbSurfProp);
   }
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys, wallSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, leftcapwallphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, rightcapwallphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, leftcapwallphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, rightcapwallphysical, NbSurfProp);
   for (auto phys : idcPhys) {
-    new G4CMPLogicalBorderSurface("Al", GePhys, phys, topSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, phys, NbSurfProp);
   }
-  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector2physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct1physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct2physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct3physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct4physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct5physical, topSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, absorberphysical, topSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector2physical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct1physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct2physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct3physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct4physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, junct5physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, absorberphysical, AlSurfProp);
 
 
   //                                        
@@ -673,16 +680,18 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 // Attach material properties and electrode/sensor handler to surface
 
 void RISQTutorialDetectorConstruction::
-AttachPhononSensor(G4CMPSurfaceProperty *surfProp) {
+AttachPhononSensor_Al(G4CMPSurfaceProperty *surfProp) {
   if (!surfProp) return;		// No surface, nothing to do
 
-  // Specify properties of aluminum sensor, same on both detector faces
-  // See G4CMPPhononElectrode.hh or README.md for property keys
+  double filmThicknessAl = 0;
+  if (RISQTutorialConfigManager::GetfilmThicknessAl() != -1.0) filmThicknessAl = RISQTutorialConfigManager::GetfilmThicknessAl();
+
+  std::cout<<"SR--Al filmThickness set to "<< filmThicknessAl <<std::endl;
 
   // Properties must be added to existing surface-property table
   auto sensorProp = surfProp->GetPhononMaterialPropertiesTablePointer();
   sensorProp->AddConstProperty("filmAbsorption", .795);  //.795 
-  sensorProp->AddConstProperty("filmThickness", 100.*nm);
+  sensorProp->AddConstProperty("filmThickness", filmThicknessAl*nm);
   sensorProp->AddConstProperty("gapEnergy", 173.715e-6*eV);
   sensorProp->AddConstProperty("lowQPLimit", 3.);
   sensorProp->AddConstProperty("phononLifetime", 242.*ps);
@@ -694,4 +703,28 @@ AttachPhononSensor(G4CMPSurfaceProperty *surfProp) {
   surfProp->SetPhononElectrode(new G4CMPPhononElectrode);
 }
 
+void RISQTutorialDetectorConstruction::
+AttachPhononSensor_Nb(G4CMPSurfaceProperty *surfProp) {
+  if (!surfProp) return;		// No surface, nothing to do
+
+  double filmThicknessNb = 0;
+  if (RISQTutorialConfigManager::GetfilmThicknessNb() != -1.0) filmThicknessNb = RISQTutorialConfigManager::GetfilmThicknessNb();
+
+  std::cout<<"SR--Nb filmThickness set to "<< filmThicknessNb <<std::endl;
+
+  // Properties must be added to existing surface-property table
+  auto sensorProp = surfProp->GetPhononMaterialPropertiesTablePointer();
+  sensorProp->AddConstProperty("filmAbsorption", .745);  //.745 
+  sensorProp->AddConstProperty("filmThickness", filmThicknessNb*nm);
+  sensorProp->AddConstProperty("gapEnergy",1538e-6*eV );            //SQD: From Eric, Dylan
+  sensorProp->AddConstProperty("lowQPLimit",3.);                   //SQD: Taken from G4CMP phonon example (also aluminum).
+  sensorProp->AddConstProperty("phononLifetime",4.17*CLHEP::ps);   //SQD: From G4CMP phonon example (also aluminum), validated by Eric.
+  sensorProp->AddConstProperty("phononLifetimeSlope",0.29);        //REL: Based on guessing from Kaplan paper, I think this is material-agnostic?
+  sensorProp->AddConstProperty("vSound",2.44*CLHEP::km/CLHEP::s); //SQD: From Eric
+  sensorProp->AddConstProperty("subgapAbsorption", 0.1);
+
+
+  // Attach electrode object to handle KaplanQP interface
+  surfProp->SetPhononElectrode(new G4CMPPhononElectrode);
+}
 

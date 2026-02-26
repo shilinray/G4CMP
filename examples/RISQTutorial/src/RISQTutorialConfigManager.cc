@@ -17,6 +17,7 @@
 #include "RISQTutorialConfigMessenger.hh"
 #include "G4RunManager.hh"
 #include <stdlib.h>
+#include "CLHEP/Units/SystemOfUnits.h"
 
 
 // Constructor and Singleton Initializer
@@ -31,7 +32,12 @@ RISQTutorialConfigManager* RISQTutorialConfigManager::Instance() {
 RISQTutorialConfigManager::RISQTutorialConfigManager()
   : Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"RISQTutorial_hits.txt"),
     Primary_file("RISQTutorial_primary.txt"),
-    messenger(new RISQTutorialConfigMessenger(this)) {;}
+    messenger(new RISQTutorialConfigMessenger(this)) 
+    {
+    filmThicknessAl = -1.0;
+    filmThicknessNb = -1.0;
+      
+    }
 
 RISQTutorialConfigManager::~RISQTutorialConfigManager() {
   delete messenger; messenger=0;
@@ -43,3 +49,18 @@ RISQTutorialConfigManager::~RISQTutorialConfigManager() {
 void RISQTutorialConfigManager::UpdateGeometry() {
   G4RunManager::GetRunManager()->ReinitializeGeometry(true);
 }
+
+void RISQTutorialConfigManager::UpdatePhysics() {
+  G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+}
+
+void RISQTutorialConfigManager::SetfilmThicknessAl(G4double filmThicknessAl){
+  Instance()->ffilmThicknessAl = filmThicknessAl;
+}
+
+void RISQTutorialConfigManager::SetfilmThicknessNb(G4double filmThicknessNb){
+  Instance()->ffilmThicknessNb = filmThicknessNb;
+}
+
+double SLAC1ConfigManager::GetfilmThicknessAl() { return Instance()->ffilmThicknessAl; }
+double SLAC1ConfigManager::GetfilmThicknessNb() { return Instance()->ffilmThicknessNb; }

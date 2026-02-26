@@ -29,17 +29,20 @@ public:
   // Access current values
   static const G4String& GetHitOutput()  { return Instance()->Hit_file; }
   static const G4String& GetPrimaryOutput()  { return Instance()->Primary_file; }
+  static double GetfilmThicknessAl();
+  static double GetfilmThicknessNb();
+
 
   // Change values (e.g., via Messenger)
   static void SetHitOutput(const G4String& name)
     { Instance()->Hit_file=name; UpdateGeometry(); }
-
-  // Change values (e.g., via Messenger)
   static void SetPrimaryOutput(const G4String& name)
     { Instance()->Hit_file=name; UpdateGeometry(); }
+  static void SetfilmThicknessAl(G4double filmThicknessAl);
+  static void SetfilmThicknessNb(G4double filmThicknessNb);
 
-  
   static void UpdateGeometry();
+  static void UpdatePhysics();
 
 private:
   RISQTutorialConfigManager();		// Singleton: only constructed on request
@@ -53,6 +56,8 @@ private:
 private:
   G4String Hit_file;	// Output file of e/h hits ($G4CMP_HIT_FILE)
   G4String Primary_file;	// Output file of primaries
+  G4double filmThicknessAl;
+  G4double filmThicknessNb;
 
   RISQTutorialConfigMessenger* messenger;
 };

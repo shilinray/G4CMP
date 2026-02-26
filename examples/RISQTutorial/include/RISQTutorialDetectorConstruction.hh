@@ -45,7 +45,7 @@ private:
   G4VPhysicalVolume* fWorldPhys;
 
   
-  G4CMPSurfaceProperty* topSurfProp;
+  G4CMPSurfaceProperty* AlSurfProp;
   G4CMPSurfaceProperty* botSurfProp;
   G4CMPSurfaceProperty* wallSurfProp;
   

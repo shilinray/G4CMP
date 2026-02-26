@@ -23,11 +23,18 @@ RISQTutorialConfigMessenger::RISQTutorialConfigMessenger(RISQTutorialConfigManag
     theManager(mgr), hitsCmd(0) {
   hitsCmd = CreateCommand<G4UIcmdWithAString>("HitsFile",
 			      "Set filename for output of phonon hit locations");
+
+  filmThicknessAlCmd = CreateCommand<G4UIcmdWithADouble> ("FilmThicknessAl", 
+            "Set the filmThickness parameter for Al");
+  filmThicknessNbCmd = CreateCommand<G4UIcmdWithADouble> ("FilmThicknessNb", 
+            "Set the filmThickness parameter for Nb");
 }
 
 
 RISQTutorialConfigMessenger::~RISQTutorialConfigMessenger() {
   delete hitsCmd; hitsCmd=0;
+  delete filmThicknessAlCmd; filmThicknessAlCmd=0;
+  delete filmThicknessNbCmd; filmThicknessNbCmd=0
 }
 
 
@@ -35,4 +42,7 @@ RISQTutorialConfigMessenger::~RISQTutorialConfigMessenger() {
 
 void RISQTutorialConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
   if (cmd == hitsCmd) theManager->SetHitOutput(value);
+  if (cmd == filmThicknessAlCmd) theManager->SetfilmThicknessAl(filmThicknessAlCmd->GetNewDoubleValue(value));
+  if (cmd == filmThicknessNbCmd) theManager->SetfilmThicknessNb(filmThicknessNbCmd->GetNewDoubleValue(value));
+ 
 }

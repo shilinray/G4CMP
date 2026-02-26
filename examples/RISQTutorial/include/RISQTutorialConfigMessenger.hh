@@ -18,6 +18,9 @@
 
 class RISQTutorialConfigManager;
 class G4UIcmdWithAString;
+class G4UIcmdWithADouble;
+class G4UIcmdWithAnInteger;
+class G4UIcmdWithABool;
 class G4UIcommand;
 
 
@@ -31,6 +34,9 @@ public:
 private:
   RISQTutorialConfigManager* theManager;
   G4UIcmdWithAString* hitsCmd;
+
+  G4UIcmdWithADouble* filmThicknessAlCmd;
+  G4UIcmdWithADouble* filmThicknessNbCmd;
 
 private:
   RISQTutorialConfigMessenger(const RISQTutorialConfigMessenger&);	// Copying is forbidden
