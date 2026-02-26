@@ -20,8 +20,10 @@
 #include <vector>
 
 //ROOT includes
-#include "TH2F.h"
 #include "TH1F.h"
+#include "TFile.h"
+#include "TH2F.h"
+#include "TCanvas.h"
 
 //---------------------------------------------------------------------------------------
 // Define a set of structs for use interpreting the output from G4CMP
@@ -256,34 +258,130 @@ void PCEStudy(std::string primariesFilename, std::string hitsFilename)
 
 }
 
-void PrintPhononCollectionEfficiency(std::string primariesFilename, std::string hitsFilename)
+void PrintPhononCollectionEfficiency()
 {
-  const std::map<int,PrimaryInfo> primaryInfo = ParsePrimaryTextFileForPrimaries(primariesFilename);
-  const std::map<int,std::vector<Hit> > hitInfo = ParseHitTextFileForHits(hitsFilename);
 
-  double totalPrimaryEnergy_eV = 0.0;
-  for (const auto& kv : primaryInfo) {
-    totalPrimaryEnergy_eV += kv.second.energy_eV;
+  std::vector<int> al_vals = {100, 200, 300, 400, 500, 600};
+  std::vector<int> nb_vals = {20, 40, 60, 80, 100};
+
+  std::vector<std::string> hits_filenames;
+  std::vector<std::string> primary_filenames;
+
+
+  for (int al : al_vals) {
+      for (int nb : nb_vals) {
+          std::ostringstream ss;
+          ss "../G4Macros/data/" << "Hits_Al" << al << "_Nb" << nb << ".txt";
+          hits_filenames.push_back(ss.str());
+      }
+  }
+  for (int al : al_vals) {
+      for (int nb : nb_vals) {
+          std::ostringstream ss;
+          ss "../G4Macros/data/" << "Primary_Al" << al << "_Nb" << nb << ".txt";
+          primary_filenames.push_back(ss.str());
+      }
   }
 
-  double totalHitEnergy_eV = 0.0;
-  for (const auto& kv : hitInfo) {
-    for (const Hit& h : kv.second) {
-      totalHitEnergy_eV += h.eDep_eV;
+  for (size_t i = 0; i < hits_filenames.size(); ++i) {
+
+    const std::map<int,PrimaryInfo> primaryInfo = ParsePrimaryTextFileForPrimaries(primary_filenames[i]);
+    const std::map<int,std::vector<Hit> > hitInfo = ParseHitTextFileForHits(../G4Macros/data/hits_filenames[i]);
+
+    double totalPrimaryEnergy_eV = 0.0;
+    for (const auto& kv : primaryInfo) {
+      totalPrimaryEnergy_eV += kv.second.energy_eV;
+    }
+
+    double totalHitEnergy_eV = 0.0;
+    for (const auto& kv : hitInfo) {
+      for (const Hit& h : kv.second) {
+        totalHitEnergy_eV += h.eDep_eV;
+      }
+    }
+
+    const double pce = (totalPrimaryEnergy_eV > 0.0) ? (totalHitEnergy_eV / totalPrimaryEnergy_eV) : 0.0;
+
+    std::cout << "\n=== Phonon Collection Efficiency (PCE) ===\n"
+              << "Primaries file: " << primary_filenames[i] << "\n"
+              << "Hits file:      " << hits_filenames[i] << "\n"
+              << "Total primary phonon energy: " << totalPrimaryEnergy_eV << " eV\n"
+              << "Total hit phonon energy:     " << totalHitEnergy_eV << " eV\n"
+              << "PCE = " << (100.0 * pce) << " %\n"
+              << "========================================\n";
+  }
+}
+
+void PrintPhononCollectionEfficiencyAndPlot()
+{
+  std::vector<int> al_vals = {100, 200, 300, 400, 500, 600};
+  std::vector<int> nb_vals = {20, 40, 60, 80, 100};
+
+  const std::string baseDir = "../G4Macros/data"; // change if needed
+
+  // 2D chart: X=Al, Y=Nb, Z=PCE (%)
+  TH2F* h_pce_al_nb = new TH2F("h_pce_al_nb",
+                              "PCE vs Al and Nb;Al parameter;Nb parameter;PCE [%]",
+                              (int)al_vals.size(), 0, (int)al_vals.size(),
+                              (int)nb_vals.size(), 0, (int)nb_vals.size());
+
+  // Label bins with the actual parameter values
+  for (int i = 0; i < (int)al_vals.size(); ++i)
+    h_pce_al_nb->GetXaxis()->SetBinLabel(i + 1, std::to_string(al_vals[i]).c_str());
+  for (int j = 0; j < (int)nb_vals.size(); ++j)
+    h_pce_al_nb->GetYaxis()->SetBinLabel(j + 1, std::to_string(nb_vals[j]).c_str());
+
+  for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+    for (int iN = 0; iN < (int)nb_vals.size(); ++iN) {
+
+      const int al = al_vals[iA];
+      const int nb = nb_vals[iN];
+
+      std::ostringstream primPath, hitPath;
+      primPath << baseDir << "/Primary_Al" << al << "_Nb" << nb << ".txt";
+      hitPath  << baseDir << "/Hits_Al"    << al << "_Nb" << nb << ".txt";
+
+      const std::string primariesFilename = primPath.str();
+      const std::string hitsFilename      = hitPath.str();
+
+      const std::map<int, PrimaryInfo> primaryInfo =
+          ParsePrimaryTextFileForPrimaries(primariesFilename);
+
+      const std::map<int, std::vector<Hit>> hitInfo =
+          ParseHitTextFileForHits(hitsFilename);
+
+      double totalPrimaryEnergy_eV = 0.0;
+      for (const auto& kv : primaryInfo)
+        totalPrimaryEnergy_eV += kv.second.energy_eV;
+
+      double totalHitEnergy_eV = 0.0;
+      for (const auto& kv : hitInfo)
+        for (const Hit& h : kv.second)
+          totalHitEnergy_eV += h.eDep_eV;
+
+      const double pce = (totalPrimaryEnergy_eV > 0.0)
+                           ? (totalHitEnergy_eV / totalPrimaryEnergy_eV)
+                           : 0.0;
+
+      // Fill chart as percent
+      h_pce_al_nb->SetBinContent(iA + 1, iN + 1, 100.0 * pce);
+
+      // Optional per-combo print (remove if you don't want stdout spam)
+      std::cout << "Al=" << al << " Nb=" << nb
+                << "  PCE=" << (100.0 * pce) << " %"
+                << "  (" << primariesFilename << ", " << hitsFilename << ")\n";
     }
   }
 
-  const double pce = (totalPrimaryEnergy_eV > 0.0) ? (totalHitEnergy_eV / totalPrimaryEnergy_eV) : 0.0;
+  // Save outputs
+  TFile* fOut = new TFile("PCE_Al_Nb.root", "RECREATE");
+  h_pce_al_nb->Write();
+  fOut->Close();
 
-  std::cout << "\n=== Phonon Collection Efficiency (PCE) ===\n"
-            << "Primaries file: " << primariesFilename << "\n"
-            << "Hits file:      " << hitsFilename << "\n"
-            << "Total primary phonon energy: " << totalPrimaryEnergy_eV << " eV\n"
-            << "Total hit phonon energy:     " << totalHitEnergy_eV << " eV\n"
-            << "PCE = " << (100.0 * pce) << " %\n"
-            << "========================================\n";
+  TCanvas c("c", "c", 900, 700);
+  h_pce_al_nb->Draw("COLZ TEXT");   // COLZ = heatmap, TEXT = numbers in bins
+  c.SaveAs("PCE_Al_Nb.png");
 }
-
   
   
 
