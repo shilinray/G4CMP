@@ -1,3 +1,4 @@
+/run/numberOfThreads 5
 /run/initialize
 /tracking/verbose 0
 /run/printProgress 1000
@@ -21,4 +22,4 @@
 #Select energies
 /gps/ene/type Mono
 /gps/energy 0.004 eV 
-/run/beamOn 10000
+/run/beamOn 50000
