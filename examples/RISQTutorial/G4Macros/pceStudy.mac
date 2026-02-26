@@ -12,10 +12,6 @@
 /gps/number 1
 /gps/particle phononL
 
-/g4cmp/phononBounces 1000
-/g4cmp/filmThicknessNb 30
-/g4cmp/filmThicknessAl 200
-
 #Now we generate from a volume instead of a point
 /gps/pos/type Volume
 /gps/pos/shape Para
@@ -29,4 +25,4 @@
 #Select energies
 /gps/ene/type Mono
 /gps/energy 0.004 eV 
-/run/beamOn 10000
+/run/beamOn 50000
