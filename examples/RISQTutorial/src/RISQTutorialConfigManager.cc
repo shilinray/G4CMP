@@ -34,8 +34,8 @@ RISQTutorialConfigManager::RISQTutorialConfigManager()
     Primary_file("RISQTutorial_primary.txt"),
     messenger(new RISQTutorialConfigMessenger(this)) 
     {
-    filmThicknessAl = -1.0;
-    filmThicknessNb = -1.0;
+    filmThicknessAl = 0;
+    filmThicknessNb = 0;
       
     }
 
@@ -55,12 +55,14 @@ void RISQTutorialConfigManager::UpdatePhysics() {
 }
 
 void RISQTutorialConfigManager::SetfilmThicknessAl(G4double filmThicknessAl){
-  Instance()->ffilmThicknessAl = filmThicknessAl;
+  Instance()->filmThicknessAl = filmThicknessAl;
 }
 
 void RISQTutorialConfigManager::SetfilmThicknessNb(G4double filmThicknessNb){
-  Instance()->ffilmThicknessNb = filmThicknessNb;
+  Instance()->filmThicknessNb = filmThicknessNb;
 }
 
-double SLAC1ConfigManager::GetfilmThicknessAl() { return Instance()->ffilmThicknessAl; }
-double SLAC1ConfigManager::GetfilmThicknessNb() { return Instance()->ffilmThicknessNb; }
+double RISQTutorialConfigManager::GetfilmThicknessAl() { return Instance()->filmThicknessAl; }
+double RISQTutorialConfigManager::GetfilmThicknessNb() { return Instance()->filmThicknessNb; }
+
+

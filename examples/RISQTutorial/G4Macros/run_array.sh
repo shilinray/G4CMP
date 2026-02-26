@@ -1,14 +1,14 @@
 #!/bin/bash
 
-dead_z="20 40 60 80 100"
-live_z="100 200 300 400 500 600"
+Al_z="100 200 300 400 500 600"
+Nb_z="20 40 60 80 100"
 
-for dz in $dead_z
+for alz in $Al_z
 do
-    for lz in $live_z
+    for nbz in $Nb_z
     do
-        echo $dz $lz
-        sbatch ./thickness.sh $dz $lz
+        echo $nbz $alz
+        sbatch ./thickness.sh $alz $nbz
     done
 done
 

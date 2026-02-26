@@ -1233,7 +1233,10 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialConfigMessenger.cc.o: ../src/RISQ
   /usr/local/include/Geant4/CLHEP/Vector/ThreeVector.icc \
   ../include/RISQTutorialConfigManager.hh \
   /usr/local/include/Geant4/globals.hh \
-  /usr/local/include/Geant4/G4UIcmdWithAString.hh
+  /usr/local/include/Geant4/G4UIcmdWithAString.hh \
+  /usr/local/include/Geant4/G4UIcmdWithADouble.hh \
+  /usr/local/include/Geant4/G4UIcmdWithAnInteger.hh \
+  /usr/local/include/Geant4/G4UIcmdWithABool.hh
 
 CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialCornerFluxLine.cc.o: ../src/RISQTutorialCornerFluxLine.cc \
   /usr/include/stdc-predef.h \
@@ -2258,6 +2261,7 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: ../src
   ../include/RISQTutorialStraightFluxLine.hh \
   ../include/RISQTutorialCornerFluxLine.hh \
   ../include/RISQTutorialResonatorAssembly.hh \
+  ../include/RISQTutorialConfigManager.hh \
   /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/include/G4CMP/G4CMPPhononElectrode.hh \
   /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/include/G4CMP/G4CMPVElectrodePattern.hh \
   /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/include/G4CMP/G4CMPProcessUtils.hh \
@@ -7168,6 +7172,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 
 /usr/local/include/Geant4/G4NistManager.hh:
 
+/usr/local/include/Geant4/G4UIcmdWithAnInteger.hh:
+
 /usr/local/include/Geant4/G4UIcmdWithAString.hh:
 
 /usr/include/c++/11/list:
@@ -7431,6 +7437,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 ../include/RISQTutorialDetectorParameters.hh:
 
 /usr/local/include/Geant4/G4DCofThisEvent.hh:
+
+/usr/local/include/Geant4/G4UIcmdWithADouble.hh:
 
 /usr/include/c++/11/ext/aligned_buffer.h:
 
@@ -7863,6 +7871,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialTransmissionLine.cc.o: ../src/RIS
 /usr/include/c++/11/ratio:
 
 /usr/include/c++/11/condition_variable:
+
+/usr/local/include/Geant4/G4UIcmdWithABool.hh:
 
 /usr/include/c++/11/thread:
 

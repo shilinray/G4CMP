@@ -16,7 +16,13 @@ Currently Loaded Modules:
 
  
 
-Macro is: 'pceStudy.mac'
+Macro is: pceStudy.mac
+Al thickness: 100
+Nb thickness: 30
+Base Macro pceStudy.mac
+Macro File Run_Al100_Nb30.mac
+Hits File Hits_Al100_Nb30.txt
+Primary File Primary_Al100_Nb30.txt
 
 **************************************************************
  Geant4 version Name: geant4-10-07-patch-04 [MT]   (9-September-2022)
@@ -82,6 +88,8 @@ Some /vis commands (optionally) take a string to specify colour.
 "/vis/list" to see available colours.
 *** /run/numberOfThreads command is issued in sequential mode.
 Command is ignored.
+SR--Al filmThickness set to 100
+SR--Nb filmThickness set to 30
 
  hInelastic FTFP_BERT : threshold between BERT and FTFP is over the interval 
  for pions :   3 to 6 GeV
@@ -822,70 +830,6 @@ See commands in /vis/modeling/trajectories/ for other options.
 --> Event 7000 starts.
 --> Event 8000 starts.
 --> Event 9000 starts.
---> Event 10000 starts.
---> Event 11000 starts.
---> Event 12000 starts.
---> Event 13000 starts.
---> Event 14000 starts.
---> Event 15000 starts.
---> Event 16000 starts.
-
--------- WWWW ------- G4Exception-START -------- WWWW -------
-*** G4Exception : Limit001
-      issued by : G4CMPTrackLimiter
-Killing track escaped from original volume.
-*** This is just a warning message. ***
--------- WWWW -------- G4Exception-END --------- WWWW -------
-
---> Event 17000 starts.
---> Event 18000 starts.
---> Event 19000 starts.
---> Event 20000 starts.
---> Event 21000 starts.
---> Event 22000 starts.
---> Event 23000 starts.
---> Event 24000 starts.
-
--------- WWWW ------- G4Exception-START -------- WWWW -------
-*** G4Exception : Limit001
-      issued by : G4CMPTrackLimiter
-Killing track escaped from original volume.
-*** This is just a warning message. ***
--------- WWWW -------- G4Exception-END --------- WWWW -------
-
---> Event 25000 starts.
---> Event 26000 starts.
---> Event 27000 starts.
---> Event 28000 starts.
---> Event 29000 starts.
---> Event 30000 starts.
---> Event 31000 starts.
---> Event 32000 starts.
---> Event 33000 starts.
---> Event 34000 starts.
---> Event 35000 starts.
---> Event 36000 starts.
---> Event 37000 starts.
---> Event 38000 starts.
---> Event 39000 starts.
---> Event 40000 starts.
---> Event 41000 starts.
-
--------- WWWW ------- G4Exception-START -------- WWWW -------
-*** G4Exception : Limit001
-      issued by : G4CMPTrackLimiter
-Killing track escaped from original volume.
-*** This is just a warning message. ***
--------- WWWW -------- G4Exception-END --------- WWWW -------
-
---> Event 42000 starts.
---> Event 43000 starts.
---> Event 44000 starts.
---> Event 45000 starts.
---> Event 46000 starts.
---> Event 47000 starts.
---> Event 48000 starts.
---> Event 49000 starts.
 0 events have been kept for refreshing and/or reviewing.
   "/vis/reviewKeptEvents" to review them one by one.
   "/vis/enable", then "/vis/viewer/flush" or "/vis/viewer/rebuild" to see them accumulated.

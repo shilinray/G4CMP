@@ -31,8 +31,8 @@ public:
 private:
   void DefineMaterials();
   void SetupGeometry();
-  void AttachPhononSensor(G4CMPSurfaceProperty * surfProp);
-
+  void AttachPhononSensor_Al(G4CMPSurfaceProperty * surfProp);
+  void AttachPhononSensor_Nb(G4CMPSurfaceProperty * surfProp);
   
 private:
   G4Material* fLiquidHelium;
@@ -46,6 +46,7 @@ private:
 
   
   G4CMPSurfaceProperty* AlSurfProp;
+  G4CMPSurfaceProperty* NbSurfProp;
   G4CMPSurfaceProperty* botSurfProp;
   G4CMPSurfaceProperty* wallSurfProp;
   

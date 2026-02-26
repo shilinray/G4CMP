@@ -14,38 +14,39 @@ module load scdms/V05-02
 module list
 
 BaseMacro="pceStudy.mac"
-echo "Macro is: '$macro'"
+echo "Macro is: $BaseMacro"
 
 if [ "$#" -lt 2 ]
 then
-    echo "Enter dead and live thicknesses"
+    echo "Enter Al and Nb thicknesses"
     # exit: quits the script immedietly
     exit
 fi
 
 # takes the first and second gives parameters and assigns them to variables
-dead_z = $1
-live_z = $2
+Al_z="$1"
+Nb_z="$2"
 
-echo "Dead Metal thickness: "$dead_z
-echo "Live Metal thickness: "$live_z
+echo "Al thickness: $Al_z"
+echo "Nb thickness: $Nb_z"
 
 # creates output files names and macro file name
-fHits="Hits_dz"${dead_z}"_lz"${live_z}".txt"
-fPrimary="Primary_dz"${dead_z}"_lz"${live_z}".txt"
-mName="Run_dz"${dead_z}"_lz"${live_z}".txt"
+fHits="Hits_Al${Al_z}_Nb${Nb_z}.txt"
+fPrimary="Primary_Al${Al_z}_Nb${Nb_z}.txt"
+mName="Run_Al${Al_z}_Nb${Nb_z}.mac"
 
 # prints out a summary
-echo "Base Macro "$BaseMacro
-echo "Macro File"$mName
-echo "Hits File"$fHits
-echo "Primary File"$fPrimary
+echo "Base Macro $BaseMacro"
+echo "Macro File $mName"
+echo "Hits File $fHits"
+echo "Primary File $fPrimary"
 
 # copies BaseMacro to a new name/file
 cp $BaseMacro $mName
 
-sed -i
+sed -i "s/filmThicknessAl 0/filmThicknessAl ${Al_z}/g" $mName
+sed -i "s/filmThicknessNb 0/filmThicknessNb ${Nb_z}/g" $mName
 
 apptainer exec /sdf/group/supercdms/software/releases/cdmsfull_V05-02.sif \
   /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/RISQTutorial-build/RISQTutorial \
-  "$macro"
+  "$mName"

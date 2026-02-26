@@ -370,6 +370,7 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialStraightFluxLine.hh \
  /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialCornerFluxLine.hh \
  /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialResonatorAssembly.hh \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialConfigManager.hh \
  /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPPhononElectrode.hh \
  /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPVElectrodePattern.hh \
  /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPProcessUtils.hh \

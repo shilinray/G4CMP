@@ -8,7 +8,7 @@
 #include "RISQTutorialStraightFluxLine.hh"
 #include "RISQTutorialCornerFluxLine.hh"
 #include "RISQTutorialResonatorAssembly.hh"
-#include "RISQConfigManager.hh"
+#include "RISQTutorialConfigManager.hh"
 #include "G4CMPPhononElectrode.hh"
 #include "G4CMPElectrodeSensitivity.hh"
 #include "G4CMPLogicalBorderSurface.hh"

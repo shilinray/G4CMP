@@ -14,6 +14,9 @@
 #include "RISQTutorialConfigMessenger.hh"
 #include "RISQTutorialConfigManager.hh"
 #include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithADouble.hh"
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithABool.hh"
 
 
 // Constructor and destructor
@@ -24,9 +27,9 @@ RISQTutorialConfigMessenger::RISQTutorialConfigMessenger(RISQTutorialConfigManag
   hitsCmd = CreateCommand<G4UIcmdWithAString>("HitsFile",
 			      "Set filename for output of phonon hit locations");
 
-  filmThicknessAlCmd = CreateCommand<G4UIcmdWithADouble> ("FilmThicknessAl", 
+  filmThicknessAlCmd = CreateCommand<G4UIcmdWithADouble> ("filmThicknessAl", 
             "Set the filmThickness parameter for Al");
-  filmThicknessNbCmd = CreateCommand<G4UIcmdWithADouble> ("FilmThicknessNb", 
+  filmThicknessNbCmd = CreateCommand<G4UIcmdWithADouble> ("filmThicknessNb", 
             "Set the filmThickness parameter for Nb");
 }
 
@@ -34,7 +37,7 @@ RISQTutorialConfigMessenger::RISQTutorialConfigMessenger(RISQTutorialConfigManag
 RISQTutorialConfigMessenger::~RISQTutorialConfigMessenger() {
   delete hitsCmd; hitsCmd=0;
   delete filmThicknessAlCmd; filmThicknessAlCmd=0;
-  delete filmThicknessNbCmd; filmThicknessNbCmd=0
+  delete filmThicknessNbCmd; filmThicknessNbCmd=0;
 }
 
 

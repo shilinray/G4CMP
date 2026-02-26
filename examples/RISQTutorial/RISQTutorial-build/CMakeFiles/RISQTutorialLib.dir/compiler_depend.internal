@@ -1237,6 +1237,9 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialConfigMessenger.cc.o
  /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialConfigManager.hh
  /usr/local/include/Geant4/globals.hh
  /usr/local/include/Geant4/G4UIcmdWithAString.hh
+ /usr/local/include/Geant4/G4UIcmdWithADouble.hh
+ /usr/local/include/Geant4/G4UIcmdWithAnInteger.hh
+ /usr/local/include/Geant4/G4UIcmdWithABool.hh
 
 CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialCornerFluxLine.cc.o
  /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/src/RISQTutorialCornerFluxLine.cc
@@ -2263,6 +2266,7 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o
  /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialStraightFluxLine.hh
  /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialCornerFluxLine.hh
  /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialResonatorAssembly.hh
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialConfigManager.hh
  /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/include/G4CMP/G4CMPPhononElectrode.hh
  /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/include/G4CMP/G4CMPVElectrodePattern.hh
  /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/include/G4CMP/G4CMPProcessUtils.hh

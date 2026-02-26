@@ -227,4 +227,7 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialConfigMessenger.cc.o: \
  /usr/local/include/Geant4/CLHEP/Vector/ThreeVector.icc \
  /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialConfigManager.hh \
  /usr/local/include/Geant4/globals.hh \
- /usr/local/include/Geant4/G4UIcmdWithAString.hh
+ /usr/local/include/Geant4/G4UIcmdWithAString.hh \
+ /usr/local/include/Geant4/G4UIcmdWithADouble.hh \
+ /usr/local/include/Geant4/G4UIcmdWithAnInteger.hh \
+ /usr/local/include/Geant4/G4UIcmdWithABool.hh
