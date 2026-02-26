@@ -26,6 +26,146 @@
 #include "TH2D.h"
 
 //---------------------------------------------------------------------------------------
+// Parsing function
+std::vector<Event> ReadInG4CMPPrimaryAndHitFiles(std::string hitTextFilename, std::string primaryTextFilename)
+{
+  //Output: a vector of event objects nicely organizing our data.
+  std::vector<Event> output;
+
+  //First, let's open up our primary file and parse it. We'll get a map of int (event ID)
+  //to primary info and a map of int (eventID) to a list of hits
+  std::map<int,PrimaryInfo> primaryInfo = ParsePrimaryTextFileForPrimaries(primaryTextFilename);
+  std::map<int,std::vector<Hit> > hitInfo = ParseHitTextFileForHits(hitTextFilename);
+
+  //Now we do a final loop over event ID to merge these into actual events.
+  for( std::map<int,PrimaryInfo>::iterator it = primaryInfo.begin(); it != primaryInfo.end(); ++it ){
+    Event theEvent;
+    theEvent.runID = it->second.runID;
+    theEvent.eventID = it->first;
+    theEvent.hitVect = hitInfo[it->first];
+    theEvent.thePrim = it->second;
+    output.push_back(theEvent);
+  }
+  return output;
+
+}
+  
+
+//---------------------------------------------------------------------------------------
+// Parsing function
+std::map<int,std::vector<Hit> > ParseHitTextFileForHits(std::string filename)
+{
+  std::map<int,std::vector<Hit> > output;
+  std::vector<Hit> dummy;
+  
+  std::ifstream infile;
+  infile.open(filename.c_str());
+  std::string wholeLine;
+
+  //Begin loop through file
+  int eventID = -1;
+  int runID = -1;
+  int counter = 0;
+  while(1){
+    if(!infile.good()) break;
+    if(infile.is_open()){
+      std::getline(infile,wholeLine);
+      
+      //Tokenize the string (split between spaces)
+      stringstream check1(wholeLine);
+      string token;
+      std::vector<std::string> tokens;
+      while(getline(check1,token,' ')){
+	tokens.push_back(token);
+      }
+      if( tokens.size() == 0 ) break;
+	  
+      //If we're on the first line of the file
+      if( tokens[0].find("Run") != std::string::npos ){
+	continue;
+      }
+
+      //Check the runID and eventID, and if different than existing one,
+      //push back a new event into the map
+      if( std::atoi(tokens[0].c_str()) != runID || std::atoi(tokens[1].c_str()) != eventID ){
+	output.emplace(std::atoi(tokens[1].c_str()),dummy);
+	runID = std::atoi(tokens[0].c_str());
+	eventID = std::atoi(tokens[1].c_str());
+	counter++; 
+	if( counter % 1000 == 0 ) std::cout << "Done reading " << counter << " events for hits." << std::endl;
+      }
+
+      //Log the hit information and push back into the most recently-created event in the vector
+      Hit theHit;      
+      theHit.runID = std::atoi(tokens[0].c_str());
+      theHit.eventID = std::atoi(tokens[1].c_str());
+      theHit.trackID = std::atoi(tokens[2].c_str());
+      theHit.particleName = tokens[3];
+      theHit.startEnergy_eV = std::atof(tokens[4].c_str());
+      theHit.startX_mm = std::atof(tokens[5].c_str());
+      theHit.startY_mm = std::atof(tokens[6].c_str());
+      theHit.startZ_mm = std::atof(tokens[7].c_str());
+      theHit.startT_ns = std::atof(tokens[8].c_str());
+      theHit.eDep_eV = std::atof(tokens[9].c_str());
+      theHit.trackWeight = std::atof(tokens[10].c_str());
+      theHit.endX_mm = std::atof(tokens[11].c_str());
+      theHit.endY_mm = std::atof(tokens[12].c_str());
+      theHit.endZ_mm = std::atof(tokens[13].c_str());
+      theHit.endT_ns = std::atof(tokens[14].c_str());
+      output[eventID].push_back(theHit);
+    }
+  }
+  return output;
+}
+
+
+//---------------------------------------------------------------------------------------
+// Parsing function
+std::map<int,PrimaryInfo> ParsePrimaryTextFileForPrimaries(std::string filename)
+{
+  std::map<int,PrimaryInfo> output;
+  std::ifstream infile;
+  infile.open(filename.c_str());
+  std::string wholeLine;
+
+  //Begin loop through file
+  while(1){
+    if(!infile.good()) break;
+    if(infile.is_open()){
+      std::getline(infile,wholeLine);
+      
+      //Tokenize the string (split between spaces)
+      stringstream check1(wholeLine);
+      string token;
+      std::vector<std::string> tokens;
+      while(getline(check1,token,' ')){
+	tokens.push_back(token);
+      }
+      if( tokens.size() == 0 ) break;
+	  
+      //If we're on the first line of the file
+      if( tokens[0].find("Run") != std::string::npos ){
+	continue;
+      }
+
+      //Here, it's simpler since there's one line per event (assuming only a single run)
+      //So we can use the event id as an index.
+      PrimaryInfo thePrim;
+      thePrim.runID = std::atoi(tokens[0].c_str());
+      thePrim.eventID = std::atoi(tokens[1].c_str());
+      thePrim.particleName = tokens[2];
+      thePrim.energy_eV = std::atof(tokens[3].c_str());
+      thePrim.X_mm = std::atof(tokens[4].c_str());
+      thePrim.Y_mm = std::atof(tokens[5].c_str());
+      thePrim.Z_mm = std::atof(tokens[6].c_str());
+      thePrim.T_ns = std::atof(tokens[7].c_str());
+      output.emplace(thePrim.eventID,thePrim);
+    }
+  }
+  return output;
+}
+
+//---------------------------------------------------------------------------------------
 // Small helpers for batch-running over many Primary_*.txt / Hits_*.txt pairs.
 namespace {
 
@@ -165,6 +305,9 @@ std::vector<Event> ReadInG4CMPPrimaryAndHitFiles(std::string hitTextFilename, st
 std::map<int,std::vector<Hit> > ParseHitTextFileForHits(std::string filename);
 std::map<int,PrimaryInfo> ParsePrimaryTextFileForPrimaries(std::string filename);
 int FindClosestQubitID(double hitX_mm, double hitY_mm);
+
+
+
 
   
 void AnalyzeMuonEvent(std::string primariesFilename, std::string hitsFilename,double scaleFactorEHPairs)
@@ -505,145 +648,6 @@ void PrintPhononCollectionEfficiency(std::string directory)
   std::cout << "\nWrote PCE 2D histogram to: " << outRoot << " (hist: h_pce_params)\n";
 }
 
-//---------------------------------------------------------------------------------------
-// Parsing function
-std::vector<Event> ReadInG4CMPPrimaryAndHitFiles(std::string hitTextFilename, std::string primaryTextFilename)
-{
-  //Output: a vector of event objects nicely organizing our data.
-  std::vector<Event> output;
-
-  //First, let's open up our primary file and parse it. We'll get a map of int (event ID)
-  //to primary info and a map of int (eventID) to a list of hits
-  std::map<int,PrimaryInfo> primaryInfo = ParsePrimaryTextFileForPrimaries(primaryTextFilename);
-  std::map<int,std::vector<Hit> > hitInfo = ParseHitTextFileForHits(hitTextFilename);
-
-  //Now we do a final loop over event ID to merge these into actual events.
-  for( std::map<int,PrimaryInfo>::iterator it = primaryInfo.begin(); it != primaryInfo.end(); ++it ){
-    Event theEvent;
-    theEvent.runID = it->second.runID;
-    theEvent.eventID = it->first;
-    theEvent.hitVect = hitInfo[it->first];
-    theEvent.thePrim = it->second;
-    output.push_back(theEvent);
-  }
-  return output;
-
-}
-  
-
-//---------------------------------------------------------------------------------------
-// Parsing function
-std::map<int,std::vector<Hit> > ParseHitTextFileForHits(std::string filename)
-{
-  std::map<int,std::vector<Hit> > output;
-  std::vector<Hit> dummy;
-  
-  std::ifstream infile;
-  infile.open(filename.c_str());
-  std::string wholeLine;
-
-  //Begin loop through file
-  int eventID = -1;
-  int runID = -1;
-  int counter = 0;
-  while(1){
-    if(!infile.good()) break;
-    if(infile.is_open()){
-      std::getline(infile,wholeLine);
-      
-      //Tokenize the string (split between spaces)
-      stringstream check1(wholeLine);
-      string token;
-      std::vector<std::string> tokens;
-      while(getline(check1,token,' ')){
-	tokens.push_back(token);
-      }
-      if( tokens.size() == 0 ) break;
-	  
-      //If we're on the first line of the file
-      if( tokens[0].find("Run") != std::string::npos ){
-	continue;
-      }
-
-      //Check the runID and eventID, and if different than existing one,
-      //push back a new event into the map
-      if( std::atoi(tokens[0].c_str()) != runID || std::atoi(tokens[1].c_str()) != eventID ){
-	output.emplace(std::atoi(tokens[1].c_str()),dummy);
-	runID = std::atoi(tokens[0].c_str());
-	eventID = std::atoi(tokens[1].c_str());
-	counter++; 
-	if( counter % 1000 == 0 ) std::cout << "Done reading " << counter << " events for hits." << std::endl;
-      }
-
-      //Log the hit information and push back into the most recently-created event in the vector
-      Hit theHit;      
-      theHit.runID = std::atoi(tokens[0].c_str());
-      theHit.eventID = std::atoi(tokens[1].c_str());
-      theHit.trackID = std::atoi(tokens[2].c_str());
-      theHit.particleName = tokens[3];
-      theHit.startEnergy_eV = std::atof(tokens[4].c_str());
-      theHit.startX_mm = std::atof(tokens[5].c_str());
-      theHit.startY_mm = std::atof(tokens[6].c_str());
-      theHit.startZ_mm = std::atof(tokens[7].c_str());
-      theHit.startT_ns = std::atof(tokens[8].c_str());
-      theHit.eDep_eV = std::atof(tokens[9].c_str());
-      theHit.trackWeight = std::atof(tokens[10].c_str());
-      theHit.endX_mm = std::atof(tokens[11].c_str());
-      theHit.endY_mm = std::atof(tokens[12].c_str());
-      theHit.endZ_mm = std::atof(tokens[13].c_str());
-      theHit.endT_ns = std::atof(tokens[14].c_str());
-      output[eventID].push_back(theHit);
-    }
-  }
-  return output;
-}
-
-
-//---------------------------------------------------------------------------------------
-// Parsing function
-std::map<int,PrimaryInfo> ParsePrimaryTextFileForPrimaries(std::string filename)
-{
-  std::map<int,PrimaryInfo> output;
-  std::ifstream infile;
-  infile.open(filename.c_str());
-  std::string wholeLine;
-
-  //Begin loop through file
-  while(1){
-    if(!infile.good()) break;
-    if(infile.is_open()){
-      std::getline(infile,wholeLine);
-      
-      //Tokenize the string (split between spaces)
-      stringstream check1(wholeLine);
-      string token;
-      std::vector<std::string> tokens;
-      while(getline(check1,token,' ')){
-	tokens.push_back(token);
-      }
-      if( tokens.size() == 0 ) break;
-	  
-      //If we're on the first line of the file
-      if( tokens[0].find("Run") != std::string::npos ){
-	continue;
-      }
-
-      //Here, it's simpler since there's one line per event (assuming only a single run)
-      //So we can use the event id as an index.
-      PrimaryInfo thePrim;
-      thePrim.runID = std::atoi(tokens[0].c_str());
-      thePrim.eventID = std::atoi(tokens[1].c_str());
-      thePrim.particleName = tokens[2];
-      thePrim.energy_eV = std::atof(tokens[3].c_str());
-      thePrim.X_mm = std::atof(tokens[4].c_str());
-      thePrim.Y_mm = std::atof(tokens[5].c_str());
-      thePrim.Z_mm = std::atof(tokens[6].c_str());
-      thePrim.T_ns = std::atof(tokens[7].c_str());
-      output.emplace(thePrim.eventID,thePrim);
-    }
-  }
-  return output;
-}
 
 
 
