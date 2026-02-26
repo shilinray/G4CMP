@@ -599,28 +599,28 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, AlSurfProp);
   // new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, NbSurfProp);
   // new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, NbSurfProp);
   // new G4CMPLogicalBorderSurface("Al", GePhys, sideGroundBridgePhysical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, AlSurfProp);
   for (auto phys : inductorPhys) {
-    new G4CMPLogicalBorderSurface("Al", GePhys, phys, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, phys, AlSurfProp);
   }
   new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys, wallSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, leftcapwallphysical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, rightcapwallphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, leftcapwallphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, rightcapwallphysical, AlSurfProp);
   for (auto phys : idcPhys) {
-    new G4CMPLogicalBorderSurface("Al", GePhys, phys, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, phys, AlSurfProp);
   }
-  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector2physical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector2physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, junct1physical, AlSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, junct2physical, AlSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, junct3physical, AlSurfProp);
