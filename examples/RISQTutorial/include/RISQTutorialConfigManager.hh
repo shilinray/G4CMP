@@ -37,7 +37,7 @@ public:
   static void SetHitOutput(const G4String& name)
     { Instance()->Hit_file=name; UpdateGeometry(); }
   static void SetPrimaryOutput(const G4String& name)
-    { Instance()->Hit_file=name; UpdateGeometry(); }
+    { Instance()->Primary_file=name; UpdateGeometry(); }
   static void SetfilmThicknessAl(G4double filmThicknessAl);
   static void SetfilmThicknessNb(G4double filmThicknessNb);
 
