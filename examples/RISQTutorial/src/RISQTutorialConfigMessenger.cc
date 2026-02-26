@@ -24,8 +24,10 @@
 RISQTutorialConfigMessenger::RISQTutorialConfigMessenger(RISQTutorialConfigManager* mgr)
   : G4UImessenger("/g4cmp/", "User configuration for G4CMP phonon example"),
     theManager(mgr), hitsCmd(0) {
-  hitsCmd = CreateCommand<G4UIcmdWithAString>("HitsFile",
-			      "Set filename for output of phonon hit locations");
+  primFileNameCmd = CreateCommand<G4UIcmdWithAString>("primFileName",
+			      "Set text file name for primary particle information");
+  hitsFileNameCmd = CreateCommand<G4UIcmdWithAString>("hitsFileName",
+			      "Set text file name for phonon hit information");
 
   filmThicknessAlCmd = CreateCommand<G4UIcmdWithADouble> ("filmThicknessAl", 
             "Set the filmThickness parameter for Al");
@@ -35,7 +37,8 @@ RISQTutorialConfigMessenger::RISQTutorialConfigMessenger(RISQTutorialConfigManag
 
 
 RISQTutorialConfigMessenger::~RISQTutorialConfigMessenger() {
-  delete hitsCmd; hitsCmd=0;
+  delete primFileNameCmd; primFileNameCmd=0;
+  delete hitsFileNameCmd; hitsFileNameCmd=0;
   delete filmThicknessAlCmd; filmThicknessAlCmd=0;
   delete filmThicknessNbCmd; filmThicknessNbCmd=0;
 }
@@ -44,7 +47,8 @@ RISQTutorialConfigMessenger::~RISQTutorialConfigMessenger() {
 // Parse user input and add to configuration
 
 void RISQTutorialConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) {
-  if (cmd == hitsCmd) theManager->SetHitOutput(value);
+  if (cmd == primFileNameCmd) theManager->SetPrimaryOutput(value);
+  if (cmd == hitsFileNameCmd) theManager->SetHitOutput(value);
   if (cmd == filmThicknessAlCmd) theManager->SetfilmThicknessAl(filmThicknessAlCmd->GetNewDoubleValue(value));
   if (cmd == filmThicknessNbCmd) theManager->SetfilmThicknessNb(filmThicknessNbCmd->GetNewDoubleValue(value));
  

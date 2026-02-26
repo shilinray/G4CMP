@@ -33,7 +33,8 @@ public:
 
 private:
   RISQTutorialConfigManager* theManager;
-  G4UIcmdWithAString* hitsCmd;
+  G4UIcmdWithAString* primFileNameCmd;
+  G4UIcmdWithAString* hitsFileNameCmd;
 
   G4UIcmdWithADouble* filmThicknessAlCmd;
   G4UIcmdWithADouble* filmThicknessNbCmd;

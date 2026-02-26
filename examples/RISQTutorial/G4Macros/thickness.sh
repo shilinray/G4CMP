@@ -46,6 +46,8 @@ cp $BaseMacro $mName
 
 sed -i "s/filmThicknessAl 0/filmThicknessAl ${Al_z}/g" $mName
 sed -i "s/filmThicknessNb 0/filmThicknessNb ${Nb_z}/g" $mName
+sed -i "s/hitsFileName " "/hitsFileName ${fHits}/g" $mName
+sed -i "s/primFileName " "/primFileName ${fPrimary}/g" $mName
 
 apptainer exec /sdf/group/supercdms/software/releases/cdmsfull_V05-02.sif \
   /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/RISQTutorial-build/RISQTutorial \
