@@ -23,7 +23,7 @@
 
 RISQTutorialConfigMessenger::RISQTutorialConfigMessenger(RISQTutorialConfigManager* mgr)
   : G4UImessenger("/g4cmp/", "User configuration for G4CMP phonon example"),
-    theManager(mgr), hitsFileNameCmd(0) {
+    theManager(mgr), primFileNameCmd(0), hitsFileNameCmd(0) {
   primFileNameCmd = CreateCommand<G4UIcmdWithAString>("primFileName",
 			      "Set text file name for primary particle information");
   hitsFileNameCmd = CreateCommand<G4UIcmdWithAString>("hitsFileName",

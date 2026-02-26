@@ -31,7 +31,7 @@ RISQTutorialConfigManager* RISQTutorialConfigManager::Instance() {
 
 RISQTutorialConfigManager::RISQTutorialConfigManager()
   : Hit_file(getenv("G4CMP_HIT_FILE")?getenv("G4CMP_HIT_FILE"):"RISQTutorial_hits.txt"),
-    Primary_file("RISQTutorial_primary.txt"),
+    Primary_file(getenv("G4CMP_PRIMARY_FILE")?getenv("G4CMP_PRIMARY_FILE"):"RISQTutorial_primary.txt"),
     messenger(new RISQTutorialConfigMessenger(this)) 
     {
     filmThicknessAl = 0;
