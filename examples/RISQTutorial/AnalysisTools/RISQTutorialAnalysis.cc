@@ -20,6 +20,7 @@
 #include <vector>
 
 //ROOT includes
+#include "TMath.h"
 #include "TH1F.h"
 #include "TFile.h"
 #include "TH2F.h"
@@ -271,14 +272,14 @@ void PrintPhononCollectionEfficiency()
   for (int al : al_vals) {
       for (int nb : nb_vals) {
           std::ostringstream ss;
-          ss "../G4Macros/data/" << "Hits_Al" << al << "_Nb" << nb << ".txt";
+          ss << "../G4Macros/data/Hits_Al" << al << "_Nb" << nb << ".txt";
           hits_filenames.push_back(ss.str());
       }
   }
   for (int al : al_vals) {
       for (int nb : nb_vals) {
           std::ostringstream ss;
-          ss "../G4Macros/data/" << "Primary_Al" << al << "_Nb" << nb << ".txt";
+          ss << "../G4Macros/data/Primary_Al" << al << "_Nb" << nb << ".txt";
           primary_filenames.push_back(ss.str());
       }
   }
@@ -286,7 +287,7 @@ void PrintPhononCollectionEfficiency()
   for (size_t i = 0; i < hits_filenames.size(); ++i) {
 
     const std::map<int,PrimaryInfo> primaryInfo = ParsePrimaryTextFileForPrimaries(primary_filenames[i]);
-    const std::map<int,std::vector<Hit> > hitInfo = ParseHitTextFileForHits(../G4Macros/data/hits_filenames[i]);
+    const std::map<int,std::vector<Hit> > hitInfo = ParseHitTextFileForHits(hits_filenames[i]);
 
     double totalPrimaryEnergy_eV = 0.0;
     for (const auto& kv : primaryInfo) {
@@ -317,11 +318,11 @@ void PrintPhononCollectionEfficiencyAndPlot()
   std::vector<int> al_vals = {100, 200, 300, 400, 500, 600};
   std::vector<int> nb_vals = {20, 40, 60, 80, 100};
 
-  const std::string baseDir = "../G4Macros/data"; // change if needed
+  const std::string baseDir = "../G4Macros"; // change if needed
 
   // 2D chart: X=Al, Y=Nb, Z=PCE (%)
   TH2F* h_pce_al_nb = new TH2F("h_pce_al_nb",
-                              "PCE vs Al and Nb;Al parameter;Nb parameter;PCE [%]",
+                              "PCE vs Al and Nb thickness;Al thickness [nm];Nb thickness [nm];PCE [%]",
                               (int)al_vals.size(), 0, (int)al_vals.size(),
                               (int)nb_vals.size(), 0, (int)nb_vals.size());
 
@@ -379,6 +380,8 @@ void PrintPhononCollectionEfficiencyAndPlot()
   fOut->Close();
 
   TCanvas c("c", "c", 900, 700);
+  c.SetRightMargin(0.18);   // default is ~0.1
+  h_pce_al_nb->SetStats(0);
   h_pce_al_nb->Draw("COLZ TEXT");   // COLZ = heatmap, TEXT = numbers in bins
   c.SaveAs("PCE_Al_Nb.png");
 }
