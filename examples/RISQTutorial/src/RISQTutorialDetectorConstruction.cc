@@ -238,7 +238,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4RotationMatrix* squatRot = new G4RotationMatrix();
   squatRot->rotateZ(90.0*deg); // 90 degree rotation
   G4ThreeVector targetCenter(targetCenterX, targetCenterY, targetCenterZ);
-  const G4ThreeVector squatOffset = targetCenter - (*squatRot) * stlCenter;
+  const G4ThreeVector squatOffset = targetCenter - (*squatRot) * stlCenter - G4ThreeVector(0, 0, 0.1 * nm); // Force 0.1 nm geometric overlap;
 
   // Debug: find the true minimum z of the rotated STL bounding box,
   // then add the placement offset to get the final world-space minimum z.
@@ -270,7 +270,10 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
   double rotatedMinZ = rotatedMinZFromBBox(overallMin, overallMax, *squatRot);
   double placedMinZ  = rotatedMinZ + squatOffset.z();
-
+  G4cout << "----------------------------------------" << G4endl;
+  G4cout << "----------------------------------------" << G4endl;
+  G4cout << "----------------------------------------" << G4endl;
+  G4cout << "----------------------------------------" << G4endl;
   G4cout << "----------------------------------------" << G4endl;
   G4cout << "Ge top surface z = " << geHalfZ / um << " um" << G4endl;
   G4cout << "Rotated STL min z (before translation) = "
