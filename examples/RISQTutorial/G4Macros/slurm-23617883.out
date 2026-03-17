@@ -93,13 +93,17 @@ WARNING: There is no world volume!
 SQUAT overall bbox min=(-15912,2409.27,-6.77626e-18) um max=(-15670,2624.73,0.2) um
 SQUAT STL center=(-15791,2517,0.1) um
 ----------------------------------------
+----------------------------------------
+----------------------------------------
+----------------------------------------
+----------------------------------------
 Ge top surface z = 50 um
 Rotated STL min z (before translation) = -6.77626e-18 um
-squatOffset.z = 50 um
-Placed STL min z (world) = 50 um
-Gap above Ge = 0 um
+squatOffset.z = 49.9999 um
+Placed STL min z (world) = 49.9999 um
+Gap above Ge = -0.0001 um
 ----------------------------------------
-SQUAT placement offset=(2517,15591,50) um
+SQUAT placement offset=(2517,15591,49.9999) um
 leftabs_solid bbox min=(-15.912,2.40927,0) mm max=(-15.799,2.62473,0.0002) mm size=(0.11296,0.215454,0.0002) mm
 leftabs_solid volume=3.39888e-06 mm^3
 righttrap_solid bbox min=(-15.803,2.515,-6.77626e-21) mm max=(-15.792,2.519,2e-05) mm size=(0.01104,0.004,2e-05) mm
