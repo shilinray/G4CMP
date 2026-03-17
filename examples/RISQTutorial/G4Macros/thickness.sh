@@ -31,8 +31,8 @@ echo "Al thickness: $Al_z"
 echo "Nb thickness: $Nb_z"
 
 # creates output files names and macro file name
-fHits="Hits_Al${Al_z}_Nb${Nb_z}.txt"
-fPrimary="Primary_Al${Al_z}_Nb${Nb_z}.txt"
+fHits="/sdf/scratch/supercdms/sray/260317_run/Hits_Al${Al_z}_Nb${Nb_z}.txt"
+fPrimary="/sdf/scratch/supercdms/sray/260317_run/Primary_Al${Al_z}_Nb${Nb_z}.txt"
 mName="Run_Al${Al_z}_Nb${Nb_z}.mac"
 
 # prints out a summary

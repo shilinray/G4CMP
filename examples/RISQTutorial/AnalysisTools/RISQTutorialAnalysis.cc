@@ -318,7 +318,7 @@ void PrintPhononCollectionEfficiencyAndPlot()
   std::vector<int> al_vals = {100, 200, 300, 400, 500, 600};
   std::vector<int> nb_vals = {20, 40, 60, 80, 100};
 
-  const std::string baseDir = "../G4Macros"; // change if needed
+  const std::string baseDir = "/sdf/scratch/supercdms/sray/260317_run"; // change if needed
 
   // 2D chart: X=Al, Y=Nb, Z=PCE (%)
   TH2F* h_pce_al_nb = new TH2F("h_pce_al_nb",
