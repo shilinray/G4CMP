@@ -196,57 +196,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     0, G4ThreeVector(0., -ycouplcapoffset, geHalfZ + thickness), couplCaplogical, "couplCapphysical",
     worldLogical, false, 0);
 
-  // // Side Ground Planes
-  // const G4double sideGroundx = 10.0*um; // 20um / 2
-  // const G4double sideGroundy = 343.0*um; // 686um / 2
-  // const G4double sideGroundGapX = 30.0*um;
-  // const G4double sideGroundGapY = 2.0*um;
-
-  // G4Box* sideGround = new G4Box("sideGround", sideGroundx, sideGroundy, thickness);
-  // G4LogicalVolume* sideGroundlogical = new G4LogicalVolume(sideGround, fAluminum, "sideGroundlogical");
-
-  // // Left Rectangle
-  // // Right edge is 30um left of couplCap left edge (-300um) -> Right edge at -330um
-  // // Center at -340um
-  // G4double xLeftGround = -(couplCapx + sideGroundGapX + sideGroundx);
-  
-  // // Right Rectangle
-  // // Left edge is 30um right of couplCap right edge (+300um) -> Left edge at +330um
-  // // Center at +340um
-  // G4double xRightGround = (couplCapx + sideGroundGapX + sideGroundx);
-
-  // // Top edge is 2um below bottom of couplCap
-  // G4double ySideGround = ycouplcapoffset + couplCapy + sideGroundGapY + sideGroundy;
-
-  // G4VPhysicalVolume* leftSideGroundPhysical = new G4PVPlacement(
-  //   0, G4ThreeVector(xLeftGround, -ySideGround, geHalfZ + thickness), 
-  //   sideGroundlogical, "leftSideGroundPhysical",
-  //   worldLogical, false, 0);
-
-  // G4VPhysicalVolume* rightSideGroundPhysical = new G4PVPlacement(
-  //   0, G4ThreeVector(xRightGround, -ySideGround, geHalfZ + thickness), 
-  //   sideGroundlogical, "rightSideGroundPhysical",
-  //   worldLogical, false, 0);
-
-  // // Bottom bridge connecting left/right side grounds
-  // const G4double sideGroundBridgeHalfY = 1.0*um;
-  // const G4double sideGroundBridgeHalfX = xRightGround + sideGroundx;
-
-  // G4Box* sideGroundBridge = new G4Box("sideGroundBridge",
-  //                                    sideGroundBridgeHalfX,
-  //                                    sideGroundBridgeHalfY,
-  //                                    thickness);
-  // G4LogicalVolume* sideGroundBridgeLogical =
-  //   new G4LogicalVolume(sideGroundBridge, fAluminum, "sideGroundBridgeLogical");
-
-  // // Place bridge so its top face touches the bottoms of the side grounds
-  // const G4double ySideGroundBottom = ySideGround + sideGroundy;
-  // const G4double ySideGroundBridge = ySideGroundBottom + sideGroundBridgeHalfY;
-
-  // G4VPhysicalVolume* sideGroundBridgePhysical = new G4PVPlacement(
-  //   0, G4ThreeVector(0., -ySideGroundBridge, geHalfZ + thickness),
-  //   sideGroundBridgeLogical, "sideGroundBridgePhysical",
-  //   worldLogical, false, 0);
+  // Placeholder removed for Side Ground Planes
 
   // connector
   const G4double connectory = 5.0*um;
@@ -550,6 +500,57 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     absorberlogical, "absorberphysicalshunt",
     worldLogical, false, 0);
 
+  // Side Ground Planes
+  const G4double sideGroundx = 10.0*um; // 20um width / 2
+  
+  // They extend from the bottom of the lowergroundplane to the top flat edge of the bridge
+  G4double yLGPBottom = yLGPoffset + alLPGhalfy;
+  G4double ySideGroundTop = yLGPBottom;
+  // The bridge top flat edge is at yabsorberoffset (same y as the absorber flat edge)
+  G4double ySideGroundBottom = yabsorberoffset;
+  
+  G4double sideGroundy = (ySideGroundBottom - ySideGroundTop) / 2.0;
+  // Note: Y coordinates are negative in placement
+  G4double ySideGroundCenter = ySideGroundTop + sideGroundy;
+
+  G4Box* sideGround = new G4Box("sideGround", sideGroundx, sideGroundy, thickness);
+  G4LogicalVolume* sideGroundlogical = new G4LogicalVolume(sideGround, fAluminum, "sideGroundlogical");
+
+  // Centers of the side ground planes
+  // They wrap around the absorber, so their inner edge aligns with the absorber outer edge.
+  // Left: center = xabsorberoffset - absorberRadius - sideGroundx
+  // Right: center = xabsorberoffset + absorberRadius + sideGroundx
+  G4double xLeftGround = xabsorberoffset - absorberRadius - sideGroundx;
+  G4double xRightGround = xabsorberoffset + absorberRadius + sideGroundx;
+
+  G4VPhysicalVolume* leftSideGroundPhysical = new G4PVPlacement(
+    0, G4ThreeVector(xLeftGround, -ySideGroundCenter, geHalfZ + thickness), 
+    sideGroundlogical, "leftSideGroundPhysical",
+    worldLogical, false, 0);
+
+  G4VPhysicalVolume* rightSideGroundPhysical = new G4PVPlacement(
+    0, G4ThreeVector(xRightGround, -ySideGroundCenter, geHalfZ + thickness), 
+    sideGroundlogical, "rightSideGroundPhysical",
+    worldLogical, false, 0);
+
+  // Bottom bridge wrapping around the absorber
+  const G4double bridgeInnerRadius = absorberRadius; 
+  const G4double bridgeOuterRadius = absorberRadius + 2.0 * sideGroundx; // 20.0um wide
+  
+  G4Tubs* sideGroundBridge = new G4Tubs("sideGroundBridge", 
+                                        bridgeInnerRadius, 
+                                        bridgeOuterRadius, 
+                                        thickness, 
+                                        180.0*deg, 180.0*deg);
+  G4LogicalVolume* sideGroundBridgeLogical =
+    new G4LogicalVolume(sideGroundBridge, fAluminum, "sideGroundBridgeLogical");
+
+  G4VPhysicalVolume* sideGroundBridgePhysical = new G4PVPlacement(
+    0, G4ThreeVector(xabsorberoffset, -yabsorberoffset, geHalfZ + thickness),
+    sideGroundBridgeLogical, "sideGroundBridgePhysical",
+    worldLogical, false, 0);
+
+  // ---- End of Geometry definition ----
 
   // 
   // detector -- Note : "sensitive detector" is attached to Germanium crystal
@@ -605,9 +606,9 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, AlSurfProp);
-  // new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, NbSurfProp);
-  // new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, NbSurfProp);
-  // new G4CMPLogicalBorderSurface("Al", GePhys, sideGroundBridgePhysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", GePhys, sideGroundBridgePhysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, AlSurfProp);
   for (auto phys : inductorPhys) {
     new G4CMPLogicalBorderSurface("Al", GePhys, phys, AlSurfProp);
@@ -651,8 +652,8 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   alFLlogical->SetVisAttributes(alVis);
   connectorlogical->SetVisAttributes(alVis);
   couplCaplogical->SetVisAttributes(alVis);
-  // sideGroundlogical->SetVisAttributes(alVis);
-  // sideGroundBridgeLogical->SetVisAttributes(alVis);
+  sideGroundlogical->SetVisAttributes(alVis);
+  sideGroundBridgeLogical->SetVisAttributes(alVis);
   capindconnectorlogical->SetVisAttributes(alVis);
   indvert1logical->SetVisAttributes(alVis);
   for (auto log : inductorLog) {

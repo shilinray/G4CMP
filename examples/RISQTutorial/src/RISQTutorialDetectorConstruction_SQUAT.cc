@@ -148,9 +148,29 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   const G4double alFeedlineHalfY = 4.5*um;
   const G4double fl_thickness = 0.2*um;
 
+  const G4double alUPGhalfy = 50.0*um;
+  const G4double alLPGhalfy = 2.0*um;
+  const G4double feedlineGap = 2.0*um;
+
   G4Box* feedline = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, fl_thickness);
+  G4Box* uppergroundplane  = new G4Box("uppergroundplane",  alFeedlineHalfX, alUPGhalfy, thickness);
+  G4Box* lowergroundplane  = new G4Box("lowergroundplane",  alFeedlineHalfX, alLPGhalfy, thickne
+
   G4LogicalVolume* alFLlogical = new G4LogicalVolume(feedline,fAluminum,"alFLlogical"); // logical feedline
+  G4LogicalVolume* alUGPlogical = new G4LogicalVolume(uppergroundplane,fAluminum,"alUGPlogical"); // logical feedline
+  G4LogicalVolume* alLGPlogical = new G4LogicalVolume(lowergroundplane,fAluminum,"alLGPlogical"); // logical feedline
+
   G4VPhysicalVolume* alFLphysical = new G4PVPlacement(0, G4ThreeVector(0.,0., geHalfZ + fl_thickness), alFLlogical, "alFLphysical", worldLogical, false, 0); 
+
+  G4double yUGPoffset = alFeedlineHalfY + feedlineGap + alUPGhalfy;
+  G4double yLGPoffset = alFeedlineHalfY + feedlineGap + alLPGhalfy;
+
+  G4VPhysicalVolume* alUGPphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., yUGPoffset, geHalfZ + thickness), alUGPlogical, "alUGPphysical",
+    worldLogical, false, 0); // physical UPG
+  G4VPhysicalVolume* alLGPphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., -yLGPoffset, geHalfZ + thickness), alLGPlogical, "alLGPphysical",
+    worldLogical, false, 0); // physical LGP
   // physical feedline
 
   // Helper to print bounding box + volume for CADMesh tessellated solids
@@ -299,6 +319,8 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   new G4CMPLogicalBorderSurface("GeToAl_LT", GePhys, lefttrapphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_JN", GePhys, junctionphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_RA", GePhys, rightabsphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_UGP", GePhys, alUGPphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_LGP", GePhys, alLGPphysical, NbSurfProp);
 
 
   // Ge -> World (bare Ge where there is no Al coverage)
@@ -324,6 +346,8 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4VisAttributes* alVis = new G4VisAttributes(G4Colour(1.0, 0.0, 0.0, 0.5));
   alVis->SetVisibility(true);
   alFLlogical->SetVisAttributes(alVis);
+  alUGPlogical->SetVisAttributes(alVis);
+  alLGPlogical->SetVisAttributes(alVis);
   leftabslogical->SetVisAttributes(alVis);
   righttraplogical->SetVisAttributes(alVis);
   lefttraplogical->SetVisAttributes(alVis);
