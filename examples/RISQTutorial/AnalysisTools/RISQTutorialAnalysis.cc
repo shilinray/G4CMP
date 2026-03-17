@@ -351,14 +351,21 @@ void PrintPhononCollectionEfficiencyAndPlot()
       const std::map<int, std::vector<Hit>> hitInfo =
           ParseHitTextFileForHits(hitsFilename);
 
+      TString hName = TString::Format("h_eDep_Al%d_Nb%d", al, nb);
+      TH1F * h_eDep = new TH1F(hName, "Hit EDeps; log10(eDep[eV]); nEvents", 200, -6, 1);
+
       double totalPrimaryEnergy_eV = 0.0;
       for (const auto& kv : primaryInfo)
         totalPrimaryEnergy_eV += kv.second.energy_eV;
 
       double totalHitEnergy_eV = 0.0;
-      for (const auto& kv : hitInfo)
-        for (const Hit& h : kv.second)
+      for (const auto& kv : hitInfo) {
+        for (const Hit& h : kv.second) {
           totalHitEnergy_eV += h.eDep_eV;
+          double logEnergy_eV = TMath::Log10(h.eDep_eV);
+          h_eDep->Fill(logEnergy_eV);
+        }
+      }
 
       const double pce = (totalPrimaryEnergy_eV > 0.0)
                            ? (totalHitEnergy_eV / totalPrimaryEnergy_eV)
@@ -377,6 +384,8 @@ void PrintPhononCollectionEfficiencyAndPlot()
   // Save outputs
   TFile* fOut = new TFile("PCE_Al_Nb.root", "RECREATE");
   h_pce_al_nb->Write();
+  // Also write all TH1Fs created
+  fOut->Write();
   fOut->Close();
 
   TCanvas c("c", "c", 900, 700);

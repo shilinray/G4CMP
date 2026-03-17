@@ -234,9 +234,11 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   const G4double targetCenterX = 0.0*um;    // Desired X position of SQUAT center
   const G4double targetCenterY = -200.0*um; // Desired Y position: 200um below feedline
   const G4double targetCenterZ = geHalfZ + (overallMax.z() - overallMin.z()) / 2.0; // Bottom of SQUAT at Ge surface
-  const G4ThreeVector squatOffset(targetCenterX - stlCenter.x(), 
-                                   targetCenterY - stlCenter.y(), 
-                                   targetCenterZ - stlCenter.z());
+  
+  G4RotationMatrix* squatRot = new G4RotationMatrix();
+  squatRot->rotateZ(90.0*deg); // 90 degree rotation
+  G4ThreeVector targetCenter(targetCenterX, targetCenterY, targetCenterZ);
+  const G4ThreeVector squatOffset = targetCenter - (*squatRot) * stlCenter;
 
   G4cout << "SQUAT placement offset=" << (squatOffset/um) << " um" << G4endl;
 
@@ -249,19 +251,19 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
   // Create logical volumes and place physical volumes
   G4LogicalVolume* leftabslogical = new G4LogicalVolume(leftabs_solid,fAluminum,"leftabslogical"); 
-  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(0, squatOffset, leftabslogical, "leftabsphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(squatRot, squatOffset, leftabslogical, "leftabsphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* righttraplogical = new G4LogicalVolume(righttrap_solid,fAluminum,"righttraplogical"); 
-  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, squatOffset, righttraplogical, "righttrapphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(squatRot, squatOffset, righttraplogical, "righttrapphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* lefttraplogical = new G4LogicalVolume(lefttrap_solid,fAluminum,"lefttraplogical"); 
-  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(0, squatOffset, lefttraplogical, "lefttrapphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(squatRot, squatOffset, lefttraplogical, "lefttrapphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* junctionlogical = new G4LogicalVolume(junction_solid,fAluminum,"junctionlogical"); 
-  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, squatOffset, junctionlogical, "junctionphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(squatRot, squatOffset, junctionlogical, "junctionphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* rightabslogical = new G4LogicalVolume(rightabs_solid,fAluminum,"rightabslogical"); 
-  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(0, squatOffset, rightabslogical, "rightabsphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(squatRot, squatOffset, rightabslogical, "rightabsphysicalshunt", worldLogical, false, 0);
 
 
   // 
