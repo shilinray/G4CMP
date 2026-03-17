@@ -153,8 +153,8 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   const G4double feedlineGap = 2.0*um;
 
   G4Box* feedline = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, fl_thickness);
-  G4Box* uppergroundplane  = new G4Box("uppergroundplane",  alFeedlineHalfX, alUPGhalfy, thickness);
-  G4Box* lowergroundplane  = new G4Box("lowergroundplane",  alFeedlineHalfX, alLPGhalfy, thickne
+  G4Box* uppergroundplane  = new G4Box("uppergroundplane",  alFeedlineHalfX, alUPGhalfy, fl_thickness);
+  G4Box* lowergroundplane  = new G4Box("lowergroundplane",  alFeedlineHalfX, alLPGhalfy, fl_thickness);
 
   G4LogicalVolume* alFLlogical = new G4LogicalVolume(feedline,fAluminum,"alFLlogical"); // logical feedline
   G4LogicalVolume* alUGPlogical = new G4LogicalVolume(uppergroundplane,fAluminum,"alUGPlogical"); // logical feedline
@@ -166,10 +166,10 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yLGPoffset = alFeedlineHalfY + feedlineGap + alLPGhalfy;
 
   G4VPhysicalVolume* alUGPphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., yUGPoffset, geHalfZ + thickness), alUGPlogical, "alUGPphysical",
+    0, G4ThreeVector(0., yUGPoffset, geHalfZ + fl_thickness), alUGPlogical, "alUGPphysical",
     worldLogical, false, 0); // physical UPG
   G4VPhysicalVolume* alLGPphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., -yLGPoffset, geHalfZ + thickness), alLGPlogical, "alLGPphysical",
+    0, G4ThreeVector(0., -yLGPoffset, geHalfZ + fl_thickness), alLGPlogical, "alLGPphysical",
     worldLogical, false, 0); // physical LGP
   // physical feedline
 
