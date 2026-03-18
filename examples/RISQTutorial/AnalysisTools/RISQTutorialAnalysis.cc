@@ -25,6 +25,7 @@
 #include "TFile.h"
 #include "TH2F.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 
 //---------------------------------------------------------------------------------------
 // Define a set of structs for use interpreting the output from G4CMP
@@ -324,27 +325,28 @@ void PrintPhononCollectionEfficiencyAndPlot()
 
   const std::string baseDir = "../G4Macros/260317_run/SQUAT";
 
-  // Open output ROOT file first so all histograms can belong to it
   TFile* fOut = new TFile("PCE_Al_Nb.root", "RECREATE");
   if (!fOut || fOut->IsZombie()) {
-    std::cerr << "Error: could not create output file PCE_Al_Nb.root\n";
+    std::cerr << "Error: could not create output file PCE_Al_Nb.root" << std::endl;
     return;
   }
   fOut->cd();
 
-  // 2D chart: X=Al, Y=Nb, Z=PCE (%)
+  // 2D PCE map
   TH2F* h_pce_al_nb = new TH2F("h_pce_al_nb",
                                "PCE vs Al and Nb thickness;Al thickness [nm];Nb thickness [nm];PCE [%]",
                                (int)al_vals.size(), 0, (int)al_vals.size(),
                                (int)nb_vals.size(), 0, (int)nb_vals.size());
 
-  // Label bins with actual thickness values
   for (int i = 0; i < (int)al_vals.size(); ++i) {
     h_pce_al_nb->GetXaxis()->SetBinLabel(i + 1, std::to_string(al_vals[i]).c_str());
   }
   for (int j = 0; j < (int)nb_vals.size(); ++j) {
     h_pce_al_nb->GetYaxis()->SetBinLabel(j + 1, std::to_string(nb_vals[j]).c_str());
   }
+
+  // Group histograms by Al so we can overlay later
+  std::vector<std::vector<TH1F*> > hists_by_al(al_vals.size());
 
   for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
     for (int iN = 0; iN < (int)nb_vals.size(); ++iN) {
@@ -359,13 +361,12 @@ void PrintPhononCollectionEfficiencyAndPlot()
       const std::string primariesFilename = primPath.str();
       const std::string hitsFilename      = hitPath.str();
 
-      // Check both files exist
       std::ifstream primFile(primariesFilename.c_str());
       std::ifstream hitFile(hitsFilename.c_str());
 
       if (!primFile.good() || !hitFile.good()) {
         std::cout << "Skipping Al=" << al << " Nb=" << nb
-                  << " because one or both files are missing.\n";
+                  << " because one or both files are missing." << std::endl;
         continue;
       }
 
@@ -378,13 +379,23 @@ void PrintPhononCollectionEfficiencyAndPlot()
       const std::map<int, std::vector<Hit> > hitInfo =
           ParseHitTextFileForHits(hitsFilename);
 
-      // Create one hit-energy histogram per parameter combination
-      TString hName  = TString::Format("h_eDep_Al%d_Nb%d", al, nb);
-      TString hTitle = TString::Format("Hit EDeps Al=%d nm Nb=%d nm;log10(eDep[eV]);nEvents",
+      TString hName = TString::Format("h_eDep_Al%d_Nb%d", al, nb);
+      TString hTitle = TString::Format("Hit EDeps for Al=%d nm, Nb=%d nm;log10(eDep[eV]);nEvents",
                                        al, nb);
 
       TH1F* h_eDep = new TH1F(hName, hTitle, 200, -6, 1);
       h_eDep->SetDirectory(fOut);
+      h_eDep->SetLineWidth(2);
+      h_eDep->SetStats(0);
+
+      // Assign a distinct color for each Nb value
+      int color = kBlack;
+      if (iN == 0) color = kBlack;
+      else if (iN == 1) color = kRed;
+      else if (iN == 2) color = kBlue;
+      else if (iN == 3) color = kGreen + 2;
+      else if (iN == 4) color = kMagenta + 1;
+      h_eDep->SetLineColor(color);
 
       double totalPrimaryEnergy_eV = 0.0;
       for (const auto& kv : primaryInfo) {
@@ -395,10 +406,8 @@ void PrintPhononCollectionEfficiencyAndPlot()
       for (const auto& kv : hitInfo) {
         for (const Hit& h : kv.second) {
           totalHitEnergy_eV += h.eDep_eV;
-
           if (h.eDep_eV > 0.0) {
-            const double logEnergy_eV = TMath::Log10(h.eDep_eV);
-            h_eDep->Fill(logEnergy_eV);
+            h_eDep->Fill(TMath::Log10(h.eDep_eV));
           }
         }
       }
@@ -413,29 +422,81 @@ void PrintPhononCollectionEfficiencyAndPlot()
                 << " Nb=" << nb
                 << "  Total primary energy=" << totalPrimaryEnergy_eV << " eV"
                 << "  Total hit energy=" << totalHitEnergy_eV << " eV"
-                << "  PCE=" << 100.0 * pce << " %\n";
+                << "  PCE=" << 100.0 * pce << " %" << std::endl;
 
-      // Write this histogram immediately
       fOut->cd();
       h_eDep->Write();
+
+      hists_by_al[iA].push_back(h_eDep);
     }
   }
 
-  // Write 2D PCE map
+  // Write the 2D PCE map
   fOut->cd();
   h_pce_al_nb->Write();
 
-  // Also save a png of the PCE map
-  TCanvas* c = new TCanvas("c_pce_al_nb", "c_pce_al_nb", 900, 700);
-  c->SetRightMargin(0.18);
+  // Save the PCE map as a png
+  TCanvas* c_pce = new TCanvas("c_pce_al_nb", "c_pce_al_nb", 900, 700);
+  c_pce->SetRightMargin(0.18);
   h_pce_al_nb->SetStats(0);
   h_pce_al_nb->Draw("COLZ TEXT");
-  c->SaveAs("PCE_Al_Nb.png");
+  c_pce->Write();
+  c_pce->SaveAs("PCE_Al_Nb.png");
+
+  // Make 6 combined energy plots: same Al, varying Nb
+  for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+    const int al_val = al_vals[iA];
+
+    if (hists_by_al[iA].empty()) continue;
+
+    TString cName  = TString::Format("c_eDep_overlay_Al%d", al_val);
+    TString cTitle = TString::Format("Hit EDeps for Al=%d nm, varying Nb", al_val);
+    TCanvas* c = new TCanvas(cName, cTitle, 900, 700);
+
+    TLegend* leg = new TLegend(0.68, 0.68, 0.88, 0.88);
+    leg->SetBorderSize(1);
+    leg->SetFillStyle(0);
+
+    double maxY = 0.0;
+    for (TH1F* h : hists_by_al[iA]) {
+      if (h->GetMaximum() > maxY) maxY = h->GetMaximum();
+    }
+
+    bool first = true;
+    for (TH1F* h : hists_by_al[iA]) {
+      h->SetTitle(TString::Format("Hit EDeps for Al=%d nm, varying Nb;log10(eDep[eV]);nEvents",
+                                  al_val));
+      h->SetMaximum(1.15 * maxY);
+
+      TString histName = h->GetName();
+      int parsed_al = -1;
+      int nb_val = -1;
+      sscanf(histName.Data(), "h_eDep_Al%d_Nb%d", &parsed_al, &nb_val);
+
+      if (first) {
+        h->Draw("HIST");
+        first = false;
+      } else {
+        h->Draw("HIST SAME");
+      }
+
+      leg->AddEntry(h, TString::Format("Nb = %d nm", nb_val), "l");
+    }
+
+    leg->Draw();
+
+    fOut->cd();
+    c->Write();
+    c->SaveAs(TString::Format("h_eDep_overlay_Al%d.png", al_val));
+
+    delete leg;
+    delete c;
+  }
 
   fOut->Write();
   fOut->Close();
 
-  delete c;
+  delete c_pce;
 }
   
 
