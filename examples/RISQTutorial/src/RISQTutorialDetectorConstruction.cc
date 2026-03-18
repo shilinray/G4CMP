@@ -173,20 +173,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     worldLogical, false, 0); // physical LGP
   // physical feedline
 
-  // Helper to print bounding box + volume for CADMesh tessellated solids
-  const auto printSolidInfo = [](const char* label, G4VSolid* solid) {
-    G4ThreeVector pMin, pMax;
-    solid->BoundingLimits(pMin, pMax);
-    const G4ThreeVector size = pMax - pMin;
-
-    G4cout << label << " bbox min=" << (pMin/mm) << " mm"
-           << " max=" << (pMax/mm) << " mm"
-           << " size=" << (size/mm) << " mm" << G4endl;
-    G4cout << label << " volume=" << (solid->GetCubicVolume()/mm3) << " mm^3" << G4endl;
-  };
-
   // SQUAT - Load all STL parts first
-  // const G4double trap_thickness = .02*um;
 
   auto leftabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE1.STL");
   leftabs->SetScale(1e-3);
@@ -224,10 +211,6 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     overallMax.setZ(std::max(overallMax.z(), pMax.z()));
   }
   G4ThreeVector stlCenter = 0.5 * (overallMin + overallMax);
-  
-  G4cout << "SQUAT overall bbox min=" << (overallMin/um) << " um"
-         << " max=" << (overallMax/um) << " um" << G4endl;
-  G4cout << "SQUAT STL center=" << (stlCenter/um) << " um" << G4endl;
 
   // Compute offset to place SQUAT center at desired position
   // Target Z: bottom of SQUAT sits on top of Ge surface (at z = geHalfZ)
@@ -235,80 +218,24 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   const G4double targetCenterY = -200.0*um; // Desired Y position: 200um below feedline
   const G4double targetCenterZ = geHalfZ + (overallMax.z() - overallMin.z()) / 2.0; // Bottom of SQUAT at Ge surface
   
-  G4RotationMatrix* squatRot = new G4RotationMatrix();
-  squatRot->rotateZ(90.0*deg); // 90 degree rotation
   G4ThreeVector targetCenter(targetCenterX, targetCenterY, targetCenterZ);
-  const G4ThreeVector squatOffset = targetCenter - (*squatRot) * stlCenter - G4ThreeVector(0, 0, 0.1 * nm); // Force 0.1 nm geometric overlap;
-
-  // Debug: find the true minimum z of the rotated STL bounding box,
-  // then add the placement offset to get the final world-space minimum z.
-
-  auto rotatedMinZFromBBox = [&](const G4ThreeVector& bmin,
-                                const G4ThreeVector& bmax,
-                                const G4RotationMatrix& R)
-  {
-      double minZ = DBL_MAX;
-
-      // 8 corners of the unrotated bounding box
-      for (int ix = 0; ix < 2; ix++) {
-          for (int iy = 0; iy < 2; iy++) {
-              for (int iz = 0; iz < 2; iz++) {
-                  G4ThreeVector corner(
-                      ix ? bmax.x() : bmin.x(),
-                      iy ? bmax.y() : bmin.y(),
-                      iz ? bmax.z() : bmin.z()
-                  );
-
-                  G4ThreeVector rc = R * corner;   // rotate corner
-                  if (rc.z() < minZ) minZ = rc.z();
-              }
-          }
-      }
-
-      return minZ;
-  };
-
-  double rotatedMinZ = rotatedMinZFromBBox(overallMin, overallMax, *squatRot);
-  double placedMinZ  = rotatedMinZ + squatOffset.z();
-  G4cout << "----------------------------------------" << G4endl;
-  G4cout << "----------------------------------------" << G4endl;
-  G4cout << "----------------------------------------" << G4endl;
-  G4cout << "----------------------------------------" << G4endl;
-  G4cout << "----------------------------------------" << G4endl;
-  G4cout << "Ge top surface z = " << geHalfZ / um << " um" << G4endl;
-  G4cout << "Rotated STL min z (before translation) = "
-        << rotatedMinZ / um << " um" << G4endl;
-  G4cout << "squatOffset.z = " << squatOffset.z() / um << " um" << G4endl;
-  G4cout << "Placed STL min z (world) = "
-        << placedMinZ / um << " um" << G4endl;
-  G4cout << "Gap above Ge = "
-        << (placedMinZ - geHalfZ) / um << " um" << G4endl;
-  G4cout << "----------------------------------------" << G4endl;
-
-  G4cout << "SQUAT placement offset=" << (squatOffset/um) << " um" << G4endl;
-
-  // Print individual solid info
-  printSolidInfo("leftabs_solid", leftabs_solid);
-  printSolidInfo("righttrap_solid", righttrap_solid);
-  printSolidInfo("lefttrap_solid", lefttrap_solid);
-  printSolidInfo("junction_solid", junction_solid);
-  printSolidInfo("rightabs_solid", rightabs_solid);
+  const G4ThreeVector squatOffset = targetCenter - stlCenter - G4ThreeVector(0, 0, 0.1 * nm); // Force 0.1 nm geometric overlap;
 
   // Create logical volumes and place physical volumes
   G4LogicalVolume* leftabslogical = new G4LogicalVolume(leftabs_solid,fAluminum,"leftabslogical"); 
-  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(squatRot, squatOffset, leftabslogical, "leftabsphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(0, squatOffset, leftabslogical, "leftabsphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* righttraplogical = new G4LogicalVolume(righttrap_solid,fAluminum,"righttraplogical"); 
-  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(squatRot, squatOffset, righttraplogical, "righttrapphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, squatOffset, righttraplogical, "righttrapphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* lefttraplogical = new G4LogicalVolume(lefttrap_solid,fAluminum,"lefttraplogical"); 
-  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(squatRot, squatOffset, lefttraplogical, "lefttrapphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(0, squatOffset, lefttraplogical, "lefttrapphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* junctionlogical = new G4LogicalVolume(junction_solid,fAluminum,"junctionlogical"); 
-  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(squatRot, squatOffset, junctionlogical, "junctionphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, squatOffset, junctionlogical, "junctionphysicalshunt", worldLogical, false, 0);
 
   G4LogicalVolume* rightabslogical = new G4LogicalVolume(rightabs_solid,fAluminum,"rightabslogical"); 
-  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(squatRot, squatOffset, rightabslogical, "rightabsphysicalshunt", worldLogical, false, 0);
+  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(0, squatOffset, rightabslogical, "rightabsphysicalshunt", worldLogical, false, 0);
 
 
   // 
