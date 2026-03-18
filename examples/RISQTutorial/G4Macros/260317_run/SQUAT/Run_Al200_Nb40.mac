@@ -1,4 +1,4 @@
-/run/numberOfThreads 20
+/run/numberOfThreads 15
 
 /g4cmp/phononBounces 1000
 /g4cmp/filmThicknessAl 200
@@ -27,4 +27,4 @@
 #Select energies
 /gps/ene/type Mono
 /gps/energy 0.004 eV 
-/run/beamOn 5000
+/run/beamOn 200000

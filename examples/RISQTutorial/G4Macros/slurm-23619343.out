@@ -17,12 +17,12 @@ Currently Loaded Modules:
  
 
 Macro is: pceStudy.mac
-Al thickness: 300
+Al thickness: 200
 Nb thickness: 60
 Base Macro pceStudy.mac
-Macro File ./260317_run/SQUAT/Run_Al300_Nb60.mac
-Hits File ./260317_run/SQUAT/Hits_Al300_Nb60.txt
-Primary File ./260317_run/SQUAT/Primary_Al300_Nb60.txt
+Macro File ./260317_run/SQUAT/Run_Al200_Nb60.mac
+Hits File ./260317_run/SQUAT/Hits_Al200_Nb60.txt
+Primary File ./260317_run/SQUAT/Primary_Al200_Nb60.txt
 
 **************************************************************
  Geant4 version Name: geant4-10-07-patch-04 [MT]   (9-September-2022)
@@ -90,7 +90,7 @@ Some /vis commands (optionally) take a string to specify colour.
 Command is ignored.
 WARNING: There is no world volume!
 WARNING: There is no world volume!
-SR--Al filmThickness set to 300
+SR--Al filmThickness set to 200
 SR--Nb filmThickness set to 60
 
  hInelastic FTFP_BERT : threshold between BERT and FTFP is over the interval 
@@ -827,6 +827,225 @@ See commands in /vis/modeling/trajectories/ for other options.
 --> Event 2000 starts.
 --> Event 3000 starts.
 --> Event 4000 starts.
+--> Event 5000 starts.
+--> Event 6000 starts.
+--> Event 7000 starts.
+--> Event 8000 starts.
+--> Event 9000 starts.
+--> Event 10000 starts.
+--> Event 11000 starts.
+--> Event 12000 starts.
+--> Event 13000 starts.
+--> Event 14000 starts.
+--> Event 15000 starts.
+--> Event 16000 starts.
+--> Event 17000 starts.
+--> Event 18000 starts.
+--> Event 19000 starts.
+--> Event 20000 starts.
+--> Event 21000 starts.
+--> Event 22000 starts.
+--> Event 23000 starts.
+--> Event 24000 starts.
+--> Event 25000 starts.
+--> Event 26000 starts.
+--> Event 27000 starts.
+--> Event 28000 starts.
+--> Event 29000 starts.
+--> Event 30000 starts.
+--> Event 31000 starts.
+--> Event 32000 starts.
+--> Event 33000 starts.
+--> Event 34000 starts.
+--> Event 35000 starts.
+--> Event 36000 starts.
+--> Event 37000 starts.
+--> Event 38000 starts.
+--> Event 39000 starts.
+--> Event 40000 starts.
+--> Event 41000 starts.
+--> Event 42000 starts.
+--> Event 43000 starts.
+--> Event 44000 starts.
+--> Event 45000 starts.
+--> Event 46000 starts.
+--> Event 47000 starts.
+--> Event 48000 starts.
+--> Event 49000 starts.
+--> Event 50000 starts.
+--> Event 51000 starts.
+--> Event 52000 starts.
+--> Event 53000 starts.
+--> Event 54000 starts.
+--> Event 55000 starts.
+--> Event 56000 starts.
+--> Event 57000 starts.
+--> Event 58000 starts.
+--> Event 59000 starts.
+--> Event 60000 starts.
+--> Event 61000 starts.
+--> Event 62000 starts.
+--> Event 63000 starts.
+--> Event 64000 starts.
+--> Event 65000 starts.
+--> Event 66000 starts.
+--> Event 67000 starts.
+--> Event 68000 starts.
+--> Event 69000 starts.
+--> Event 70000 starts.
+--> Event 71000 starts.
+--> Event 72000 starts.
+--> Event 73000 starts.
+--> Event 74000 starts.
+--> Event 75000 starts.
+--> Event 76000 starts.
+--> Event 77000 starts.
+--> Event 78000 starts.
+--> Event 79000 starts.
+--> Event 80000 starts.
+--> Event 81000 starts.
+--> Event 82000 starts.
+--> Event 83000 starts.
+--> Event 84000 starts.
+--> Event 85000 starts.
+--> Event 86000 starts.
+--> Event 87000 starts.
+--> Event 88000 starts.
+--> Event 89000 starts.
+--> Event 90000 starts.
+--> Event 91000 starts.
+--> Event 92000 starts.
+--> Event 93000 starts.
+--> Event 94000 starts.
+--> Event 95000 starts.
+--> Event 96000 starts.
+--> Event 97000 starts.
+--> Event 98000 starts.
+--> Event 99000 starts.
+--> Event 100000 starts.
+--> Event 101000 starts.
+--> Event 102000 starts.
+--> Event 103000 starts.
+--> Event 104000 starts.
+--> Event 105000 starts.
+--> Event 106000 starts.
+--> Event 107000 starts.
+--> Event 108000 starts.
+--> Event 109000 starts.
+--> Event 110000 starts.
+--> Event 111000 starts.
+--> Event 112000 starts.
+--> Event 113000 starts.
+--> Event 114000 starts.
+--> Event 115000 starts.
+--> Event 116000 starts.
+--> Event 117000 starts.
+--> Event 118000 starts.
+--> Event 119000 starts.
+--> Event 120000 starts.
+--> Event 121000 starts.
+--> Event 122000 starts.
+--> Event 123000 starts.
+--> Event 124000 starts.
+--> Event 125000 starts.
+--> Event 126000 starts.
+--> Event 127000 starts.
+--> Event 128000 starts.
+--> Event 129000 starts.
+--> Event 130000 starts.
+--> Event 131000 starts.
+
+-------- WWWW ------- G4Exception-START -------- WWWW -------
+*** G4Exception : Limit001
+      issued by : G4CMPTrackLimiter
+Killing track escaped from original volume.
+*** This is just a warning message. ***
+-------- WWWW -------- G4Exception-END --------- WWWW -------
+
+--> Event 132000 starts.
+--> Event 133000 starts.
+--> Event 134000 starts.
+--> Event 135000 starts.
+--> Event 136000 starts.
+--> Event 137000 starts.
+--> Event 138000 starts.
+--> Event 139000 starts.
+--> Event 140000 starts.
+--> Event 141000 starts.
+--> Event 142000 starts.
+--> Event 143000 starts.
+--> Event 144000 starts.
+--> Event 145000 starts.
+--> Event 146000 starts.
+--> Event 147000 starts.
+--> Event 148000 starts.
+--> Event 149000 starts.
+--> Event 150000 starts.
+--> Event 151000 starts.
+--> Event 152000 starts.
+--> Event 153000 starts.
+--> Event 154000 starts.
+--> Event 155000 starts.
+--> Event 156000 starts.
+--> Event 157000 starts.
+--> Event 158000 starts.
+--> Event 159000 starts.
+--> Event 160000 starts.
+--> Event 161000 starts.
+--> Event 162000 starts.
+--> Event 163000 starts.
+--> Event 164000 starts.
+--> Event 165000 starts.
+--> Event 166000 starts.
+--> Event 167000 starts.
+--> Event 168000 starts.
+--> Event 169000 starts.
+--> Event 170000 starts.
+--> Event 171000 starts.
+--> Event 172000 starts.
+--> Event 173000 starts.
+--> Event 174000 starts.
+--> Event 175000 starts.
+--> Event 176000 starts.
+--> Event 177000 starts.
+--> Event 178000 starts.
+--> Event 179000 starts.
+--> Event 180000 starts.
+--> Event 181000 starts.
+
+-------- WWWW ------- G4Exception-START -------- WWWW -------
+*** G4Exception : Limit001
+      issued by : G4CMPTrackLimiter
+Killing track escaped from original volume.
+*** This is just a warning message. ***
+-------- WWWW -------- G4Exception-END --------- WWWW -------
+
+--> Event 182000 starts.
+
+-------- WWWW ------- G4Exception-START -------- WWWW -------
+*** G4Exception : Limit001
+      issued by : G4CMPTrackLimiter
+Killing track escaped from original volume.
+*** This is just a warning message. ***
+-------- WWWW -------- G4Exception-END --------- WWWW -------
+
+--> Event 183000 starts.
+--> Event 184000 starts.
+--> Event 185000 starts.
+--> Event 186000 starts.
+--> Event 187000 starts.
+--> Event 188000 starts.
+--> Event 189000 starts.
+--> Event 190000 starts.
+--> Event 191000 starts.
+--> Event 192000 starts.
+--> Event 193000 starts.
+--> Event 194000 starts.
+--> Event 195000 starts.
+--> Event 196000 starts.
+--> Event 197000 starts.
+--> Event 198000 starts.
+--> Event 199000 starts.
 0 events have been kept for refreshing and/or reviewing.
   "/vis/reviewKeptEvents" to review them one by one.
   "/vis/enable", then "/vis/viewer/flush" or "/vis/viewer/rebuild" to see them accumulated.

@@ -85,5 +85,9 @@
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/Buttons.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TAttBBox2D.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TAttCanvas.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TLegend.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TPave.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TBox.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TAttText.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/RVersion.h /usr/local/include/ROOT/RConfig.hxx /usr/local/include/TClass.h /usr/local/include/TDictAttributeMap.h /usr/local/include/TInterpreter.h /usr/local/include/TROOT.h /usr/local/include/TBuffer.h /usr/local/include/TMemberInspector.h /usr/local/include/TError.h /usr/local/include/RtypesImp.h /usr/local/include/TIsAProxy.h /usr/local/include/TFileMergeInfo.h /usr/local/include/TCollectionProxyInfo.h /usr/local/bin/rootcling
 RISQTutorialAnalysis_cc__ROOTBUILDVERSION= 6.28/10
