@@ -17,12 +17,12 @@ Currently Loaded Modules:
  
 
 Macro is: pceStudy.mac
-Al thickness: 100
-Nb thickness: 10
+Al thickness: 400
+Nb thickness: 100
 Base Macro pceStudy.mac
-Macro File ./260317_run/SQUAT/Run_Al100_Nb10.mac
-Hits File ./260317_run/SQUAT/Hits_Al100_Nb10.txt
-Primary File ./260317_run/SQUAT/Primary_Al100_Nb10.txt
+Macro File ./260317_run/SQUAT/Run_Al400_Nb100.mac
+Hits File ./260317_run/SQUAT/Hits_Al400_Nb100.txt
+Primary File ./260317_run/SQUAT/Primary_Al400_Nb100.txt
 
 **************************************************************
  Geant4 version Name: geant4-10-07-patch-04 [MT]   (9-September-2022)
@@ -90,8 +90,8 @@ Some /vis commands (optionally) take a string to specify colour.
 Command is ignored.
 WARNING: There is no world volume!
 WARNING: There is no world volume!
-SR--Al filmThickness set to 100
-SR--Nb filmThickness set to 10
+SR--Al filmThickness set to 400
+SR--Nb filmThickness set to 100
 
  hInelastic FTFP_BERT : threshold between BERT and FTFP is over the interval 
  for pions :   3 to 6 GeV
@@ -824,14 +824,6 @@ See commands in /vis/modeling/trajectories/ for other options.
 ### Run 0 starts.
 --> Event 0 starts.
 --> Event 1000 starts.
-
--------- WWWW ------- G4Exception-START -------- WWWW -------
-*** G4Exception : Limit001
-      issued by : G4CMPTrackLimiter
-Killing track escaped from original volume.
-*** This is just a warning message. ***
--------- WWWW -------- G4Exception-END --------- WWWW -------
-
 --> Event 2000 starts.
 --> Event 3000 starts.
 --> Event 4000 starts.

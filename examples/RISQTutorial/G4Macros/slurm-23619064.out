@@ -17,12 +17,12 @@ Currently Loaded Modules:
  
 
 Macro is: pceStudy.mac
-Al thickness: 100
-Nb thickness: 10
+Al thickness: 400
+Nb thickness: 60
 Base Macro pceStudy.mac
-Macro File ./260317_run/SQUAT/Run_Al100_Nb10.mac
-Hits File ./260317_run/SQUAT/Hits_Al100_Nb10.txt
-Primary File ./260317_run/SQUAT/Primary_Al100_Nb10.txt
+Macro File ./260317_run/SQUAT/Run_Al400_Nb60.mac
+Hits File ./260317_run/SQUAT/Hits_Al400_Nb60.txt
+Primary File ./260317_run/SQUAT/Primary_Al400_Nb60.txt
 
 **************************************************************
  Geant4 version Name: geant4-10-07-patch-04 [MT]   (9-September-2022)
@@ -90,32 +90,8 @@ Some /vis commands (optionally) take a string to specify colour.
 Command is ignored.
 WARNING: There is no world volume!
 WARNING: There is no world volume!
-SQUAT overall bbox min=(-15912,2409.27,-6.77626e-18) um max=(-15670,2624.73,0.2) um
-SQUAT STL center=(-15791,2517,0.1) um
-----------------------------------------
-----------------------------------------
-----------------------------------------
-----------------------------------------
-----------------------------------------
-Ge top surface z = 50 um
-Rotated STL min z (before translation) = -6.77626e-18 um
-squatOffset.z = 49.9999 um
-Placed STL min z (world) = 49.9999 um
-Gap above Ge = -0.0001 um
-----------------------------------------
-SQUAT placement offset=(2517,15591,49.9999) um
-leftabs_solid bbox min=(-15.912,2.40927,0) mm max=(-15.799,2.62473,0.0002) mm size=(0.11296,0.215454,0.0002) mm
-leftabs_solid volume=3.39888e-06 mm^3
-righttrap_solid bbox min=(-15.803,2.515,-6.77626e-21) mm max=(-15.792,2.519,2e-05) mm size=(0.01104,0.004,2e-05) mm
-righttrap_solid volume=5.34898e-10 mm^3
-lefttrap_solid bbox min=(-15.783,2.40927,0) mm max=(-15.67,2.62473,0.0002) mm size=(0.11296,0.215454,0.0002) mm
-lefttrap_solid volume=3.39891e-06 mm^3
-junction_solid bbox min=(-15.795,2.5158,0) mm max=(-15.7863,2.5182,2e-05) mm size=(0.00872,0.0024,2e-05) mm
-junction_solid volume=8.0064e-11 mm^3
-rightabs_solid bbox min=(-15.7918,2.515,-6.77626e-21) mm max=(-15.779,2.519,2e-05) mm size=(0.01282,0.004,2e-05) mm
-rightabs_solid volume=5.49808e-10 mm^3
-SR--Al filmThickness set to 100
-SR--Nb filmThickness set to 10
+SR--Al filmThickness set to 400
+SR--Nb filmThickness set to 60
 
  hInelastic FTFP_BERT : threshold between BERT and FTFP is over the interval 
  for pions :   3 to 6 GeV

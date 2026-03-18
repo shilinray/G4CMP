@@ -1,10 +1,10 @@
 /run/numberOfThreads 20
 
 /g4cmp/phononBounces 1000
-/g4cmp/filmThicknessAl 100
-/g4cmp/filmThicknessNb 10
-/g4cmp/primFileName ./260317_run/SQUAT/Primary_Al100_Nb10.txt
-/g4cmp/hitsFileName ./260317_run/SQUAT/Hits_Al100_Nb10.txt
+/g4cmp/filmThicknessAl 300
+/g4cmp/filmThicknessNb 80
+/g4cmp/primFileName ./260317_run/SQUAT/Primary_Al300_Nb80.txt
+/g4cmp/hitsFileName ./260317_run/SQUAT/Hits_Al300_Nb80.txt
 
 /run/initialize
 /tracking/verbose 0
