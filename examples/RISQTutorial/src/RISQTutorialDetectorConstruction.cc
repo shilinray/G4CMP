@@ -45,7 +45,7 @@ using namespace RISQTutorialDetectorParameters;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 RISQTutorialDetectorConstruction::RISQTutorialDetectorConstruction()
-  : fLiquidHelium(0), fVacuum(0), fGermanium(0), fAluminum(0), fTungsten(0),
+  : fAir(0), fVacuum(0), fGermanium(0), fAluminum(0), fTungsten(0),
     fWorldPhys(0), AlSurfProp(0), botSurfProp(0), wallSurfProp(0), 
     fSuperconductorSensitivity(0), fConstructed(false) {;}
 
@@ -89,7 +89,7 @@ void RISQTutorialDetectorConstruction::DefineMaterials()
 { 
   G4NistManager* nistManager = G4NistManager::Instance();
 
-  fLiquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected
+  fAir = nistManager->FindOrBuildMaterial("G4_AIR"); 
   fVacuum = new G4Material("VACUUM", 
         1.,
 		1.008*CLHEP::g/CLHEP::mole,
@@ -116,10 +116,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
                                  false,0); // physical placement
   
   //                               
-  // Germanium cylinder - this is the volume in which we will propagate phonons
+  // Germanium crystal - this is the volume in which we will propagate phonons
   //  
+  const G4double geHalfX = 0.5*cm;
+  const G4double geHalfY = 0.5*cm;
   const G4double geHalfZ = 0.05*mm;
-  G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", 0.5*cm, 0.5*cm, geHalfZ);
+  G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", geHalfX, geHalfY, geHalfZ);
   G4LogicalVolume* fGermaniumLogical = new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
   G4VPhysicalVolume* GePhys = new G4PVPlacement(0,G4ThreeVector(),fGermaniumLogical,"fGermaniumPhysical", worldLogical,false,0); 
   // placing physical volume at center of world logical
@@ -139,6 +141,23 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
   // NOTE:  Above registration can also be done in single step:
   // G4LatticlePhysical* GePhysical = LM->LoadLattice(GePhys, "Ge");
+
+  //
+  // Air boxes touching the 4 side faces of the Ge crystal (+X, -X, +Y, -Y)
+  //
+  const G4double airSideThickness = 0.5*cm; // Distance the air extends away from the chip
+  
+  // X boxes cover the +X and -X faces of the Ge crystal
+  G4VSolid* airSideSolidX = new G4Box("airSideSolidX", airSideThickness/2, geHalfY, geHalfZ);
+  G4LogicalVolume* airSideLogicalX = new G4LogicalVolume(airSideSolidX, fAir, "airSideLogicalX");
+  G4VPhysicalVolume* airSideRightXPhys = new G4PVPlacement(0, G4ThreeVector(geHalfX + airSideThickness/2, 0, 0), airSideLogicalX, "airSideRightX", worldLogical, false, 0);
+  G4VPhysicalVolume* airSideLeftXPhys = new G4PVPlacement(0, G4ThreeVector(-geHalfX - airSideThickness/2, 0, 0), airSideLogicalX, "airSideLeftX", worldLogical, false, 0);
+
+  // Y boxes cover the +Y and -Y faces of the Ge crystal
+  G4VSolid* airSideSolidY = new G4Box("airSideSolidY", geHalfX, airSideThickness/2, geHalfZ);
+  G4LogicalVolume* airSideLogicalY = new G4LogicalVolume(airSideSolidY, fAir, "airSideLogicalY");
+  G4VPhysicalVolume* airSideRightYPhys = new G4PVPlacement(0, G4ThreeVector(0, geHalfY + airSideThickness/2, 0), airSideLogicalY, "airSideRightY", worldLogical, false, 0);
+  G4VPhysicalVolume* airSideLeftYPhys = new G4PVPlacement(0, G4ThreeVector(0, -geHalfY - airSideThickness/2, 0), airSideLogicalY, "airSideLeftY", worldLogical, false, 0);
 
   //
   // Aluminum. This is where phonon hits are registered
@@ -262,7 +281,8 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
 
     double pAbsProbAlSi = 0; //.488
-    double pAbsProbSideWallSi = 0.0;
+    double pAbsProbSideWallSi = 0.01;
+    double pAbsProbPolishedWallSi = 0.0;
 
     AlSurfProp = new G4CMPSurfaceProperty("AlSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbAlSi, 1.0, 0.0, 0.0);
@@ -276,11 +296,16 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
     AttachPhononSensor_Nb(NbSurfProp);
 
-    wallSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
+    sidewallSurfProp = new G4CMPSurfaceProperty("SideWallSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbSideWallSi, 1.0, 0.0, 0.0 );
-    wallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+    sidewallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					  diffCoeffs, specCoeffs, GHz, GHz,GHz);
-
+    
+    
+    polishedwallSurfProp = new G4CMPSurfaceProperty("polishedWallSurf", 0.0, 1.0, 0.0, 0.0,
+                                                      pAbsProbPolishedWallSi, 1.0, 0.0, 0.0 );
+    polishedwallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					  diffCoeffs, specCoeffs, GHz, GHz,GHz);
   }
 
   // Connects the inner volume, outer volume, and physics that applies at the surface
@@ -298,7 +323,13 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
 
   // Ge -> World (bare Ge where there is no Al coverage)
-  new G4CMPLogicalBorderSurface("GeToWorld", GePhys, fWorldPhys, wallSurfProp);
+  new G4CMPLogicalBorderSurface("GeToWorld", GePhys, fWorldPhys, polishedwallSurfProp);
+  new G4CMPLogicalBorderSurface("GeTorightSideWall", GePhys, airSideRightXPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideLeftXPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideRightYPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideLeftYPhys, sidewallSurfProp);
+
+
 
 //                                        
 // Visualization attributes
@@ -315,6 +346,11 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   geVis->SetVisibility(true);
   fGermaniumLogical->SetVisAttributes(geVis);
   
+  // Air boxes: light blue, semi-transparent
+  G4VisAttributes* airVis = new G4VisAttributes(G4Colour(0.0, 0.5, 1.0, 0.1));
+  airVis->SetVisibility(true);
+  airSideLogicalX->SetVisAttributes(airVis);
+  airSideLogicalY->SetVisAttributes(airVis);
 
   // Aluminum patterned parts
   G4VisAttributes* alVis = new G4VisAttributes(G4Colour(1.0, 0.0, 0.0, 0.5));

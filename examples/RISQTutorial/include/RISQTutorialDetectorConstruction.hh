@@ -35,7 +35,7 @@ private:
   void AttachPhononSensor_Nb(G4CMPSurfaceProperty * surfProp);
   
 private:
-  G4Material* fLiquidHelium;
+  G4Material* fAir;
   G4Material* fVacuum;
   G4Material* fGermanium;
   G4Material* fAluminum;

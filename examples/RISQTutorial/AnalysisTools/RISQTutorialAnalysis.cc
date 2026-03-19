@@ -320,7 +320,7 @@ void PrintPhononCollectionEfficiency()
 ///////////////////////////////////////////////////////
 void PrintPhononCollectionEfficiencyAndPlot()
 {
-  std::vector<int> al_vals = {100, 200, 300, 400, 500, 600};
+  std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
   std::vector<int> nb_vals = {20, 40, 60, 80, 100};
 
   const std::string baseDir = "../G4Macros/260317_run/SQUAT";
@@ -395,7 +395,8 @@ void PrintPhononCollectionEfficiencyAndPlot()
       else if (iN == 2) color = kBlue;
       else if (iN == 3) color = kGreen + 2;
       else if (iN == 4) color = kMagenta + 1;
-      h_eDep->SetLineColor(color);
+      // Make the lines slightly opaque/transparent (alpha = 0.6)
+      h_eDep->SetLineColorAlpha(color, 0.6);
 
       double totalPrimaryEnergy_eV = 0.0;
       for (const auto& kv : primaryInfo) {
@@ -498,7 +499,11 @@ void PrintPhononCollectionEfficiencyAndPlot()
 
   delete c_pce;
 }
-  
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////  
 
 //---------------------------------------------------------------------------------------
 // Parsing function

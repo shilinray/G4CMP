@@ -55,3 +55,5 @@ sed -i "s|primFileName|primFileName ${fPrimary}|g" $mName
 apptainer exec /sdf/group/supercdms/software/releases/cdmsfull_V05-02.sif \
   /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/RISQTutorial-build/RISQTutorial \
   "$mName"
+
+mv ./260317_run/SQUAT /sdf/scratch/supercdms/sray/260317_run
