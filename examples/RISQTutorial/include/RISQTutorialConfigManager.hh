@@ -31,6 +31,9 @@ public:
   static const G4String& GetPrimaryOutput()  { return Instance()->Primary_file; }
   static double GetfilmThicknessAl();
   static double GetfilmThicknessNb();
+  static bool GetAl();
+  static double GetpAbsProbSideWallSi();
+  static double GetpAbsProbPolishedWallSi();
 
 
   // Change values (e.g., via Messenger)
@@ -40,6 +43,9 @@ public:
     { Instance()->Primary_file=name; UpdateGeometry(); }
   static void SetfilmThicknessAl(G4double filmThicknessAl);
   static void SetfilmThicknessNb(G4double filmThicknessNb);
+  static void SetAl(bool Al);
+  static void SetpAbsProbSideWallSi(G4double pAbs);
+  static void SetpAbsProbPolishedWallSi(G4double pAbs);
 
   static void UpdateGeometry();
   static void UpdatePhysics();
@@ -58,6 +64,9 @@ private:
   G4String Primary_file;	// Output file of primaries
   G4double filmThicknessAl;
   G4double filmThicknessNb;
+  bool Al;
+  G4double pAbsProbSideWallSi;
+  G4double pAbsProbPolishedWallSi;
 
   RISQTutorialConfigMessenger* messenger;
 };

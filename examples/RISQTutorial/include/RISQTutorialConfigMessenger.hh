@@ -38,6 +38,9 @@ private:
 
   G4UIcmdWithADouble* filmThicknessAlCmd;
   G4UIcmdWithADouble* filmThicknessNbCmd;
+  G4UIcmdWithABool* AlCmd;
+  G4UIcmdWithADouble* pAbsProbSideWallSiCmd;
+  G4UIcmdWithADouble* pAbsProbPolishedWallSiCmd;
 
 private:
   RISQTutorialConfigMessenger(const RISQTutorialConfigMessenger&);	// Copying is forbidden

@@ -36,6 +36,9 @@ RISQTutorialConfigManager::RISQTutorialConfigManager()
     {
     filmThicknessAl = 0;
     filmThicknessNb = 0;
+    Al = false;
+    pAbsProbSideWallSi = 0.0;
+    pAbsProbPolishedWallSi = 0.0;
       
     }
 
@@ -62,7 +65,22 @@ void RISQTutorialConfigManager::SetfilmThicknessNb(G4double filmThicknessNb){
   Instance()->filmThicknessNb = filmThicknessNb;
 }
 
+void RISQTutorialConfigManager::SetAl(bool Al){
+  Instance()->Al = Al;
+}
+
+void RISQTutorialConfigManager::SetpAbsProbSideWallSi(G4double pAbs){
+  Instance()->pAbsProbSideWallSi = pAbs;
+}
+
+void RISQTutorialConfigManager::SetpAbsProbPolishedWallSi(G4double pAbs){
+  Instance()->pAbsProbPolishedWallSi = pAbs;
+}
+
 double RISQTutorialConfigManager::GetfilmThicknessAl() { return Instance()->filmThicknessAl; }
 double RISQTutorialConfigManager::GetfilmThicknessNb() { return Instance()->filmThicknessNb; }
+bool RISQTutorialConfigManager::GetAl() { return Instance()->Al; }
+double RISQTutorialConfigManager::GetpAbsProbSideWallSi() { return Instance()->pAbsProbSideWallSi; }
+double RISQTutorialConfigManager::GetpAbsProbPolishedWallSi() { return Instance()->pAbsProbPolishedWallSi; }
 
 

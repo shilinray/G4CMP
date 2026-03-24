@@ -3,6 +3,9 @@
 /g4cmp/phononBounces 1000
 /g4cmp/filmThicknessAl 0
 /g4cmp/filmThicknessNb 0
+/g4cmp/Al false
+/g4cmp/pAbsProbSideWallSi 0.01
+/g4cmp/pAbsProbPolishedWallSi 0.0
 /g4cmp/primFileName
 /g4cmp/hitsFileName
 
@@ -27,4 +30,4 @@
 #Select energies
 /gps/ene/type Mono
 /gps/energy 0.004 eV 
-/run/beamOn 200000
+/run/beamOn 2000

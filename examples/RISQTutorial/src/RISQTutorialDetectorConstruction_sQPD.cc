@@ -45,16 +45,16 @@ using namespace RISQTutorialDetectorParameters;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 RISQTutorialDetectorConstruction::RISQTutorialDetectorConstruction()
-  : fLiquidHelium(0), fVacuum(0), fGermanium(0), fAluminum(0), fTungsten(0),
-    fWorldPhys(0), AlSurfProp(0), botSurfProp(0), wallSurfProp(0), 
+  : fAir(0), fVacuum(0), fGermanium(0), fAluminum(0), fTungsten(0),
+    fWorldPhys(0), AlSurfProp(0), polishedwallSurfProp(0), sidewallSurfProp(0), 
     fSuperconductorSensitivity(0), fConstructed(false) {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 RISQTutorialDetectorConstruction::~RISQTutorialDetectorConstruction() {
   delete AlSurfProp;
-  delete botSurfProp;
-  delete wallSurfProp;
+  delete polishedwallSurfProp;
+  delete sidewallSurfProp;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -89,7 +89,7 @@ void RISQTutorialDetectorConstruction::DefineMaterials()
 { 
   G4NistManager* nistManager = G4NistManager::Instance();
 
-  fLiquidHelium = nistManager->FindOrBuildMaterial("G4_AIR"); // to be corrected
+  fAir = nistManager->FindOrBuildMaterial("G4_AIR"); 
   fVacuum = new G4Material("VACUUM", 
         1.,
 		1.008*CLHEP::g/CLHEP::mole,
@@ -119,14 +119,13 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   //                               
   // Germanium cylinder - this is the volume in which we will propagate phonons
   //  
+  const G4double geHalfX = 0.5*cm;
+  const G4double geHalfY = 0.5*cm;
   const G4double geHalfZ = 0.05*mm;
-  G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", 0.5*cm, 0.5*cm,
-                                         geHalfZ);
-  G4LogicalVolume* fGermaniumLogical =
-    new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
-  G4VPhysicalVolume* GePhys = 
-    new G4PVPlacement(0,G4ThreeVector(),fGermaniumLogical,"fGermaniumPhysical",
-                      worldLogical,false,0); // placing physical volume at center of world logical
+  G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", geHalfX, geHalfY, geHalfZ);
+  G4LogicalVolume* fGermaniumLogical = new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
+  G4VPhysicalVolume* GePhys = new G4PVPlacement(0,G4ThreeVector(),fGermaniumLogical,"fGermaniumPhysical", worldLogical,false,0); 
+  // placing physical volume at center of world logical
 
   //
   //Germanium lattice information
@@ -143,6 +142,23 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
   // NOTE:  Above registration can also be done in single step:
   // G4LatticlePhysical* GePhysical = LM->LoadLattice(GePhys, "Ge");
+
+  //
+  // Air boxes touching the 4 side faces of the Ge crystal (+X, -X, +Y, -Y)
+  //
+  const G4double airSideThickness = 0.5*cm; // Distance the air extends away from the chip
+  
+  // X boxes cover the +X and -X faces of the Ge crystal
+  G4VSolid* airSideSolidX = new G4Box("airSideSolidX", airSideThickness/2, geHalfY, geHalfZ);
+  G4LogicalVolume* airSideLogicalX = new G4LogicalVolume(airSideSolidX, fAir, "airSideLogicalX");
+  G4VPhysicalVolume* airSideRightXPhys = new G4PVPlacement(0, G4ThreeVector(geHalfX + airSideThickness/2, 0, 0), airSideLogicalX, "airSideRightX", worldLogical, false, 0);
+  G4VPhysicalVolume* airSideLeftXPhys = new G4PVPlacement(0, G4ThreeVector(-geHalfX - airSideThickness/2, 0, 0), airSideLogicalX, "airSideLeftX", worldLogical, false, 0);
+
+  // Y boxes cover the +Y and -Y faces of the Ge crystal
+  G4VSolid* airSideSolidY = new G4Box("airSideSolidY", geHalfX, airSideThickness/2, geHalfZ);
+  G4LogicalVolume* airSideLogicalY = new G4LogicalVolume(airSideSolidY, fAir, "airSideLogicalY");
+  G4VPhysicalVolume* airSideRightYPhys = new G4PVPlacement(0, G4ThreeVector(0, geHalfY + airSideThickness/2, 0), airSideLogicalY, "airSideRightY", worldLogical, false, 0);
+  G4VPhysicalVolume* airSideLeftYPhys = new G4PVPlacement(0, G4ThreeVector(0, -geHalfY - airSideThickness/2, 0), airSideLogicalY, "airSideLeftY", worldLogical, false, 0);
 
   //
   // Aluminum. This is where phonon hits are registered
@@ -575,7 +591,8 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
 
     double pAbsProbAlSi = 0; //.488
-    double pAbsProbSideWallSi = 0.0;
+    double pAbsProbSideWallSi = RISQTutorialConfigManager::GetpAbsProbSideWallSi();//.01
+    double pAbsProbPolishedWallSi = RISQTutorialConfigManager::GetpAbsProbPolishedWallSi(); //.0025
 
     AlSurfProp = new G4CMPSurfaceProperty("AlSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbAlSi, 1.0, 0.0, 0.0);
@@ -589,9 +606,15 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 					 diffCoeffs, specCoeffs, GHz, GHz, GHz);
     AttachPhononSensor_Nb(NbSurfProp);
 
-    wallSurfProp = new G4CMPSurfaceProperty("WallSurf", 0.0, 1.0, 0.0, 0.0,
+    sidewallSurfProp = new G4CMPSurfaceProperty("SideWallSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbSideWallSi, 1.0, 0.0, 0.0 );
-    wallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+    sidewallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
+					  diffCoeffs, specCoeffs, GHz, GHz,GHz);
+    
+    
+    polishedwallSurfProp = new G4CMPSurfaceProperty("polishedWallSurf", 0.0, 1.0, 0.0, 0.0,
+                                                      pAbsProbPolishedWallSi, 1.0, 0.0, 0.0 );
+    polishedwallSurfProp->AddScatteringProperties(anhCutoff, reflCutoff, anhCoeffs,
 					  diffCoeffs, specCoeffs, GHz, GHz,GHz);
 
   }
@@ -599,28 +622,63 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, sideGroundBridgePhysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, AlSurfProp);
-  for (auto phys : inductorPhys) {
-    new G4CMPLogicalBorderSurface("Al", GePhys, phys, AlSurfProp);
+  bool Al = RISQTutorialConfigManager::GetAl();
+  if (Al) {
+    new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, sideGroundBridgePhysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, AlSurfProp);
+    for (auto phys : inductorPhys) {
+      new G4CMPLogicalBorderSurface("Al", GePhys, phys, AlSurfProp);
+    }
+    new G4CMPLogicalBorderSurface("Al", GePhys, leftcapwallphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, rightcapwallphysical, AlSurfProp);
+    for (auto phys : idcPhys) {
+      new G4CMPLogicalBorderSurface("Al", GePhys, phys, AlSurfProp);
+    }
+    new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector2physical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, AlSurfProp);
   }
-  new G4CMPLogicalBorderSurface("detWall", GePhys, fWorldPhys, wallSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, leftcapwallphysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, rightcapwallphysical, AlSurfProp);
-  for (auto phys : idcPhys) {
-    new G4CMPLogicalBorderSurface("Al", GePhys, phys, AlSurfProp);
+  
+  if (!Al) { 
+    new G4CMPLogicalBorderSurface("Nb", GePhys, alFLphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, alUGPphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, alLGPphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, capindconnectorphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, connectorphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, couplCapphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, leftSideGroundPhysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, rightSideGroundPhysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, sideGroundBridgePhysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, indvert1physical, NbSurfProp);
+    for (auto phys : inductorPhys) {
+      new G4CMPLogicalBorderSurface("Nb", GePhys, phys, NbSurfProp);
+    }
+    new G4CMPLogicalBorderSurface("Nb", GePhys, leftcapwallphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, rightcapwallphysical, NbSurfProp);
+    for (auto phys : idcPhys) {
+      new G4CMPLogicalBorderSurface("Nb", GePhys, phys, NbSurfProp);
+    }
+    new G4CMPLogicalBorderSurface("Nb", GePhys, botcapindconnector1physical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, botcapindconnector2physical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", GePhys, capjunctconnectphysical, NbSurfProp);
   }
-  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector2physical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, AlSurfProp);
+  
+  // walls
+  new G4CMPLogicalBorderSurface("GeToWorld", GePhys, fWorldPhys, polishedwallSurfProp);
+  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideRightXPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideLeftXPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideRightYPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideLeftYPhys, sidewallSurfProp);
+
+  // sensor
   new G4CMPLogicalBorderSurface("Al", GePhys, junct1physical, AlSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, junct2physical, AlSurfProp);
   new G4CMPLogicalBorderSurface("Al", GePhys, junct3physical, AlSurfProp);
@@ -642,6 +700,11 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   geVis->SetVisibility(true);
   fGermaniumLogical->SetVisAttributes(geVis);
   
+  // Air boxes: light blue, semi-transparent
+  G4VisAttributes* airVis = new G4VisAttributes(G4Colour(0.0, 0.5, 1.0, 0.1));
+  airVis->SetVisibility(true);
+  airSideLogicalX->SetVisAttributes(airVis);
+  airSideLogicalY->SetVisAttributes(airVis);
 
   // Aluminum patterned parts
   G4VisAttributes* alVis = new G4VisAttributes(G4Colour(1.0, 0.0, 0.0, 0.5));

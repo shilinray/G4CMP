@@ -323,7 +323,7 @@ void PrintPhononCollectionEfficiencyAndPlot()
   std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
   std::vector<int> nb_vals = {20, 40, 60, 80, 100};
 
-  const std::string baseDir = "../G4Macros/260317_run/SQUAT";
+  const std::string baseDir = "../G4Macros/260324_run/lQPD_true";
 
   TFile* fOut = new TFile("PCE_Al_Nb.root", "RECREATE");
   if (!fOut || fOut->IsZombie()) {

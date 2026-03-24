@@ -16,9 +16,9 @@ module list
 BaseMacro="pceStudy.mac"
 echo "Macro is: $BaseMacro"
 
-if [ "$#" -lt 2 ]
+if [ "$#" -lt 5 ]
 then
-    echo "Enter Al and Nb thicknesses"
+    echo "Enter Al, Nb thicknesses, Al bool (true/false), pAbsProbSideWallSi, pAbsProbPolishedWallSi"
     # exit: quits the script immedietly
     exit
 fi
@@ -26,12 +26,27 @@ fi
 # takes the first and second gives parameters and assigns them to variables
 Al_z="$1"
 Nb_z="$2"
+Al_bool="$3"
+pAbsProbSideWallSi="$4"
+pAbsProbPolishedWallSi="$5"
 
-run_dir="./260317_run/SQUAT"
-tag="Al${Al_z}_Nb${Nb_z}"
+if [Al_bool]
+then
+    run_dir="./260324_run/lQPD_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+fi 
+
+if [!Al_bool]
+then
+    run_dir="./260324_run/lQPD_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+fi 
+
+tag="Al${Al_z}_Nb${Nb_z}_AlBool${Al_bool}_wall${pAbsProbSideWallSi}_polished${pAbsProbPolishedWallSi}"
 
 echo "Al thickness: $Al_z"
 echo "Nb thickness: $Nb_z"
+echo "Al bool: $Al_bool"
+echo "pAbsProbSideWallSi: $pAbsProbSideWallSi"
+echo "pAbsProbPolishedWallSi: $pAbsProbPolishedWallSi"
 
 mkdir -p "$run_dir"
 
@@ -49,6 +64,9 @@ cp $BaseMacro $mName
 
 sed -i "s/filmThicknessAl 0/filmThicknessAl ${Al_z}/g" $mName
 sed -i "s/filmThicknessNb 0/filmThicknessNb ${Nb_z}/g" $mName
+sed -i "s/Al false/Al ${Al_bool}/g" $mName
+sed -i "s/pAbsProbSideWallSi 0.01/pAbsProbSideWallSi ${pAbsProbSideWallSi}/g" $mName
+sed -i "s/pAbsProbPolishedWallSi 0.0/pAbsProbPolishedWallSi ${pAbsProbPolishedWallSi}/g" $mName
 sed -i "s|hitsFileName|hitsFileName ${fHits}|g" $mName
 sed -i "s|primFileName|primFileName ${fPrimary}|g" $mName
 
