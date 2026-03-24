@@ -1,0 +1,114 @@
+Lmod has detected the following error: The following module(s) are unknown:
+"scdms/V05-02"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "scdms/V05-02"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+
+Currently Loaded Modules:
+  1) slurm/current
+
+ 
+
+Macro is: pceStudy.mac
+/var/spool/slurmd/job23875130/slurm_script: line 33: [Al_bool]: command not found
+/var/spool/slurmd/job23875130/slurm_script: line 38: [!Al_bool]: command not found
+Al thickness: 100
+Nb thickness: 20
+Al bool: true
+pAbsProbSideWallSi: 0.01
+pAbsProbPolishedWallSi: 0.0
+mkdir: cannot create directory ‘’: No such file or directory
+Base Macro pceStudy.mac
+Macro File /Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac
+Hits File /Hits_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.txt
+Primary File /Primary_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.txt
+cp: cannot create regular file '/Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac': Permission denied
+sed: can't read /Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac: No such file or directory
+sed: can't read /Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac: No such file or directory
+sed: can't read /Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac: No such file or directory
+sed: can't read /Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac: No such file or directory
+sed: can't read /Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac: No such file or directory
+sed: can't read /Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac: No such file or directory
+sed: can't read /Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac: No such file or directory
+
+**************************************************************
+ Geant4 version Name: geant4-10-07-patch-04 [MT]   (9-September-2022)
+                       Copyright : Geant4 Collaboration
+                      References : NIM A 506 (2003), 250-303
+                                 : IEEE-TNS 53 (2006), 270-278
+                                 : NIM A 835 (2016), 186-225
+                             WWW : http://geant4.org/
+**************************************************************
+
+<<< Geant4 Physics List simulation engine: FTFP_BERT
+
+Visualization Manager instantiating with verbosity "warnings (3)"...
+Visualization Manager initialising...
+Registering graphics systems...
+
+You have successfully registered the following graphics systems.
+Registered graphics systems are:
+  ASCIITree (ATree)
+  DAWNFILE (DAWNFILE)
+  G4HepRep (HepRepXML)
+  G4HepRepFile (HepRepFile)
+  RayTracer (RayTracer)
+  VRML1FILE (VRML1FILE)
+  VRML2FILE (VRML2FILE)
+  gMocrenFile (gMocrenFile)
+  OpenGLImmediateQt (OGLIQt, OGLI)
+  OpenGLStoredQt (OGLSQt, OGL, OGLS)
+  OpenGLImmediateX (OGLIX, OGLIQt_FALLBACK)
+  OpenGLStoredX (OGLSX, OGLSQt_FALLBACK)
+  RayTracerX (RayTracerX)
+
+Registering model factories...
+
+You have successfully registered the following model factories.
+Registered model factories:
+  generic
+  drawByAttribute
+  drawByCharge
+  drawByOriginVolume
+  drawByParticleID
+  drawByEncounteredVolume
+
+Registered models:
+  None
+
+Registered filter factories:
+  attributeFilter
+  chargeFilter
+  originVolumeFilter
+  particleFilter
+  encounteredVolumeFilter
+
+Registered filters:
+  None
+
+You have successfully registered the following user vis actions.
+Run Duration User Vis Actions: none
+End of Event User Vis Actions: none
+End of Run User Vis Actions: none
+
+Some /vis commands (optionally) take a string to specify colour.
+"/vis/list" to see available colours.
+ERROR: Can not open a macro file </Run_Al100_Nb20_AlBooltrue_wall0.01_polished0.0.mac>. Set macro path with "/control/macroPath" if needed.
+
+-------- WWWW ------- G4Exception-START -------- WWWW -------
+*** G4Exception : UIMAN0123
+      issued by : G4UImanager::ApplyCommand
+Command aborted (400)
+Error code : 400
+*** This is just a warning message. ***
+-------- WWWW -------- G4Exception-END --------- WWWW -------
+
+Graphics systems deleted.
+Visualization Manager deleting...
