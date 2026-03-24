@@ -53,7 +53,7 @@ else
     fi
 fi 
 
-tag="Al${Al_z}_Nb${Nb_z}
+tag="Al${Al_z}_Nb${Nb_z}"
 
 echo "Al thickness: $Al_z"
 echo "Nb thickness: $Nb_z"
