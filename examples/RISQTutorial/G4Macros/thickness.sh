@@ -11,7 +11,7 @@
 # load SCDMS singularity image module
 
 # module load scdms/V05-02
-module list
+# module list
 
 BaseMacro="pceStudy.mac"
 echo "Macro is: $BaseMacro"
@@ -53,7 +53,7 @@ else
     fi
 fi 
 
-tag="Al${Al_z}_Nb${Nb_z}_AlBool${Al_bool}_wall${pAbsProbSideWallSi}_polished${pAbsProbPolishedWallSi}"
+tag="Al${Al_z}_Nb${Nb_z}
 
 echo "Al thickness: $Al_z"
 echo "Nb thickness: $Nb_z"
