@@ -10,8 +10,8 @@
 
 # load SCDMS singularity image module
 
-# module load scdms/V05-02
-# module list
+module load scdms/V05-02
+module list
 
 BaseMacro="pceStudy.mac"
 echo "Macro is: $BaseMacro"
