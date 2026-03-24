@@ -46,15 +46,15 @@ using namespace RISQTutorialDetectorParameters;
 
 RISQTutorialDetectorConstruction::RISQTutorialDetectorConstruction()
   : fAir(0), fVacuum(0), fGermanium(0), fAluminum(0), fTungsten(0),
-    fWorldPhys(0), AlSurfProp(0), botSurfProp(0), wallSurfProp(0), 
+    fWorldPhys(0), AlSurfProp(0), polishedwallSurfProp(0), sidewallSurfProp(0), 
     fSuperconductorSensitivity(0), fConstructed(false) {;}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 RISQTutorialDetectorConstruction::~RISQTutorialDetectorConstruction() {
   delete AlSurfProp;
-  delete botSurfProp;
-  delete wallSurfProp;
+  delete polishedwallSurfProp;
+  delete sidewallSurfProp;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -281,8 +281,8 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
 
     double pAbsProbAlSi = 0; //.488
-    double pAbsProbSideWallSi = 0.01;
-    double pAbsProbPolishedWallSi = 0.0;
+    double pAbsProbSideWallSi = 0.01;//.01
+    double pAbsProbPolishedWallSi = 0.0; //.0025
 
     AlSurfProp = new G4CMPSurfaceProperty("AlSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbAlSi, 1.0, 0.0, 0.0);
@@ -312,14 +312,14 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
   // Ge -> Al (phonons start in Ge and enter Al)
-  new G4CMPLogicalBorderSurface("GeToAl_FL", GePhys, alFLphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_FL", GePhys, alFLphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_LA", GePhys, leftabsphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_RT", GePhys, righttrapphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_LT", GePhys, lefttrapphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_JN", GePhys, junctionphysical, AlSurfProp);
   new G4CMPLogicalBorderSurface("GeToAl_RA", GePhys, rightabsphysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("GeToAl_UGP", GePhys, alUGPphysical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("GeToAl_LGP", GePhys, alLGPphysical, NbSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_UGP", GePhys, alUGPphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("GeToAl_LGP", GePhys, alLGPphysical, AlSurfProp);
 
 
   // Ge -> World (bare Ge where there is no Al coverage)

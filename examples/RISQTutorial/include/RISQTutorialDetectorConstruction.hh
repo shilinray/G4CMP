@@ -47,9 +47,9 @@ private:
   
   G4CMPSurfaceProperty* AlSurfProp;
   G4CMPSurfaceProperty* NbSurfProp;
-  G4CMPSurfaceProperty* botSurfProp;
-  G4CMPSurfaceProperty* wallSurfProp;
-  
+  G4CMPSurfaceProperty* polishedwallSurfProp;
+  G4CMPSurfaceProperty* sidewallSurfProp;
+    
   G4CMPElectrodeSensitivity* fSuperconductorSensitivity;
   G4bool fConstructed;
   //G4bool fIfField;

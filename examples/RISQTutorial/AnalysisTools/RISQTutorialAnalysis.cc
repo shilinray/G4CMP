@@ -345,8 +345,11 @@ void PrintPhononCollectionEfficiencyAndPlot()
     h_pce_al_nb->GetYaxis()->SetBinLabel(j + 1, std::to_string(nb_vals[j]).c_str());
   }
 
-  // Group histograms by Al so we can overlay later
+  // Group histograms two ways:
+  // 1) by Al (for fixed Al, varying Nb)
+  // 2) by Nb (for fixed Nb, varying Al)
   std::vector<std::vector<TH1F*> > hists_by_al(al_vals.size());
+  std::vector<std::vector<TH1F*> > hists_by_nb(nb_vals.size());
 
   for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
     for (int iN = 0; iN < (int)nb_vals.size(); ++iN) {
@@ -388,15 +391,15 @@ void PrintPhononCollectionEfficiencyAndPlot()
       h_eDep->SetLineWidth(2);
       h_eDep->SetStats(0);
 
-      // Assign a distinct color for each Nb value
-      int color = kBlack;
-      if (iN == 0) color = kBlack;
-      else if (iN == 1) color = kRed;
-      else if (iN == 2) color = kBlue;
-      else if (iN == 3) color = kGreen + 2;
-      else if (iN == 4) color = kMagenta + 1;
-      // Make the lines slightly opaque/transparent (alpha = 0.6)
-      h_eDep->SetLineColorAlpha(color, 0.6);
+      // Color by Nb for the fixed-Al overlays
+      int color_nb = kBlack;
+      if (iN == 0) color_nb = kBlack;
+      else if (iN == 1) color_nb = kRed;
+      else if (iN == 2) color_nb = kBlue;
+      else if (iN == 3) color_nb = kGreen + 2;
+      else if (iN == 4) color_nb = kMagenta + 1;
+
+      h_eDep->SetLineColorAlpha(color_nb, 0.6);
 
       double totalPrimaryEnergy_eV = 0.0;
       for (const auto& kv : primaryInfo) {
@@ -429,6 +432,7 @@ void PrintPhononCollectionEfficiencyAndPlot()
       h_eDep->Write();
 
       hists_by_al[iA].push_back(h_eDep);
+      hists_by_nb[iN].push_back(h_eDep);
     }
   }
 
@@ -444,7 +448,9 @@ void PrintPhononCollectionEfficiencyAndPlot()
   c_pce->Write();
   c_pce->SaveAs("PCE_Al_Nb.png");
 
-  // Make 6 combined energy plots: same Al, varying Nb
+  // --------------------------------------------------------------------------
+  // Fixed Al, varying Nb
+  // --------------------------------------------------------------------------
   for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
     const int al_val = al_vals[iA];
 
@@ -494,6 +500,76 @@ void PrintPhononCollectionEfficiencyAndPlot()
     delete c;
   }
 
+  // --------------------------------------------------------------------------
+  // Fixed Nb, varying Al
+  // --------------------------------------------------------------------------
+  for (int iN = 0; iN < (int)nb_vals.size(); ++iN) {
+    const int nb_val = nb_vals[iN];
+
+    if (hists_by_nb[iN].empty()) continue;
+
+    TString cName  = TString::Format("c_eDep_overlay_Nb%d", nb_val);
+    TString cTitle = TString::Format("Hit EDeps for Nb=%d nm, varying Al", nb_val);
+    TCanvas* c = new TCanvas(cName, cTitle, 900, 700);
+
+    TLegend* leg = new TLegend(0.68, 0.58, 0.88, 0.88);
+    leg->SetBorderSize(1);
+    leg->SetFillStyle(0);
+
+    double maxY = 0.0;
+    for (TH1F* h : hists_by_nb[iN]) {
+      if (h->GetMaximum() > maxY) maxY = h->GetMaximum();
+    }
+
+    bool first = true;
+    int color_index = 0;
+
+    for (TH1F* h : hists_by_nb[iN]) {
+      h->SetTitle(TString::Format("Hit EDeps for Nb=%d nm, varying Al;log10(eDep[eV]);nEvents",
+                                  nb_val));
+      h->SetMaximum(1.15 * maxY);
+
+      // Recolor by Al for these plots so each Al is visually distinct
+      int color_al = kBlack;
+      if (color_index == 0) color_al = kBlack;
+      else if (color_index == 1) color_al = kRed;
+      else if (color_index == 2) color_al = kBlue;
+      else if (color_index == 3) color_al = kGreen + 2;
+      else if (color_index == 4) color_al = kMagenta + 1;
+      else if (color_index == 5) color_al = kOrange + 7;
+      else if (color_index == 6) color_al = kCyan + 2;
+      else if (color_index == 7) color_al = kViolet;
+      else if (color_index == 8) color_al = kPink + 7;
+      else if (color_index == 9) color_al = kAzure + 2;
+
+      h->SetLineColorAlpha(color_al, 0.6);
+
+      TString histName = h->GetName();
+      int al_val = -1;
+      int parsed_nb = -1;
+      sscanf(histName.Data(), "h_eDep_Al%d_Nb%d", &al_val, &parsed_nb);
+
+      if (first) {
+        h->Draw("HIST");
+        first = false;
+      } else {
+        h->Draw("HIST SAME");
+      }
+
+      leg->AddEntry(h, TString::Format("Al = %d nm", al_val), "l");
+      ++color_index;
+    }
+
+    leg->Draw();
+
+    fOut->cd();
+    c->Write();
+    c->SaveAs(TString::Format("h_eDep_overlay_Nb%d.png", nb_val));
+
+    delete leg;
+    delete c;
+  }
+
   fOut->Write();
   fOut->Close();
 
@@ -507,68 +583,73 @@ void PrintPhononCollectionEfficiencyAndPlot()
 
 //---------------------------------------------------------------------------------------
 // Parsing function
+//---------------------------------------------------------------------------------------
+// Parsing function
 std::map<int,std::vector<Hit> > ParseHitTextFileForHits(std::string filename)
 {
+  //std::cout << "About to parse hits:    " << hitsFilename << std::endl;
   std::map<int,std::vector<Hit> > output;
-  std::vector<Hit> dummy;
-  
-  std::ifstream infile;
-  infile.open(filename.c_str());
-  std::string wholeLine;
 
-  //Begin loop through file
+  std::ifstream infile(filename.c_str());
+  if (!infile.is_open()) {
+    std::cerr << "Error: could not open hit file: " << filename << std::endl;
+    return output;
+  }
+
+  std::string wholeLine;
   int eventID = -1;
   int runID = -1;
   int counter = 0;
-  while(1){
-    if(!infile.good()) break;
-    if(infile.is_open()){
-      std::getline(infile,wholeLine);
-      
-      //Tokenize the string (split between spaces)
-      stringstream check1(wholeLine);
-      string token;
-      std::vector<std::string> tokens;
-      while(getline(check1,token,' ')){
-	tokens.push_back(token);
-      }
-      if( tokens.size() == 0 ) break;
-	  
-      //If we're on the first line of the file
-      if( tokens[0].find("Run") != std::string::npos ){
-	continue;
-      }
 
-      //Check the runID and eventID, and if different than existing one,
-      //push back a new event into the map
-      if( std::atoi(tokens[0].c_str()) != runID || std::atoi(tokens[1].c_str()) != eventID ){
-	output.emplace(std::atoi(tokens[1].c_str()),dummy);
-	runID = std::atoi(tokens[0].c_str());
-	eventID = std::atoi(tokens[1].c_str());
-	counter++; 
-	if( counter % 1000 == 0 ) std::cout << "Done reading " << counter << " events for hits." << std::endl;
-      }
-
-      //Log the hit information and push back into the most recently-created event in the vector
-      Hit theHit;      
-      theHit.runID = std::atoi(tokens[0].c_str());
-      theHit.eventID = std::atoi(tokens[1].c_str());
-      theHit.trackID = std::atoi(tokens[2].c_str());
-      theHit.particleName = tokens[3];
-      theHit.startEnergy_eV = std::atof(tokens[4].c_str());
-      theHit.startX_mm = std::atof(tokens[5].c_str());
-      theHit.startY_mm = std::atof(tokens[6].c_str());
-      theHit.startZ_mm = std::atof(tokens[7].c_str());
-      theHit.startT_ns = std::atof(tokens[8].c_str());
-      theHit.eDep_eV = std::atof(tokens[9].c_str());
-      theHit.trackWeight = std::atof(tokens[10].c_str());
-      theHit.endX_mm = std::atof(tokens[11].c_str());
-      theHit.endY_mm = std::atof(tokens[12].c_str());
-      theHit.endZ_mm = std::atof(tokens[13].c_str());
-      theHit.endT_ns = std::atof(tokens[14].c_str());
-      output[eventID].push_back(theHit);
+  while (std::getline(infile, wholeLine)) {
+    // Skip empty / whitespace-only lines
+    if (wholeLine.find_first_not_of(" \t\r\n") == std::string::npos) {
+      continue;
     }
+
+    // Skip header line(s)
+    if (wholeLine.find("Run") != std::string::npos) {
+      continue;
+    }
+
+    std::istringstream iss(wholeLine);
+    Hit theHit;
+
+    if (!(iss >> theHit.runID
+              >> theHit.eventID
+              >> theHit.trackID
+              >> theHit.particleName
+              >> theHit.startEnergy_eV
+              >> theHit.startX_mm
+              >> theHit.startY_mm
+              >> theHit.startZ_mm
+              >> theHit.startT_ns
+              >> theHit.eDep_eV
+              >> theHit.trackWeight
+              >> theHit.endX_mm
+              >> theHit.endY_mm
+              >> theHit.endZ_mm
+              >> theHit.endT_ns)) {
+      std::cerr << "Warning: skipping malformed line in hit file: "
+                << filename << std::endl
+                << "  Line: " << wholeLine << std::endl;
+      continue;
+    }
+
+    if (theHit.runID != runID || theHit.eventID != eventID) {
+      output.emplace(theHit.eventID, std::vector<Hit>{});
+      runID = theHit.runID;
+      eventID = theHit.eventID;
+      counter++;
+
+      if (counter % 1000 == 0) {
+        std::cout << "Done reading " << counter << " events for hits." << std::endl;
+      }
+    }
+
+    output[eventID].push_back(theHit);
   }
+
   return output;
 }
 
@@ -577,45 +658,55 @@ std::map<int,std::vector<Hit> > ParseHitTextFileForHits(std::string filename)
 // Parsing function
 std::map<int,PrimaryInfo> ParsePrimaryTextFileForPrimaries(std::string filename)
 {
+  //std::cout << "About to parse primary: " << primariesFilename << std::endl;
   std::map<int,PrimaryInfo> output;
-  std::ifstream infile;
-  infile.open(filename.c_str());
+
+  std::ifstream infile(filename.c_str());
+  if (!infile.is_open()) {
+    std::cerr << "Error: could not open primary file: " << filename << std::endl;
+    return output;
+  }
+
   std::string wholeLine;
 
-  //Begin loop through file
-  while(1){
-    if(!infile.good()) break;
-    if(infile.is_open()){
-      std::getline(infile,wholeLine);
-      
-      //Tokenize the string (split between spaces)
-      stringstream check1(wholeLine);
-      string token;
-      std::vector<std::string> tokens;
-      while(getline(check1,token,' ')){
-	tokens.push_back(token);
-      }
-      if( tokens.size() == 0 ) break;
-	  
-      //If we're on the first line of the file
-      if( tokens[0].find("Run") != std::string::npos ){
-	continue;
-      }
-
-      //Here, it's simpler since there's one line per event (assuming only a single run)
-      //So we can use the event id as an index.
-      PrimaryInfo thePrim;
-      thePrim.runID = std::atoi(tokens[0].c_str());
-      thePrim.eventID = std::atoi(tokens[1].c_str());
-      thePrim.particleName = tokens[2];
-      thePrim.energy_eV = std::atof(tokens[3].c_str());
-      thePrim.X_mm = std::atof(tokens[4].c_str());
-      thePrim.Y_mm = std::atof(tokens[5].c_str());
-      thePrim.Z_mm = std::atof(tokens[6].c_str());
-      thePrim.T_ns = std::atof(tokens[7].c_str());
-      output.emplace(thePrim.eventID,thePrim);
+  while (std::getline(infile, wholeLine)) {
+    // Skip empty / whitespace-only lines
+    if (wholeLine.find_first_not_of(" \t\r\n") == std::string::npos) {
+      continue;
     }
+
+    // Skip header line(s)
+    if (wholeLine.find("Run") != std::string::npos) {
+      continue;
+    }
+
+    std::istringstream iss(wholeLine);
+    PrimaryInfo thePrim;
+
+    // Your current primary text format appears to be:
+    // runID eventID particleName energy X Y Z T
+    //
+    // So we do NOT read trackID here.
+    if (!(iss >> thePrim.runID
+              >> thePrim.eventID
+              >> thePrim.particleName
+              >> thePrim.energy_eV
+              >> thePrim.X_mm
+              >> thePrim.Y_mm
+              >> thePrim.Z_mm
+              >> thePrim.T_ns)) {
+      std::cerr << "Warning: skipping malformed line in primary file: "
+                << filename << std::endl
+                << "  Line: " << wholeLine << std::endl;
+      continue;
+    }
+
+    // This field exists in the struct but is not present in the file format.
+    thePrim.trackID = -1;
+
+    output[thePrim.eventID] = thePrim;
   }
+
   return output;
 }
 
