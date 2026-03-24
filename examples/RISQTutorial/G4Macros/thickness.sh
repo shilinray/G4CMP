@@ -10,7 +10,7 @@
 
 # load SCDMS singularity image module
 
-module load scdms/V05-02
+# module load scdms/V05-02
 module list
 
 BaseMacro="pceStudy.mac"
@@ -30,14 +30,27 @@ Al_bool="$3"
 pAbsProbSideWallSi="$4"
 pAbsProbPolishedWallSi="$5"
 
-if [Al_bool]
+if [ "$Al_bool" = "true" ]
 then
-    run_dir="./260324_run/lQPD_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
-fi 
-
-if [!Al_bool]
-then
-    run_dir="./260324_run/lQPD_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+    if [ "$pAbsProbPolishedWallSi" = "0.0" ]
+    then
+        run_dir="./260324_run/lQPD_Al_SW"
+    elif [ "$pAbsProbSideWallSi" = "0.0" ]
+    then
+        run_dir="./260324_run/lQPD_Al_PF"
+    else
+        run_dir="./260324_run/lQPD_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+    fi
+else
+    if [ "$pAbsProbPolishedWallSi" = "0.0" ]
+    then
+        run_dir="./260324_run/lQPD_Al_Nb_SW"
+    elif [ "$pAbsProbSideWallSi" = "0.0" ]
+    then
+        run_dir="./260324_run/lQPD_Al_Nb_PF"
+    else
+        run_dir="./260324_run/lQPD_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+    fi
 fi 
 
 tag="Al${Al_z}_Nb${Nb_z}_AlBool${Al_bool}_wall${pAbsProbSideWallSi}_polished${pAbsProbPolishedWallSi}"
