@@ -26,6 +26,7 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+#include "TLine.h"
 
 //---------------------------------------------------------------------------------------
 // Define a set of structs for use interpreting the output from G4CMP
@@ -490,6 +491,42 @@ void PrintPhononCollectionEfficiencyAndPlot()
       leg->AddEntry(h, TString::Format("Nb = %d nm", nb_val), "l");
     }
 
+    TLine* line_Nb1 = new TLine(TMath::Log10(1.5e-3), 0, TMath::Log10(1.5e-3), 1.15 * maxY);
+    TLine* line_Nb2 = new TLine(TMath::Log10(3.0e-3), 0, TMath::Log10(3.0e-3), 1.15 * maxY);
+    TLine* line_Nb3 = new TLine(TMath::Log10(4.5e-3), 0, TMath::Log10(4.5e-3), 1.15 * maxY);
+    line_Nb1->SetLineColor(kOrange+1);
+    line_Nb2->SetLineColor(kOrange+1);
+    line_Nb3->SetLineColor(kOrange+1);
+    line_Nb1->SetLineStyle(2);
+    line_Nb2->SetLineStyle(2);
+    line_Nb3->SetLineStyle(2);
+    line_Nb1->SetLineWidth(2);
+    line_Nb2->SetLineWidth(2);
+    line_Nb3->SetLineWidth(2);
+
+    TLine* line_Al1 = new TLine(TMath::Log10(0.34e-3), 0, TMath::Log10(0.34e-3), 1.15 * maxY);
+    TLine* line_Al2 = new TLine(TMath::Log10(0.68e-3), 0, TMath::Log10(0.68e-3), 1.15 * maxY);
+    TLine* line_Al3 = new TLine(TMath::Log10(1.02e-3), 0, TMath::Log10(1.02e-3), 1.15 * maxY);
+    line_Al1->SetLineColor(kGreen+2);
+    line_Al2->SetLineColor(kGreen+2);
+    line_Al3->SetLineColor(kGreen+2);
+    line_Al1->SetLineStyle(2);
+    line_Al2->SetLineStyle(2);
+    line_Al3->SetLineStyle(2);
+    line_Al1->SetLineWidth(2);
+    line_Al2->SetLineWidth(2);
+    line_Al3->SetLineWidth(2);
+
+    line_Nb1->Draw();
+    line_Nb2->Draw();
+    line_Nb3->Draw();
+    line_Al1->Draw();
+    line_Al2->Draw();
+    line_Al3->Draw();
+
+    leg->AddEntry(line_Nb1, "Nb gap", "l");
+    leg->AddEntry(line_Al1, "Al gap", "l");
+
     leg->Draw();
 
     fOut->cd();
@@ -559,6 +596,42 @@ void PrintPhononCollectionEfficiencyAndPlot()
       leg->AddEntry(h, TString::Format("Al = %d nm", al_val), "l");
       ++color_index;
     }
+
+    TLine* line_Nb1 = new TLine(TMath::Log10(1.5e-3), 0, TMath::Log10(1.5e-3), 1.15 * maxY);
+    TLine* line_Nb2 = new TLine(TMath::Log10(3.0e-3), 0, TMath::Log10(3.0e-3), 1.15 * maxY);
+    TLine* line_Nb3 = new TLine(TMath::Log10(4.5e-3), 0, TMath::Log10(4.5e-3), 1.15 * maxY);
+    line_Nb1->SetLineColor(kOrange+1);
+    line_Nb2->SetLineColor(kOrange+1);
+    line_Nb3->SetLineColor(kOrange+1);
+    line_Nb1->SetLineStyle(2);
+    line_Nb2->SetLineStyle(2);
+    line_Nb3->SetLineStyle(2);
+    line_Nb1->SetLineWidth(2);
+    line_Nb2->SetLineWidth(2);
+    line_Nb3->SetLineWidth(2);
+
+    TLine* line_Al1 = new TLine(TMath::Log10(0.34e-3), 0, TMath::Log10(0.34e-3), 1.15 * maxY);
+    TLine* line_Al2 = new TLine(TMath::Log10(0.68e-3), 0, TMath::Log10(0.68e-3), 1.15 * maxY);
+    TLine* line_Al3 = new TLine(TMath::Log10(1.02e-3), 0, TMath::Log10(1.02e-3), 1.15 * maxY);
+    line_Al1->SetLineColor(kGreen+2);
+    line_Al2->SetLineColor(kGreen+2);
+    line_Al3->SetLineColor(kGreen+2);
+    line_Al1->SetLineStyle(2);
+    line_Al2->SetLineStyle(2);
+    line_Al3->SetLineStyle(2);
+    line_Al1->SetLineWidth(2);
+    line_Al2->SetLineWidth(2);
+    line_Al3->SetLineWidth(2);
+
+    line_Nb1->Draw();
+    line_Nb2->Draw();
+    line_Nb3->Draw();
+    line_Al1->Draw();
+    line_Al2->Draw();
+    line_Al3->Draw();
+
+    leg->AddEntry(line_Nb1, "Nb gap", "l");
+    leg->AddEntry(line_Al1, "Al gap", "l");
 
     leg->Draw();
 
