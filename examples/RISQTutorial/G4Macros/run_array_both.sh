@@ -16,9 +16,7 @@ do
             # Config 1
             echo $nbz $alz $albool 0.01 0.0
             sbatch ./thickness.sh $alz $nbz $albool 0.01 0.0
-            
-            exit 0
-            
+
             # Config 2
             echo $nbz $alz $albool 0.0 0.0025
             sbatch ./thickness.sh $alz $nbz $albool 0.0 0.0025

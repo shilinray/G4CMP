@@ -1,0 +1,96 @@
+Lmod has detected the following error: The following module(s) are unknown:
+"scdms/V05-02"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "scdms/V05-02"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+
+Currently Loaded Modules:
+  1) slurm/current
+
+ 
+
+Macro is: pceStudy.mac
+Al thickness: 500
+Nb thickness: 60
+Al bool: true
+pAbsProbSideWallSi: 0.0
+pAbsProbPolishedWallSi: 0.0025
+Base Macro pceStudy.mac
+Macro File ./260324_run/lQPD_Al_PF/Run_Al500_Nb60.mac
+Hits File ./260324_run/lQPD_Al_PF/Hits_Al500_Nb60.txt
+Primary File ./260324_run/lQPD_Al_PF/Primary_Al500_Nb60.txt
+
+**************************************************************
+ Geant4 version Name: geant4-10-07-patch-04 [MT]   (9-September-2022)
+                       Copyright : Geant4 Collaboration
+                      References : NIM A 506 (2003), 250-303
+                                 : IEEE-TNS 53 (2006), 270-278
+                                 : NIM A 835 (2016), 186-225
+                             WWW : http://geant4.org/
+**************************************************************
+
+<<< Geant4 Physics List simulation engine: FTFP_BERT
+
+Visualization Manager instantiating with verbosity "warnings (3)"...
+Visualization Manager initialising...
+Registering graphics systems...
+
+You have successfully registered the following graphics systems.
+Registered graphics systems are:
+  ASCIITree (ATree)
+  DAWNFILE (DAWNFILE)
+  G4HepRep (HepRepXML)
+  G4HepRepFile (HepRepFile)
+  RayTracer (RayTracer)
+  VRML1FILE (VRML1FILE)
+  VRML2FILE (VRML2FILE)
+  gMocrenFile (gMocrenFile)
+  OpenGLImmediateQt (OGLIQt, OGLI)
+  OpenGLStoredQt (OGLSQt, OGL, OGLS)
+  OpenGLImmediateX (OGLIX, OGLIQt_FALLBACK)
+  OpenGLStoredX (OGLSX, OGLSQt_FALLBACK)
+  RayTracerX (RayTracerX)
+
+Registering model factories...
+
+You have successfully registered the following model factories.
+Registered model factories:
+  generic
+  drawByAttribute
+  drawByCharge
+  drawByOriginVolume
+  drawByParticleID
+  drawByEncounteredVolume
+
+Registered models:
+  None
+
+Registered filter factories:
+  attributeFilter
+  chargeFilter
+  originVolumeFilter
+  particleFilter
+  encounteredVolumeFilter
+
+Registered filters:
+  None
+
+You have successfully registered the following user vis actions.
+Run Duration User Vis Actions: none
+End of Event User Vis Actions: none
+End of Run User Vis Actions: none
+
+Some /vis commands (optionally) take a string to specify colour.
+"/vis/list" to see available colours.
+*** /run/numberOfThreads command is issued in sequential mode.
+Command is ignored.
+WARNING: There is no world volume!
+WARNING: There is no world volume!
+slurmstepd: error: *** JOB 23888656 ON sdfrome012 CANCELLED AT 2026-03-25T03:10:24 DUE TO PREEMPTION ***
