@@ -324,7 +324,7 @@ void PrintPhononCollectionEfficiencyAndPlot()
   std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
   std::vector<int> nb_vals = {20, 40, 60, 80, 100};
 
-  const std::string baseDir = "../G4Macros/260324_run/lQPD_Al_SW";
+  const std::string baseDir = "../G4Macros/260317_run/SQUAT_Al_PF";
 
   TFile* fOut = new TFile("PCE_Al_Nb.root", "RECREATE");
   if (!fOut || fOut->IsZombie()) {
@@ -337,7 +337,7 @@ void PrintPhononCollectionEfficiencyAndPlot()
   TH2F* h_pce_al_nb = new TH2F("h_pce_al_nb",
                                "PCE vs Al and Nb thickness;Al thickness [nm];Nb thickness [nm];PCE [%]",
                                (int)al_vals.size(), 0, (int)al_vals.size(),
-                               (int)nb_vals.size(), 0, (int)nb_vals.size());
+                                (int)nb_vals.size(), 0, (int)nb_vals.size());
 
   for (int i = 0; i < (int)al_vals.size(); ++i) {
     h_pce_al_nb->GetXaxis()->SetBinLabel(i + 1, std::to_string(al_vals[i]).c_str());
@@ -368,11 +368,11 @@ void PrintPhononCollectionEfficiencyAndPlot()
       std::ifstream primFile(primariesFilename.c_str());
       std::ifstream hitFile(hitsFilename.c_str());
 
-      if (!primFile.good() || !hitFile.good()) {
-        std::cout << "Skipping Al=" << al << " Nb=" << nb
-                  << " because one or both files are missing." << std::endl;
-        continue;
-      }
+      //if (!primFile.good() || !hitFile.good()) {
+        //std::cout << "Skipping Al=" << al << " Nb=" << nb
+                  //<< " because one or both files are missing." << std::endl;
+        //continue;
+      //}
 
       primFile.close();
       hitFile.close();
