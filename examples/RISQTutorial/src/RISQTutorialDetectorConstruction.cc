@@ -1,4 +1,4 @@
-// QPD
+// lQPD
 
 #include "RISQTutorialDetectorConstruction.hh"
 #include "RISQTutorialSensitivity.hh"
@@ -592,8 +592,10 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
 
     double pAbsProbAlSi = 0; //.488
-    double pAbsProbSideWallSi = 0.01;//.01
-    double pAbsProbPolishedWallSi = 0.0; //.0025
+    double pAbsProbSideWallSi = 0;//.01
+    if (RISQTutorialConfigManager::GetpAbsProbSideWallSi() != -1.0) pAbsProbSideWallSi = RISQTutorialConfigManager::GetpAbsProbSideWallSi();
+    double pAbsProbPolishedWallSi = 0; //.0025
+    if (RISQTutorialConfigManager::GetpAbsProbPolishedWallSi() != -1.0) pAbsProbPolishedWallSi = RISQTutorialConfigManager::GetpAbsProbPolishedWallSi();
 
     AlSurfProp = new G4CMPSurfaceProperty("AlSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbAlSi, 1.0, 0.0, 0.0);
@@ -622,10 +624,8 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
 
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
-  
-  bool Al = true; 
 
-  if (Al) {
+  if (RISQTutorialConfigManager::GetAl()) {
     new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, AlSurfProp);
     new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, AlSurfProp);
     new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, AlSurfProp);
@@ -650,7 +650,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, AlSurfProp);
   }
 
-  if (!Al) {
+  if (!RISQTutorialConfigManager::GetAl()) {
     new G4CMPLogicalBorderSurface("Nb", GePhys, alFLphysical, NbSurfProp);
     new G4CMPLogicalBorderSurface("Nb", GePhys, alUGPphysical, NbSurfProp);
     new G4CMPLogicalBorderSurface("Nb", GePhys, alLGPphysical, NbSurfProp);

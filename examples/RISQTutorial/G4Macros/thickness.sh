@@ -78,7 +78,7 @@ cp $BaseMacro $mName
 sed -i "s/filmThicknessAl 0/filmThicknessAl ${Al_z}/g" $mName
 sed -i "s/filmThicknessNb 0/filmThicknessNb ${Nb_z}/g" $mName
 sed -i "s/Al false/Al ${Al_bool}/g" $mName
-sed -i "s/pAbsProbSideWallSi 0.01/pAbsProbSideWallSi ${pAbsProbSideWallSi}/g" $mName
+sed -i "s/pAbsProbSideWallSi 0.0/pAbsProbSideWallSi ${pAbsProbSideWallSi}/g" $mName
 sed -i "s/pAbsProbPolishedWallSi 0.0/pAbsProbPolishedWallSi ${pAbsProbPolishedWallSi}/g" $mName
 sed -i "s|hitsFileName|hitsFileName ${fHits}|g" $mName
 sed -i "s|primFileName|primFileName ${fPrimary}|g" $mName

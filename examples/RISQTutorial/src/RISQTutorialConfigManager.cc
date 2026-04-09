@@ -34,11 +34,11 @@ RISQTutorialConfigManager::RISQTutorialConfigManager()
     Primary_file(getenv("G4CMP_PRIMARY_FILE")?getenv("G4CMP_PRIMARY_FILE"):"RISQTutorial_primary.txt"),
     messenger(new RISQTutorialConfigMessenger(this)) 
     {
-    filmThicknessAl = 0;
-    filmThicknessNb = 0;
-    Al = false;
-    pAbsProbSideWallSi = 0.0;
-    pAbsProbPolishedWallSi = 0.0;
+    filmThicknessAl = -1.0;
+    filmThicknessNb = -1.0;
+    Al = true;
+    pAbsProbSideWallSi = -1.0;
+    pAbsProbPolishedWallSi = -1.0;
       
     }
 

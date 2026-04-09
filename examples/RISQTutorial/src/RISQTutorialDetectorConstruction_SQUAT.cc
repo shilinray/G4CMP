@@ -281,8 +281,10 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     const G4double anhCutoff = 520., reflCutoff = 350.;   // Units external
 
     double pAbsProbAlSi = 0; //.488
-    double pAbsProbSideWallSi = RISQTutorialConfigManager::GetpAbsProbSideWallSi();//.01
-    double pAbsProbPolishedWallSi = RISQTutorialConfigManager::GetpAbsProbPolishedWallSi(); //.0025
+    double pAbsProbSideWallSi = 0;//.01
+    if (RISQTutorialConfigManager::GetpAbsProbSideWallSi() != -1.0) pAbsProbSideWallSi = RISQTutorialConfigManager::GetpAbsProbSideWallSi();
+    double pAbsProbPolishedWallSi = 0; //.0025
+    if (RISQTutorialConfigManager::GetpAbsProbPolishedWallSi() != -1.0) pAbsProbPolishedWallSi = RISQTutorialConfigManager::GetpAbsProbPolishedWallSi();
 
     AlSurfProp = new G4CMPSurfaceProperty("AlSurf", 0.0, 1.0, 0.0, 0.0,
                                                       pAbsProbAlSi, 1.0, 0.0, 0.0);
@@ -312,13 +314,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
   // Ge -> Al (phonons start in Ge and enter Al)
-  bool Al = RISQTutorialConfigManager::GetAl();
-  if (Al) {
+  if (RISQTutorialConfigManager::GetAl()) {
     new G4CMPLogicalBorderSurface("GeToAl_FL", GePhys, alFLphysical, AlSurfProp);
     new G4CMPLogicalBorderSurface("GeToAl_UGP", GePhys, alUGPphysical, AlSurfProp);
     new G4CMPLogicalBorderSurface("GeToAl_LGP", GePhys, alLGPphysical, AlSurfProp);
   }
-  if (!Al) {
+  if (!RISQTutorialConfigManager::GetAl()) {
     new G4CMPLogicalBorderSurface("GeToAl_FL", GePhys, alFLphysical, NbSurfProp);
     new G4CMPLogicalBorderSurface("GeToAl_UGP", GePhys, alUGPphysical, NbSurfProp);
     new G4CMPLogicalBorderSurface("GeToAl_LGP", GePhys, alLGPphysical, NbSurfProp);
