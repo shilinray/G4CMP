@@ -34,22 +34,22 @@ if [ "$Al_bool" = "true" ]
 then
     if [ "$pAbsProbPolishedWallSi" = "0.0" ]
     then
-        run_dir="./260324_run/lQPD_Al_SW"
+        run_dir="./260409_run/SQUAT_Al_SW"
     elif [ "$pAbsProbSideWallSi" = "0.0" ]
     then
-        run_dir="./260324_run/lQPD_Al_PF"
+        run_dir="./260409_run/SQUAT_Al_PF"
     else
-        run_dir="./260324_run/lQPD_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+        run_dir="./260409_run/SQUAT_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
     fi
 else
     if [ "$pAbsProbPolishedWallSi" = "0.0" ]
     then
-        run_dir="./260324_run/lQPD_Al_Nb_SW"
+        run_dir="./260409_run/SQUAT_Al_Nb_SW"
     elif [ "$pAbsProbSideWallSi" = "0.0" ]
     then
-        run_dir="./260324_run/lQPD_Al_Nb_PF"
+        run_dir="./260409_run/SQUAT_Al_Nb_PF"
     else
-        run_dir="./260324_run/lQPD_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+        run_dir="./260409_run/SQUAT_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
     fi
 fi 
 
