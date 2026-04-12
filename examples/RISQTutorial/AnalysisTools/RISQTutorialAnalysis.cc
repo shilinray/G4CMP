@@ -324,31 +324,34 @@ void PrintPhononCollectionEfficiencyAndPlot()
   std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
   std::vector<int> nb_vals = {20, 40, 60, 80, 100};
 
-  const std::string baseDir = "../G4Macros/260409_run/SQUAT_Al_Nb_PF";
-
+  const std::string baseDir = "../G4Macros/260410_run/lQPD_Al_PF";
+  // Create the ROOT output file where all histograms and canvases will be saved.
   TFile* fOut = new TFile("PCE_Al_Nb.root", "RECREATE");
+  // Check that the file was created successfully.
   if (!fOut || fOut->IsZombie()) {
     std::cerr << "Error: could not create output file PCE_Al_Nb.root" << std::endl;
     return;
   }
+  // Make the output file the current ROOT directory so newly written objects go there.
   fOut->cd();
 
-  // 2D PCE map
+  // Create 2D PCE map
   TH2F* h_pce_al_nb = new TH2F("h_pce_al_nb",
                                "PCE vs Al and Nb thickness;Al thickness [nm];Nb thickness [nm];PCE [%]",
                                (int)al_vals.size(), 0, (int)al_vals.size(),
                                 (int)nb_vals.size(), 0, (int)nb_vals.size());
-
+  // labeling the x axis
   for (int i = 0; i < (int)al_vals.size(); ++i) {
     h_pce_al_nb->GetXaxis()->SetBinLabel(i + 1, std::to_string(al_vals[i]).c_str());
   }
+  // labeling the y axis
   for (int j = 0; j < (int)nb_vals.size(); ++j) {
     h_pce_al_nb->GetYaxis()->SetBinLabel(j + 1, std::to_string(nb_vals[j]).c_str());
   }
 
   // Group histograms two ways:
-  // 1) by Al (for fixed Al, varying Nb)
-  // 2) by Nb (for fixed Nb, varying Al)
+  // hists_by_al[iA] = all histograms for one fixed Al value while Nb varies
+  // hists_by_nb[iN] = all histograms for one fixed Nb value while Al varies
   std::vector<std::vector<TH1F*> > hists_by_al(al_vals.size());
   std::vector<std::vector<TH1F*> > hists_by_nb(nb_vals.size());
 
@@ -357,7 +360,7 @@ void PrintPhononCollectionEfficiencyAndPlot()
 
       const int al = al_vals[iA];
       const int nb = nb_vals[iN];
-
+      // Construct the expected input filenames for this Al/Nb combination
       std::ostringstream primPath, hitPath;
       primPath << baseDir << "/Primary_Al" << al << "_Nb" << nb << ".txt";
       hitPath  << baseDir << "/Hits_Al"    << al << "_Nb" << nb << ".txt";
@@ -376,7 +379,7 @@ void PrintPhononCollectionEfficiencyAndPlot()
 
       primFile.close();
       hitFile.close();
-
+      // map is a sorted dictionary, key is event ID, value is vector with all the info
       const std::map<int, PrimaryInfo> primaryInfo =
           ParsePrimaryTextFileForPrimaries(primariesFilename);
 
@@ -386,7 +389,8 @@ void PrintPhononCollectionEfficiencyAndPlot()
       TString hName = TString::Format("h_eDep_Al%d_Nb%d", al, nb);
       TString hTitle = TString::Format("Hit EDeps for Al=%d nm, Nb=%d nm;log10(eDep[eV]);nEvents",
                                        al, nb);
-
+      // creates 1D histogram
+      // 200 bins spanning 10^-6 eV to 10^1 eV in log10 space
       TH1F* h_eDep = new TH1F(hName, hTitle, 200, -6, 1);
       h_eDep->SetDirectory(fOut);
       h_eDep->SetLineWidth(2);
@@ -402,17 +406,25 @@ void PrintPhononCollectionEfficiencyAndPlot()
 
       h_eDep->SetLineColorAlpha(color_nb, 0.6);
 
+      // Sum the total injected/primary energy over all events.
       double totalPrimaryEnergy_eV = 0.0;
       for (const auto& kv : primaryInfo) {
         totalPrimaryEnergy_eV += kv.second.energy_eV;
       }
-
+      // Sum the total deposited hit energy over all events.
+      // Also fill the histogram with log10(eDep_eV) for each positive-energy hit.
       double totalHitEnergy_eV = 0.0;
       for (const auto& kv : hitInfo) {
+        //std::cout << "Event " << kv.first
+          //<< " has " << kv.second.size()
+          //<< " hits." << std::endl;
         for (const Hit& h : kv.second) {
           totalHitEnergy_eV += h.eDep_eV;
           if (h.eDep_eV > 0.0) {
-            h_eDep->Fill(TMath::Log10(h.eDep_eV));
+            h_eDep->Fill(TMath::Log10(h.eDep_eV)); 
+          }
+          if (h.eDep_eV < 0.0) {
+            std::cout << "There are negative energies." << std::endl;
           }
         }
       }
@@ -431,13 +443,14 @@ void PrintPhononCollectionEfficiencyAndPlot()
 
       fOut->cd();
       h_eDep->Write();
-
+      // Save pointers to the histogram in both grouping schemes
+      // so we can make overlay plots later.
       hists_by_al[iA].push_back(h_eDep);
       hists_by_nb[iN].push_back(h_eDep);
     }
   }
 
-  // Write the 2D PCE map
+  // Write the 2D PCE map to root file
   fOut->cd();
   h_pce_al_nb->Write();
 
@@ -452,6 +465,7 @@ void PrintPhononCollectionEfficiencyAndPlot()
   // --------------------------------------------------------------------------
   // Fixed Al, varying Nb
   // --------------------------------------------------------------------------
+  // For each Al thickness, overlay all corresponding histograms for different Nb values.
   for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
     const int al_val = al_vals[iA];
 
@@ -652,7 +666,175 @@ void PrintPhononCollectionEfficiencyAndPlot()
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////  
+/////////////////////////////////////////////////////// 
+ 
+void PlotCumulativeHitEnergyVsEndTime_OverlayNb20()
+{
+  std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
+  const int nb_val = 20;
+
+  const std::string baseDir = "../G4Macros/260409_run/SQUAT_Al_Nb_PF";
+
+  TFile* fOut = new TFile("CumulativeHitEnergyVsEndTime_Overlay_Nb20.root", "RECREATE");
+  if (!fOut || fOut->IsZombie()) {
+    std::cerr << "Error: could not create output file." << std::endl;
+    return;
+  }
+
+  std::vector<TH1F*> hists;
+  double globalTMin = 0.0;
+  double globalTMax = 0.0;
+  bool firstTime = true;
+
+  // --------------------------------------------------------------------------
+  // First pass: find the global time range across all Al values
+  // --------------------------------------------------------------------------
+  for (int al : al_vals) {
+    std::ostringstream hitPath;
+    hitPath << baseDir << "/Hits_Al" << al << "_Nb" << nb_val << ".txt";
+
+    const std::map<int, std::vector<Hit> > hitInfo = ParseHitTextFileForHits(hitPath.str());
+    if (hitInfo.empty()) {
+      std::cout << "Skipping empty or unreadable file: " << hitPath.str() << std::endl;
+      continue;
+    }
+
+    for (const auto& kv : hitInfo) {
+      for (const Hit& h : kv.second) {
+        if (firstTime) {
+          globalTMin = h.endT_ns;
+          globalTMax = h.endT_ns;
+          firstTime = false;
+        } else {
+          if (h.endT_ns < globalTMin) globalTMin = h.endT_ns;
+          if (h.endT_ns > globalTMax) globalTMax = h.endT_ns;
+        }
+      }
+    }
+  }
+
+  if (firstTime) {
+    std::cerr << "Error: no valid hit files found for Nb = " << nb_val << std::endl;
+    fOut->Close();
+    delete fOut;
+    return;
+  }
+
+  if (globalTMin == globalTMax) {
+    globalTMin -= 0.5;
+    globalTMax += 0.5;
+  }
+
+  const int nTimeBins = 200;
+  double maxY = 0.0;
+
+  // --------------------------------------------------------------------------
+  // Second pass: build cumulative histograms
+  // --------------------------------------------------------------------------
+  for (size_t i = 0; i < al_vals.size(); ++i) {
+    const int al = al_vals[i];
+
+    std::ostringstream hitPath;
+    hitPath << baseDir << "/Hits_Al" << al << "_Nb" << nb_val << ".txt";
+
+    const std::map<int, std::vector<Hit> > hitInfo = ParseHitTextFileForHits(hitPath.str());
+    if (hitInfo.empty()) continue;
+
+    TString hName = TString::Format("h_cumulativeEnergyVsEndTime_Al%d_Nb%d", al, nb_val);
+    TString hTitle = TString::Format("Cumulative Hit Energy vs End Time, Nb=%d nm;End Time [ns];Cumulative Deposited Energy [eV]",
+                                     nb_val);
+
+    TH1F* h_temp = new TH1F(hName, hTitle, nTimeBins, globalTMin, globalTMax);
+    h_temp->SetDirectory(fOut);
+    h_temp->SetStats(0);
+    h_temp->SetLineWidth(2);
+
+    // Give each Al curve a different color
+    int color = kBlack;
+    if      (i == 0) color = kBlack;
+    else if (i == 1) color = kRed;
+    else if (i == 2) color = kBlue;
+    else if (i == 3) color = kGreen + 2;
+    else if (i == 4) color = kMagenta + 1;
+    else if (i == 5) color = kOrange + 7;
+    else if (i == 6) color = kCyan + 2;
+    else if (i == 7) color = kViolet;
+    else if (i == 8) color = kPink + 7;
+    else if (i == 9) color = kAzure + 2;
+
+    h_temp->SetLineColor(color);
+
+    // Fill deposited energy vs time
+    for (const auto& kv : hitInfo) {
+      for (const Hit& h : kv.second) {
+        h_temp->Fill(h.endT_ns, h.eDep_eV);
+      }
+    }
+
+    // Convert to cumulative
+    double runningSum = 0.0;
+    for (int iBin = 1; iBin <= h_temp->GetNbinsX(); ++iBin) {
+      runningSum += h_temp->GetBinContent(iBin);
+      h_temp->SetBinContent(iBin, runningSum);
+    }
+
+    if (h_temp->GetMaximum() > maxY) maxY = h_temp->GetMaximum();
+
+    hists.push_back(h_temp);
+    h_temp->Write();
+  }
+
+  if (hists.empty()) {
+    std::cerr << "Error: no histograms were created." << std::endl;
+    fOut->Close();
+    delete fOut;
+    return;
+  }
+
+  // --------------------------------------------------------------------------
+  // Draw overlay
+  // --------------------------------------------------------------------------
+  TCanvas* c = new TCanvas("c_cumulativeOverlay_Nb20",
+                           "Cumulative Hit Energy vs End Time, Nb=20",
+                           1000, 700);
+
+  TLegend* leg = new TLegend(0.62, 0.58, 0.88, 0.88);
+  leg->SetBorderSize(1);
+  leg->SetFillStyle(0);
+
+  bool firstDraw = true;
+  for (TH1F* h : hists) {
+    h->SetMaximum(1.08 * maxY);
+
+    TString histName = h->GetName();
+    int al_val = -1;
+    int parsed_nb = -1;
+    sscanf(histName.Data(), "h_cumulativeEnergyVsEndTime_Al%d_Nb%d", &al_val, &parsed_nb);
+
+    if (firstDraw) {
+      h->Draw("HIST");
+      firstDraw = false;
+    } else {
+      h->Draw("HIST SAME");
+    }
+
+    leg->AddEntry(h, TString::Format("Al = %d nm", al_val), "l");
+  }
+
+  leg->Draw();
+
+  fOut->cd();
+  c->Write();
+  c->SaveAs("CumulativeHitEnergyVsEndTime_Overlay_Nb20.png");
+
+  fOut->Write();
+  fOut->Close();
+
+  delete leg;
+  delete c;
+  delete fOut;
+}
+
 
 //---------------------------------------------------------------------------------------
 // Parsing function
