@@ -39,6 +39,8 @@ RISQTutorialConfigMessenger::RISQTutorialConfigMessenger(RISQTutorialConfigManag
             "Set the parameter for pAbsProbSideWallSi");
   pAbsProbPolishedWallSiCmd = CreateCommand<G4UIcmdWithADouble> ("pAbsProbPolishedWallSi", 
             "Set the parameter for pAbsProbPolishedWallSi");
+  numsensorsCmd = CreateCommand<G4UIcmdWithADouble> ("numsensors", 
+            "Set the parameter for numsensors");
 }
 
 
@@ -50,6 +52,7 @@ RISQTutorialConfigMessenger::~RISQTutorialConfigMessenger() {
   delete AlCmd; AlCmd=0;
   delete pAbsProbSideWallSiCmd; pAbsProbSideWallSiCmd=0;
   delete pAbsProbPolishedWallSiCmd; pAbsProbPolishedWallSiCmd=0;
+  delete numsensorsCmd; numsensorsCmd=0;
 }
 
 
@@ -63,5 +66,6 @@ void RISQTutorialConfigMessenger::SetNewValue(G4UIcommand* cmd, G4String value) 
   if (cmd == AlCmd) theManager->SetAl(AlCmd->GetNewBoolValue(value));
   if (cmd == pAbsProbSideWallSiCmd) theManager->SetpAbsProbSideWallSi(pAbsProbSideWallSiCmd->GetNewDoubleValue(value));
   if (cmd == pAbsProbPolishedWallSiCmd) theManager->SetpAbsProbPolishedWallSi(pAbsProbPolishedWallSiCmd->GetNewDoubleValue(value));
+  if (cmd == numsensorsCmd) theManager->Setnumsensors(numsensorsCmd->GetNewDoubleValue(value));
  
 }

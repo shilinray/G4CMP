@@ -39,6 +39,7 @@ RISQTutorialConfigManager::RISQTutorialConfigManager()
     Al = true;
     pAbsProbSideWallSi = -1.0;
     pAbsProbPolishedWallSi = -1.0;
+    numsensors = -1.0;
       
     }
 
@@ -77,10 +78,15 @@ void RISQTutorialConfigManager::SetpAbsProbPolishedWallSi(G4double pAbs){
   Instance()->pAbsProbPolishedWallSi = pAbs;
 }
 
+void RISQTutorialConfigManager::Setnumsensors(G4double num){
+  Instance()->numsensors = num;
+}
+
 double RISQTutorialConfigManager::GetfilmThicknessAl() { return Instance()->filmThicknessAl; }
 double RISQTutorialConfigManager::GetfilmThicknessNb() { return Instance()->filmThicknessNb; }
 bool RISQTutorialConfigManager::GetAl() { return Instance()->Al; }
 double RISQTutorialConfigManager::GetpAbsProbSideWallSi() { return Instance()->pAbsProbSideWallSi; }
 double RISQTutorialConfigManager::GetpAbsProbPolishedWallSi() { return Instance()->pAbsProbPolishedWallSi; }
+double RISQTutorialConfigManager::Getnumsensors() { return Instance()->numsensors; }
 
 

@@ -6,6 +6,7 @@
 /g4cmp/Al false
 /g4cmp/pAbsProbSideWallSi 0.0
 /g4cmp/pAbsProbPolishedWallSi 0.0
+/g4cmp/numsensors 0
 /g4cmp/primFileName
 /g4cmp/hitsFileName
 

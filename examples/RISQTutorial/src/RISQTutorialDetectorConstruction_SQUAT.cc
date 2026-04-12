@@ -118,8 +118,11 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   //                               
   // Germanium crystal - this is the volume in which we will propagate phonons
   //  
-  const G4double geHalfX = 0.5*cm;
-  const G4double geHalfY = 0.5*cm;
+  double numsensors = 0;
+  if (RISQTutorialConfigManager::Getnumsensors() != -1.0) numsensors = RISQTutorialConfigManager::Getnumsensors();
+    
+  const G4double geHalfX = 0.5*cm / std::sqrt(numsensors);
+  const G4double geHalfY = 0.5*cm / std::sqrt(numsensors);
   const G4double geHalfZ = 0.05*mm;
   G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", geHalfX, geHalfY, geHalfZ);
   G4LogicalVolume* fGermaniumLogical = new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
