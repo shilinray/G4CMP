@@ -41,6 +41,7 @@ private:
   G4UIcmdWithABool* AlCmd;
   G4UIcmdWithADouble* pAbsProbSideWallSiCmd;
   G4UIcmdWithADouble* pAbsProbPolishedWallSiCmd;
+  G4UIcmdWithADouble* numsensorsCmd;
 
 private:
   RISQTutorialConfigMessenger(const RISQTutorialConfigMessenger&);	// Copying is forbidden

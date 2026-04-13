@@ -34,6 +34,7 @@ public:
   static bool GetAl();
   static double GetpAbsProbSideWallSi();
   static double GetpAbsProbPolishedWallSi();
+  static double Getnumsensors();
 
 
   // Change values (e.g., via Messenger)
@@ -46,6 +47,7 @@ public:
   static void SetAl(bool Al);
   static void SetpAbsProbSideWallSi(G4double pAbs);
   static void SetpAbsProbPolishedWallSi(G4double pAbs);
+  static void Setnumsensors(G4double num);
 
   static void UpdateGeometry();
   static void UpdatePhysics();
@@ -67,6 +69,7 @@ private:
   bool Al;
   G4double pAbsProbSideWallSi;
   G4double pAbsProbPolishedWallSi;
+  G4double numsensors;
 
   RISQTutorialConfigMessenger* messenger;
 };
