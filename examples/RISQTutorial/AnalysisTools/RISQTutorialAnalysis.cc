@@ -835,6 +835,358 @@ void PlotCumulativeHitEnergyVsEndTime_OverlayNb20()
   delete fOut;
 }
 
+void Ns_PrintPhononCollectionEfficiencyAndPlot()
+{
+  std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
+  std::vector<int> ns_vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+
+  const std::string baseDir = "../G4Macros/260412_run/lQPD_Al_Nb_PF";
+
+  // Create the ROOT output file where all histograms and canvases will be saved.
+  TFile* fOut = new TFile("PCE_Al_ns.root", "RECREATE");
+  if (!fOut || fOut->IsZombie()) {
+    std::cerr << "Error: could not create output file PCE_Al_ns.root" << std::endl;
+    return;
+  }
+  fOut->cd();
+
+  // Create 2D PCE map
+  TH2F* h_pce_al_ns = new TH2F("h_pce_al_ns",
+                               "PCE vs Al thickness and number of sensors;Al thickness [nm];Number of sensors;PCE [%]",
+                               (int)al_vals.size(), 0, (int)al_vals.size(),
+                               (int)ns_vals.size(), 0, (int)ns_vals.size());
+
+  // Label x axis with Al values
+  for (int i = 0; i < (int)al_vals.size(); ++i) {
+    h_pce_al_ns->GetXaxis()->SetBinLabel(i + 1, std::to_string(al_vals[i]).c_str());
+  }
+
+  // Label y axis with ns values
+  for (int j = 0; j < (int)ns_vals.size(); ++j) {
+    h_pce_al_ns->GetYaxis()->SetBinLabel(j + 1, std::to_string(ns_vals[j]).c_str());
+  }
+
+  // Group histograms two ways:
+  // hists_by_al[iA] = all histograms for one fixed Al value while ns varies
+  // hists_by_ns[iS] = all histograms for one fixed ns value while Al varies
+  std::vector<std::vector<TH1F*> > hists_by_al(al_vals.size());
+  std::vector<std::vector<TH1F*> > hists_by_ns(ns_vals.size());
+
+  for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+    for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
+
+      const int al = al_vals[iA];
+      const int ns = ns_vals[iS];
+
+      // Construct the expected input filenames for this Al/ns combination
+      std::ostringstream primPath, hitPath;
+      primPath << baseDir << "/Primary_Al" << al << "_ns" << ns << ".txt";
+      hitPath  << baseDir << "/Hits_Al"    << al << "_ns" << ns << ".txt";
+
+      const std::string primariesFilename = primPath.str();
+      const std::string hitsFilename      = hitPath.str();
+
+      std::ifstream primFile(primariesFilename.c_str());
+      std::ifstream hitFile(hitsFilename.c_str());
+
+      // Uncomment if you want to skip missing files
+      /*
+      if (!primFile.good() || !hitFile.good()) {
+        std::cout << "Skipping Al=" << al << " ns=" << ns
+                  << " because one or both files are missing." << std::endl;
+        primFile.close();
+        hitFile.close();
+        continue;
+      }
+      */
+
+      primFile.close();
+      hitFile.close();
+
+      const std::map<int, PrimaryInfo> primaryInfo =
+          ParsePrimaryTextFileForPrimaries(primariesFilename);
+
+      const std::map<int, std::vector<Hit> > hitInfo =
+          ParseHitTextFileForHits(hitsFilename);
+
+      TString hName = TString::Format("h_eDep_Al%d_ns%d", al, ns);
+      TString hTitle = TString::Format("Hit EDeps for Al=%d nm, ns=%d;log10(eDep[eV]);nEvents",
+                                       al, ns);
+
+      TH1F* h_eDep = new TH1F(hName, hTitle, 200, -6, 1);
+      h_eDep->SetDirectory(fOut);
+      h_eDep->SetLineWidth(2);
+      h_eDep->SetStats(0);
+
+      // Color by ns for the fixed-Al overlays
+      int color_ns = kBlack;
+      if (iS == 0)  color_ns = kBlack;
+      else if (iS == 1)  color_ns = kRed;
+      else if (iS == 2)  color_ns = kBlue;
+      else if (iS == 3)  color_ns = kGreen + 2;
+      else if (iS == 4)  color_ns = kMagenta + 1;
+      else if (iS == 5)  color_ns = kOrange + 7;
+      else if (iS == 6)  color_ns = kCyan + 2;
+      else if (iS == 7)  color_ns = kViolet;
+      else if (iS == 8)  color_ns = kPink + 7;
+      else if (iS == 9)  color_ns = kAzure + 2;
+      else if (iS == 10) color_ns = kSpring + 5;
+
+      h_eDep->SetLineColorAlpha(color_ns, 0.6);
+
+      // Sum total primary energy
+      double totalPrimaryEnergy_eV = 0.0;
+      for (const auto& kv : primaryInfo) {
+        totalPrimaryEnergy_eV += kv.second.energy_eV;
+      }
+
+      // Sum total hit energy and fill histogram
+      double totalHitEnergy_eV = 0.0;
+      for (const auto& kv : hitInfo) {
+        for (const Hit& h : kv.second) {
+          totalHitEnergy_eV += h.eDep_eV;
+
+          if (h.eDep_eV > 0.0) {
+            h_eDep->Fill(TMath::Log10(h.eDep_eV));
+          }
+
+          if (h.eDep_eV < 0.0) {
+            std::cout << "There are negative energies." << std::endl;
+          }
+        }
+      }
+
+      const double pce = (totalPrimaryEnergy_eV > 0.0)
+                           ? (totalHitEnergy_eV / totalPrimaryEnergy_eV)
+                           : 0.0;
+
+      h_pce_al_ns->SetBinContent(iA + 1, iS + 1, 100.0 * pce);
+
+      std::cout << "Al=" << al
+                << " ns=" << ns
+                << "  Total primary energy=" << totalPrimaryEnergy_eV << " eV"
+                << "  Total hit energy=" << totalHitEnergy_eV << " eV"
+                << "  PCE=" << 100.0 * pce << " %" << std::endl;
+
+      fOut->cd();
+      h_eDep->Write();
+
+      hists_by_al[iA].push_back(h_eDep);
+      hists_by_ns[iS].push_back(h_eDep);
+    }
+  }
+
+  // Write the 2D PCE map
+  fOut->cd();
+  h_pce_al_ns->Write();
+
+  // Save the PCE map as a png
+  TCanvas* c_pce = new TCanvas("c_pce_al_ns", "c_pce_al_ns", 900, 700);
+  c_pce->SetRightMargin(0.18);
+  h_pce_al_ns->SetStats(0);
+  h_pce_al_ns->Draw("COLZ TEXT");
+  c_pce->Write();
+  c_pce->SaveAs("PCE_Al_ns.png");
+
+  // --------------------------------------------------------------------------
+  // Fixed Al, varying ns
+  // --------------------------------------------------------------------------
+  for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+    const int al_val = al_vals[iA];
+
+    if (hists_by_al[iA].empty()) continue;
+
+    TString cName  = TString::Format("c_eDep_overlay_Al%d", al_val);
+    TString cTitle = TString::Format("Hit EDeps for Al=%d nm, varying ns", al_val);
+    TCanvas* c = new TCanvas(cName, cTitle, 900, 700);
+
+    TLegend* leg = new TLegend(0.68, 0.55, 0.88, 0.88);
+    leg->SetBorderSize(1);
+    leg->SetFillStyle(0);
+
+    double maxY = 0.0;
+    for (TH1F* h : hists_by_al[iA]) {
+      if (h->GetMaximum() > maxY) maxY = h->GetMaximum();
+    }
+
+    bool first = true;
+    for (TH1F* h : hists_by_al[iA]) {
+      h->SetTitle(TString::Format("Hit EDeps for Al=%d nm, varying ns;log10(eDep[eV]);nEvents",
+                                  al_val));
+      h->SetMaximum(1.15 * maxY);
+
+      TString histName = h->GetName();
+      int parsed_al = -1;
+      int ns_val = -1;
+      sscanf(histName.Data(), "h_eDep_Al%d_ns%d", &parsed_al, &ns_val);
+
+      if (first) {
+        h->Draw("HIST");
+        first = false;
+      } else {
+        h->Draw("HIST SAME");
+      }
+
+      leg->AddEntry(h, TString::Format("ns = %d", ns_val), "l");
+    }
+
+    TLine* line_Nb1 = new TLine(TMath::Log10(1.5e-3), 0, TMath::Log10(1.5e-3), 1.15 * maxY);
+    TLine* line_Nb2 = new TLine(TMath::Log10(3.0e-3), 0, TMath::Log10(3.0e-3), 1.15 * maxY);
+    TLine* line_Nb3 = new TLine(TMath::Log10(4.5e-3), 0, TMath::Log10(4.5e-3), 1.15 * maxY);
+    line_Nb1->SetLineColor(kOrange+1);
+    line_Nb2->SetLineColor(kOrange+1);
+    line_Nb3->SetLineColor(kOrange+1);
+    line_Nb1->SetLineStyle(2);
+    line_Nb2->SetLineStyle(2);
+    line_Nb3->SetLineStyle(2);
+    line_Nb1->SetLineWidth(2);
+    line_Nb2->SetLineWidth(2);
+    line_Nb3->SetLineWidth(2);
+
+    TLine* line_Al1 = new TLine(TMath::Log10(0.34e-3), 0, TMath::Log10(0.34e-3), 1.15 * maxY);
+    TLine* line_Al2 = new TLine(TMath::Log10(0.68e-3), 0, TMath::Log10(0.68e-3), 1.15 * maxY);
+    TLine* line_Al3 = new TLine(TMath::Log10(1.02e-3), 0, TMath::Log10(1.02e-3), 1.15 * maxY);
+    line_Al1->SetLineColor(kGreen+2);
+    line_Al2->SetLineColor(kGreen+2);
+    line_Al3->SetLineColor(kGreen+2);
+    line_Al1->SetLineStyle(2);
+    line_Al2->SetLineStyle(2);
+    line_Al3->SetLineStyle(2);
+    line_Al1->SetLineWidth(2);
+    line_Al2->SetLineWidth(2);
+    line_Al3->SetLineWidth(2);
+
+    line_Nb1->Draw();
+    line_Nb2->Draw();
+    line_Nb3->Draw();
+    line_Al1->Draw();
+    line_Al2->Draw();
+    line_Al3->Draw();
+
+    leg->AddEntry(line_Nb1, "Nb gap", "l");
+    leg->AddEntry(line_Al1, "Al gap", "l");
+
+    leg->Draw();
+
+    fOut->cd();
+    c->Write();
+    c->SaveAs(TString::Format("h_eDep_overlay_Al%d.png", al_val));
+
+    delete leg;
+    delete c;
+  }
+
+  // --------------------------------------------------------------------------
+  // Fixed ns, varying Al
+  // --------------------------------------------------------------------------
+  for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
+    const int ns_val = ns_vals[iS];
+
+    if (hists_by_ns[iS].empty()) continue;
+
+    TString cName  = TString::Format("c_eDep_overlay_ns%d", ns_val);
+    TString cTitle = TString::Format("Hit EDeps for ns=%d, varying Al", ns_val);
+    TCanvas* c = new TCanvas(cName, cTitle, 900, 700);
+
+    TLegend* leg = new TLegend(0.68, 0.55, 0.88, 0.88);
+    leg->SetBorderSize(1);
+    leg->SetFillStyle(0);
+
+    double maxY = 0.0;
+    for (TH1F* h : hists_by_ns[iS]) {
+      if (h->GetMaximum() > maxY) maxY = h->GetMaximum();
+    }
+
+    bool first = true;
+    int color_index = 0;
+
+    for (TH1F* h : hists_by_ns[iS]) {
+      h->SetTitle(TString::Format("Hit EDeps for ns=%d, varying Al;log10(eDep[eV]);nEvents",
+                                  ns_val));
+      h->SetMaximum(1.15 * maxY);
+
+      int color_al = kBlack;
+      if (color_index == 0) color_al = kBlack;
+      else if (color_index == 1) color_al = kRed;
+      else if (color_index == 2) color_al = kBlue;
+      else if (color_index == 3) color_al = kGreen + 2;
+      else if (color_index == 4) color_al = kMagenta + 1;
+      else if (color_index == 5) color_al = kOrange + 7;
+      else if (color_index == 6) color_al = kCyan + 2;
+      else if (color_index == 7) color_al = kViolet;
+      else if (color_index == 8) color_al = kPink + 7;
+      else if (color_index == 9) color_al = kAzure + 2;
+
+      h->SetLineColorAlpha(color_al, 0.6);
+
+      TString histName = h->GetName();
+      int al_val = -1;
+      int parsed_ns = -1;
+      sscanf(histName.Data(), "h_eDep_Al%d_ns%d", &al_val, &parsed_ns);
+
+      if (first) {
+        h->Draw("HIST");
+        first = false;
+      } else {
+        h->Draw("HIST SAME");
+      }
+
+      leg->AddEntry(h, TString::Format("Al = %d nm", al_val), "l");
+      ++color_index;
+    }
+
+    TLine* line_Nb1 = new TLine(TMath::Log10(1.5e-3), 0, TMath::Log10(1.5e-3), 1.15 * maxY);
+    TLine* line_Nb2 = new TLine(TMath::Log10(3.0e-3), 0, TMath::Log10(3.0e-3), 1.15 * maxY);
+    TLine* line_Nb3 = new TLine(TMath::Log10(4.5e-3), 0, TMath::Log10(4.5e-3), 1.15 * maxY);
+    line_Nb1->SetLineColor(kOrange+1);
+    line_Nb2->SetLineColor(kOrange+1);
+    line_Nb3->SetLineColor(kOrange+1);
+    line_Nb1->SetLineStyle(2);
+    line_Nb2->SetLineStyle(2);
+    line_Nb3->SetLineStyle(2);
+    line_Nb1->SetLineWidth(2);
+    line_Nb2->SetLineWidth(2);
+    line_Nb3->SetLineWidth(2);
+
+    TLine* line_Al1 = new TLine(TMath::Log10(0.34e-3), 0, TMath::Log10(0.34e-3), 1.15 * maxY);
+    TLine* line_Al2 = new TLine(TMath::Log10(0.68e-3), 0, TMath::Log10(0.68e-3), 1.15 * maxY);
+    TLine* line_Al3 = new TLine(TMath::Log10(1.02e-3), 0, TMath::Log10(1.02e-3), 1.15 * maxY);
+    line_Al1->SetLineColor(kGreen+2);
+    line_Al2->SetLineColor(kGreen+2);
+    line_Al3->SetLineColor(kGreen+2);
+    line_Al1->SetLineStyle(2);
+    line_Al2->SetLineStyle(2);
+    line_Al3->SetLineStyle(2);
+    line_Al1->SetLineWidth(2);
+    line_Al2->SetLineWidth(2);
+    line_Al3->SetLineWidth(2);
+
+    line_Nb1->Draw();
+    line_Nb2->Draw();
+    line_Nb3->Draw();
+    line_Al1->Draw();
+    line_Al2->Draw();
+    line_Al3->Draw();
+
+    leg->AddEntry(line_Nb1, "Nb gap", "l");
+    leg->AddEntry(line_Al1, "Al gap", "l");
+
+    leg->Draw();
+
+    fOut->cd();
+    c->Write();
+    c->SaveAs(TString::Format("h_eDep_overlay_ns%d.png", ns_val));
+
+    delete leg;
+    delete c;
+  }
+
+  fOut->Write();
+  fOut->Close();
+
+  delete c_pce;
+}
+
 
 //---------------------------------------------------------------------------------------
 // Parsing function
