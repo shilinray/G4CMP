@@ -166,7 +166,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Aluminum. This is where phonon hits are registered
 
   // Aluminum feedline
-  const G4double alFeedlineHalfX = 0.5*cm;
+  const G4double alFeedlineHalfX = geHalfX;
   const G4double alFeedlineHalfY = 4.5*um;
   const G4double fl_thickness = 0.2*um;
 
