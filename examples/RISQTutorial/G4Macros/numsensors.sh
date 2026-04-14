@@ -83,6 +83,12 @@ sed -i "s/Al false/Al ${Al_bool}/g" $mName
 sed -i "s/pAbsProbSideWallSi 0.0/pAbsProbSideWallSi ${pAbsProbSideWallSi}/g" $mName
 sed -i "s/pAbsProbPolishedWallSi 0.0/pAbsProbPolishedWallSi ${pAbsProbPolishedWallSi}/g" $mName
 sed -i "s/numsensors 0/numsensors ${numsensors}/g" $mName
+
+# Scale GPS generation volume to match chip dimensions: halfx = 0.5 / sqrt(numsensors) cm
+gps_half=$(python3 -c "import math; print(f'{0.5 / math.sqrt($numsensors):.10f}')")
+sed -i "s|/gps/pos/halfx 0.5 cm|/gps/pos/halfx ${gps_half} cm|g" $mName
+sed -i "s|/gps/pos/halfy 0.5 cm|/gps/pos/halfy ${gps_half} cm|g" $mName
+
 sed -i "s|hitsFileName|hitsFileName ${fHits}|g" $mName
 sed -i "s|primFileName|primFileName ${fPrimary}|g" $mName
 
