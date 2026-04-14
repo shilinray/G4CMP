@@ -129,7 +129,7 @@ ProcessAbsorption(const G4Track& track, const G4Step& step, G4double EDep,
   particleChange.ProposeTrackStatus(fStopAndKill);
   particleChange.ProposeEnergy(0.);
 
-  particleChange.ProposeNonIonizingEnergyDeposit(EDep);
+  particleChange.ProposeNonIonizingEnergyDeposit(EDep); /////crucial line that records energy deposit/////
 
   // Secondaries are emitted with cos(theta) distribution inward
   G4ThreeVector surfNorm = G4CMP::GetSurfaceNormal(step);

@@ -760,11 +760,12 @@ AttachPhononSensor_Al(G4CMPSurfaceProperty *surfProp) {
   sensorProp->AddConstProperty("filmAbsorption", .795);  //.795 
   sensorProp->AddConstProperty("filmThickness", filmThicknessAl*nm);
   sensorProp->AddConstProperty("gapEnergy", 173.715e-6*eV);
-  sensorProp->AddConstProperty("lowQPLimit", 3.);
+  sensorProp->AddConstProperty("lowQPLimit", 1.1);
   sensorProp->AddConstProperty("phononLifetime", 242.*ps);
   sensorProp->AddConstProperty("phononLifetimeSlope", 0.29);
   sensorProp->AddConstProperty("vSound", 3.26*km/s);
-  sensorProp->AddConstProperty("subgapAbsorption", 0.1);
+  sensorProp->AddConstProperty("subgapAbsorption", 0.0);
+  sensorProp->AddConstProperty("absorberGap", 0.0);
 
   // Attach electrode object to handle KaplanQP interface
   surfProp->SetPhononElectrode(new G4CMPPhononElectrode);
@@ -784,11 +785,12 @@ AttachPhononSensor_Nb(G4CMPSurfaceProperty *surfProp) {
   sensorProp->AddConstProperty("filmAbsorption", .745);  //.745 
   sensorProp->AddConstProperty("filmThickness", filmThicknessNb*nm);
   sensorProp->AddConstProperty("gapEnergy",1538e-6*eV );            //SQD: From Eric, Dylan
-  sensorProp->AddConstProperty("lowQPLimit",3.);                   //SQD: Taken from G4CMP phonon example (also aluminum).
+  sensorProp->AddConstProperty("lowQPLimit",1.1);                   //SQD: Taken from G4CMP phonon example (also aluminum).
   sensorProp->AddConstProperty("phononLifetime",4.17*CLHEP::ps);   //SQD: From G4CMP phonon example (also aluminum), validated by Eric.
   sensorProp->AddConstProperty("phononLifetimeSlope",0.29);        //REL: Based on guessing from Kaplan paper, I think this is material-agnostic?
   sensorProp->AddConstProperty("vSound",2.44*CLHEP::km/CLHEP::s); //SQD: From Eric
-  sensorProp->AddConstProperty("subgapAbsorption", 0.1);
+  sensorProp->AddConstProperty("subgapAbsorption", 0.0);
+  sensorProp->AddConstProperty("absorberGap", 0.0);
 
 
   // Attach electrode object to handle KaplanQP interface
