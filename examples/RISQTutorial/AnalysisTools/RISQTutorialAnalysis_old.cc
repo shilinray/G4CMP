@@ -11,7 +11,6 @@
 //---------------------------------------------------------
 
 //C++ includes
-#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -26,7 +25,6 @@
 #include "TFile.h"
 #include "TH2F.h"
 #include "TCanvas.h"
-#include "TGraph.h"
 #include "TLegend.h"
 #include "TLine.h"
 
@@ -117,14 +115,14 @@ void AnalyzeMuonEvent(std::string primariesFilename, std::string hitsFilename,do
   TH2F * h_hitXZ = new TH2F("h_nHitsXZ","XZ Locations of Hits; X [mm]; Z [mm]; NHits/bin",200,-5,5,200,4.6,5.02);
   
   //Loop over events
-  for( std::vector<Event>::size_type iE = 0; iE < eventList.size(); ++iE ){
+  for( int iE = 0; iE < eventList.size(); ++iE ){
     if( iE % 1000 == 0 ) std::cout << "Done with " << iE << " event histogram fills." << std::endl;
     
     //Get the event
     Event tE = eventList[iE];
     
     //Plot a number of hit-related things: 
-    for ( std::vector<Hit>::size_type iH = 0; iH < tE.hitVect.size(); ++iH ){
+    for ( int iH = 0; iH < tE.hitVect.size(); ++iH ){
 
       //Gather hit information
       double hitX_mm = tE.hitVect[iH].endX_mm;
@@ -209,7 +207,7 @@ void PCEStudy(std::string primariesFilename, std::string hitsFilename)
   
   
   //Loop over events
-  for( std::vector<Event>::size_type iE = 0; iE < eventList.size(); ++iE ){
+  for( int iE = 0; iE < eventList.size(); ++iE ){
     if( iE % 1000 == 0 ) std::cout << "Done with " << iE << " event histogram fills." << std::endl;
 
     //Get the event
@@ -224,7 +222,7 @@ void PCEStudy(std::string primariesFilename, std::string hitsFilename)
     
     //Plot a number of hit-related things: hit multiplicity, hit locations in XYZ, hits in XYZ weighted by energy, etc.
     h_nHits->Fill(tE.hitVect.size());
-    for ( std::vector<Hit>::size_type iH = 0; iH < tE.hitVect.size(); ++iH ){
+    for ( int iH = 0; iH < tE.hitVect.size(); ++iH ){
 
       //Gather hit information
       double hitX = tE.hitVect[iH].endX_mm;
@@ -842,7 +840,7 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
   std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
   std::vector<int> ns_vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
-  const std::string baseDir = "../G4Macros/260412_run/lQPD_Al_PF";
+  const std::string baseDir = "../G4Macros/260414_run/lQPD_Al_PF";
 
   // Create the ROOT output file where all histograms and canvases will be saved.
   TFile* fOut = new TFile("PCE_Al_ns.root", "RECREATE");
@@ -854,7 +852,7 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
 
   // Create 2D PCE map
   TH2F* h_pce_al_ns = new TH2F("h_pce_al_ns",
-                               "PCE vs Al thickness and chip area;Al thickness [nm];Chip area [cm^{2}];PCE [%]",
+                               "PCE vs Al thickness and number of sensors;Al thickness [nm];Number of sensors;PCE [%]",
                                (int)al_vals.size(), 0, (int)al_vals.size(),
                                (int)ns_vals.size(), 0, (int)ns_vals.size());
 
@@ -863,11 +861,9 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
     h_pce_al_ns->GetXaxis()->SetBinLabel(i + 1, std::to_string(al_vals[i]).c_str());
   }
 
-  // Label y axis with chip area values, where area = 1 cm^2 / ns
+  // Label y axis with ns values
   for (int j = 0; j < (int)ns_vals.size(); ++j) {
-    const double chipArea_cm2 = 1.0 / ns_vals[j];
-    TString areaLabel = TString::Format("%.3f", chipArea_cm2);
-    h_pce_al_ns->GetYaxis()->SetBinLabel(j + 1, areaLabel.Data());
+    h_pce_al_ns->GetYaxis()->SetBinLabel(j + 1, std::to_string(ns_vals[j]).c_str());
   }
 
   // Group histograms two ways:
@@ -1003,7 +999,6 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
     TString cName  = TString::Format("c_eDep_overlay_Al%d", al_val);
     TString cTitle = TString::Format("Hit EDeps for Al=%d nm, varying ns", al_val);
     TCanvas* c = new TCanvas(cName, cTitle, 900, 700);
-    c->SetLogy();
 
     TLegend* leg = new TLegend(0.68, 0.55, 0.88, 0.88);
     leg->SetBorderSize(1);
@@ -1019,7 +1014,6 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
       h->SetTitle(TString::Format("Hit EDeps for Al=%d nm, varying ns;log10(eDep[eV]);nEvents",
                                   al_val));
       h->SetMaximum(1.15 * maxY);
-      h->SetMinimum(0.5);
 
       TString histName = h->GetName();
       int parsed_al = -1;
@@ -1036,6 +1030,19 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
       leg->AddEntry(h, TString::Format("ns = %d", ns_val), "l");
     }
 
+    TLine* line_Nb1 = new TLine(TMath::Log10(1.5e-3), 0, TMath::Log10(1.5e-3), 1.15 * maxY);
+    TLine* line_Nb2 = new TLine(TMath::Log10(3.0e-3), 0, TMath::Log10(3.0e-3), 1.15 * maxY);
+    TLine* line_Nb3 = new TLine(TMath::Log10(4.5e-3), 0, TMath::Log10(4.5e-3), 1.15 * maxY);
+    line_Nb1->SetLineColor(kOrange+1);
+    line_Nb2->SetLineColor(kOrange+1);
+    line_Nb3->SetLineColor(kOrange+1);
+    line_Nb1->SetLineStyle(2);
+    line_Nb2->SetLineStyle(2);
+    line_Nb3->SetLineStyle(2);
+    line_Nb1->SetLineWidth(2);
+    line_Nb2->SetLineWidth(2);
+    line_Nb3->SetLineWidth(2);
+
     TLine* line_Al1 = new TLine(TMath::Log10(0.34e-3), 0, TMath::Log10(0.34e-3), 1.15 * maxY);
     TLine* line_Al2 = new TLine(TMath::Log10(0.68e-3), 0, TMath::Log10(0.68e-3), 1.15 * maxY);
     TLine* line_Al3 = new TLine(TMath::Log10(1.02e-3), 0, TMath::Log10(1.02e-3), 1.15 * maxY);
@@ -1049,10 +1056,14 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
     line_Al2->SetLineWidth(2);
     line_Al3->SetLineWidth(2);
 
+    line_Nb1->Draw();
+    line_Nb2->Draw();
+    line_Nb3->Draw();
     line_Al1->Draw();
     line_Al2->Draw();
     line_Al3->Draw();
 
+    leg->AddEntry(line_Nb1, "Nb gap", "l");
     leg->AddEntry(line_Al1, "Al gap", "l");
 
     leg->Draw();
@@ -1076,7 +1087,6 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
     TString cName  = TString::Format("c_eDep_overlay_ns%d", ns_val);
     TString cTitle = TString::Format("Hit EDeps for ns=%d, varying Al", ns_val);
     TCanvas* c = new TCanvas(cName, cTitle, 900, 700);
-    c->SetLogy();
 
     TLegend* leg = new TLegend(0.68, 0.55, 0.88, 0.88);
     leg->SetBorderSize(1);
@@ -1094,7 +1104,6 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
       h->SetTitle(TString::Format("Hit EDeps for ns=%d, varying Al;log10(eDep[eV]);nEvents",
                                   ns_val));
       h->SetMaximum(1.15 * maxY);
-      h->SetMinimum(0.5);
 
       int color_al = kBlack;
       if (color_index == 0) color_al = kBlack;
@@ -1176,132 +1185,6 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
   fOut->Close();
 
   delete c_pce;
-}
-
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-
-void Ns_QuasiparticleAnalysis()
-{
-  std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
-  std::vector<int> ns_vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-
-  const double alGap_eV = 0.34e-3;
-  const std::string baseDir = "../G4Macros/260412_run/lQPD_Al_PF";
-
-  TFile* fOut = new TFile("QP_Al_ns.root", "RECREATE");
-  if (!fOut || fOut->IsZombie()) {
-    std::cerr << "Error: could not create output file QP_Al_ns.root" << std::endl;
-    return;
-  }
-  fOut->cd();
-
-  // 2D histogram: total quasiparticles vs Al thickness and chip area
-  TH2F* h_qp_al_ns = new TH2F("h_qp_al_ns",
-      "Total Quasiparticles vs Al thickness and chip area;Al thickness [nm];Chip area [cm^{2}];N_{QP}",
-      (int)al_vals.size(), 0, (int)al_vals.size(),
-      (int)ns_vals.size(), 0, (int)ns_vals.size());
-
-  for (int i = 0; i < (int)al_vals.size(); ++i) {
-    h_qp_al_ns->GetXaxis()->SetBinLabel(i + 1, std::to_string(al_vals[i]).c_str());
-  }
-  for (int j = 0; j < (int)ns_vals.size(); ++j) {
-    const double chipArea_cm2 = 1.0 / ns_vals[j];
-    TString areaLabel = TString::Format("%.3f", chipArea_cm2);
-    h_qp_al_ns->GetYaxis()->SetBinLabel(j + 1, areaLabel.Data());
-  }
-
-  for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
-    for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
-
-      const int al = al_vals[iA];
-      const int ns = ns_vals[iS];
-
-      std::ostringstream hitPath;
-      hitPath << baseDir << "/Hits_Al" << al << "_ns" << ns << ".txt";
-
-      const std::map<int, std::vector<Hit> > hitInfo =
-          ParseHitTextFileForHits(hitPath.str());
-
-      // Collect all hits with their endT and quasiparticle count
-      struct QPEntry {
-        double time_ns;
-        double nQP;
-      };
-      std::vector<QPEntry> qpEntries;
-
-      double totalQP = 0.0;
-      for (const auto& kv : hitInfo) {
-        for (const Hit& h : kv.second) {
-          if (h.eDep_eV > 0.0) {
-            double nQP = (h.eDep_eV / alGap_eV) * 2.0;
-            totalQP += nQP;
-            qpEntries.push_back({h.endT_ns, nQP});
-          }
-        }
-      }
-
-      h_qp_al_ns->SetBinContent(iA + 1, iS + 1, totalQP);
-
-      std::cout << "Al=" << al << " ns=" << ns
-                << "  Total QP=" << totalQP << std::endl;
-
-      // Sort by time for cumulative graph
-      std::sort(qpEntries.begin(), qpEntries.end(),
-                [](const QPEntry& a, const QPEntry& b) {
-                  return a.time_ns < b.time_ns;
-                });
-
-      // Build cumulative quasiparticle count vs time
-      if (!qpEntries.empty()) {
-        std::vector<double> times(qpEntries.size());
-        std::vector<double> cumQP(qpEntries.size());
-        double runningSum = 0.0;
-        for (size_t i = 0; i < qpEntries.size(); ++i) {
-          runningSum += qpEntries[i].nQP;
-          times[i] = qpEntries[i].time_ns;
-          cumQP[i] = runningSum;
-        }
-
-        TString gName = TString::Format("g_cumQP_Al%d_ns%d", al, ns);
-        TGraph* g = new TGraph((int)times.size(), times.data(), cumQP.data());
-        g->SetName(gName);
-        g->SetTitle(TString::Format(
-            "Cumulative QP vs Time, Al=%d nm, ns=%d;Time [ns];Cumulative N_{QP}",
-            al, ns));
-        g->SetLineWidth(2);
-
-        fOut->cd();
-        g->Write();
-
-        TString cName = TString::Format("c_cumQP_Al%d_ns%d", al, ns);
-        TCanvas* c = new TCanvas(cName, cName, 900, 700);
-        g->Draw("AL");
-        c->Write();
-        c->SaveAs(TString::Format("cumQP_Al%d_ns%d.png", al, ns));
-        delete c;
-      }
-    }
-  }
-
-  // Write and save the 2D histogram
-  fOut->cd();
-  h_qp_al_ns->Write();
-
-  TCanvas* c_qp = new TCanvas("c_qp_al_ns", "c_qp_al_ns", 900, 700);
-  c_qp->SetRightMargin(0.18);
-  h_qp_al_ns->SetStats(0);
-  h_qp_al_ns->Draw("COLZ TEXT");
-  c_qp->Write();
-  c_qp->SaveAs("QP_Al_ns.png");
-
-  fOut->Write();
-  fOut->Close();
-
-  delete c_qp;
 }
 
 
