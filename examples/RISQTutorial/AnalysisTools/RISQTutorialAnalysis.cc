@@ -840,7 +840,7 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
   std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
   std::vector<int> ns_vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
-  const std::string baseDir = "../G4Macros/260412_run/lQPD_Al_PF";
+  const std::string baseDir = "../G4Macros/260414_run/lQPD_Al_PF";
 
   // Create the ROOT output file where all histograms and canvases will be saved.
   TFile* fOut = new TFile("PCE_Al_ns.root", "RECREATE");
