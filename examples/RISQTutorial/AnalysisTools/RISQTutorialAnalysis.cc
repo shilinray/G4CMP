@@ -1190,7 +1190,11 @@ void Ns_QuasiparticleAnalysis()
   std::vector<int> ns_vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
   const double alGap_eV = 0.34e-3;
-  const std::string baseDir = "../G4Macros/260412_run/lQPD_Al_PF";
+  const bool useRecombination = true;  // set to false to turn recombination off
+  const double recombDelay_ns = 1.0e1; 
+  const double recombKillQP   = 2.0;   // kill 2 quasiparticles after 1 ms
+
+  const std::string baseDir = "../G4Macros/260419_run/lQPD_Al_PF";
 
   TFile* fOut = new TFile("QP_Al_ns.root", "RECREATE");
   if (!fOut || fOut->IsZombie()) {
@@ -1199,9 +1203,8 @@ void Ns_QuasiparticleAnalysis()
   }
   fOut->cd();
 
-  // 2D histogram: total quasiparticles vs Al thickness and chip area
   TH2F* h_qp_al_ns = new TH2F("h_qp_al_ns",
-      "Total Quasiparticles vs Al thickness and chip area;Al thickness [nm];Chip area [cm^{2}];N_{QP}",
+      "Number of Quasiparticles vs Al thickness and chip area;Al thickness [nm];Chip area [cm^{2}];N_{QP}",
       (int)al_vals.size(), 0, (int)al_vals.size(),
       (int)ns_vals.size(), 0, (int)ns_vals.size());
 
@@ -1226,68 +1229,91 @@ void Ns_QuasiparticleAnalysis()
       const std::map<int, std::vector<Hit> > hitInfo =
           ParseHitTextFileForHits(hitPath.str());
 
-      // Collect all hits with their endT and quasiparticle count
-      struct QPEntry {
+      struct QPEvent {
         double time_ns;
-        double nQP;
+        double deltaQP;
       };
-      std::vector<QPEntry> qpEntries;
+      std::vector<QPEvent> qpEvents;
 
-      double totalQP = 0.0;
+      double totalCreatedQP = 0.0;
+
       for (const auto& kv : hitInfo) {
         for (const Hit& h : kv.second) {
           if (h.eDep_eV > 0.0) {
-            double nQP = (h.eDep_eV / alGap_eV) * 2.0;
-            totalQP += nQP;
-            qpEntries.push_back({h.endT_ns, nQP});
+            const double nQP = (h.eDep_eV / alGap_eV) * 2.0;
+            totalCreatedQP += nQP;
+
+            // Always add creation event
+            qpEvents.push_back({h.endT_ns, nQP});
+
+            // Only add recombination event if enabled
+            if (useRecombination) {
+              qpEvents.push_back({h.endT_ns + recombDelay_ns, -recombKillQP});
+            }
           }
         }
       }
 
-      h_qp_al_ns->SetBinContent(iA + 1, iS + 1, totalQP);
-
-      std::cout << "Al=" << al << " ns=" << ns
-                << "  Total QP=" << totalQP << std::endl;
-
-      // Sort by time for cumulative graph
-      std::sort(qpEntries.begin(), qpEntries.end(),
-                [](const QPEntry& a, const QPEntry& b) {
+      std::sort(qpEvents.begin(), qpEvents.end(),
+                [](const QPEvent& a, const QPEvent& b) {
+                  if (a.time_ns == b.time_ns) return a.deltaQP > b.deltaQP;
                   return a.time_ns < b.time_ns;
                 });
 
-      // Build cumulative quasiparticle count vs time
-      if (!qpEntries.empty()) {
-        std::vector<double> times(qpEntries.size());
-        std::vector<double> cumQP(qpEntries.size());
-        double runningSum = 0.0;
-        for (size_t i = 0; i < qpEntries.size(); ++i) {
-          runningSum += qpEntries[i].nQP;
-          times[i] = qpEntries[i].time_ns;
-          cumQP[i] = runningSum;
+      double runningQP = 0.0;
+      std::vector<double> times;
+      std::vector<double> netQP;
+
+      for (const auto& ev : qpEvents) {
+        runningQP += ev.deltaQP;
+        if (runningQP < 0.0) runningQP = 0.0;
+
+        times.push_back(ev.time_ns);
+        netQP.push_back(runningQP);
+      }
+
+      const double finalQP = netQP.empty() ? 0.0 : netQP.back();
+      h_qp_al_ns->SetBinContent(iA + 1, iS + 1, finalQP);
+
+      std::cout << "Al=" << al
+                << " ns=" << ns
+                << " Total created QP=" << totalCreatedQP
+                << " Final QP=" << finalQP
+                << " Recombination=" << (useRecombination ? "ON" : "OFF")
+                << std::endl;
+
+      if (!times.empty()) {
+        TString gName = TString::Format("g_netQP_Al%d_ns%d", al, ns);
+        TGraph* g = new TGraph((int)times.size(), times.data(), netQP.data());
+        g->SetName(gName);
+
+        TString title;
+        if (useRecombination) {
+          title = TString::Format(
+              "Net QP vs Time with Recombination, Al=%d nm, ns=%d;Time [ns];Net N_{QP}",
+              al, ns);
+        } else {
+          title = TString::Format(
+              "Cumulative QP vs Time, Al=%d nm, ns=%d;Time [ns];N_{QP}",
+              al, ns);
         }
 
-        TString gName = TString::Format("g_cumQP_Al%d_ns%d", al, ns);
-        TGraph* g = new TGraph((int)times.size(), times.data(), cumQP.data());
-        g->SetName(gName);
-        g->SetTitle(TString::Format(
-            "Cumulative QP vs Time, Al=%d nm, ns=%d;Time [ns];Cumulative N_{QP}",
-            al, ns));
+        g->SetTitle(title);
         g->SetLineWidth(2);
 
         fOut->cd();
         g->Write();
 
-        TString cName = TString::Format("c_cumQP_Al%d_ns%d", al, ns);
+        TString cName = TString::Format("c_netQP_Al%d_ns%d", al, ns);
         TCanvas* c = new TCanvas(cName, cName, 900, 700);
         g->Draw("AL");
         c->Write();
-        c->SaveAs(TString::Format("cumQP_Al%d_ns%d.png", al, ns));
+        c->SaveAs(TString::Format("netQP_Al%d_ns%d.png", al, ns));
         delete c;
       }
     }
   }
 
-  // Write and save the 2D histogram
   fOut->cd();
   h_qp_al_ns->Write();
 

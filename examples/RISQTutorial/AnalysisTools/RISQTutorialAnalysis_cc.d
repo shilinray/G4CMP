@@ -85,6 +85,7 @@
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/Buttons.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TAttBBox2D.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TAttCanvas.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TGraph.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TLegend.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TPave.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TBox.h

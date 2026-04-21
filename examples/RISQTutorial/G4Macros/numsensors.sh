@@ -3,7 +3,7 @@
 #SBATCH --partition=roma
 #SBATCH --account=supercdms:default
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=21
+#SBATCH --cpus-per-task=15
 #SBATCH --mem-per-cpu=4096
 #SBATCH --time=0-02:00:00
 #SBATCH --gpus 0
@@ -35,22 +35,22 @@ if [ "$Al_bool" = "true" ]
 then
     if [ "$pAbsProbPolishedWallSi" = "0.0" ]
     then
-        run_dir="./260414_run/lQPD_Al_SW"
+        run_dir="./260419_run/lQPD_Al_SW"
     elif [ "$pAbsProbSideWallSi" = "0.0" ]
     then
-        run_dir="./260414_run/lQPD_Al_PF"
+        run_dir="./260419_run/lQPD_Al_PF"
     else
-        run_dir="./260414_run/lQPD_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+        run_dir="./260419_run/lQPD_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
     fi
 else
     if [ "$pAbsProbPolishedWallSi" = "0.0" ]
     then
-        run_dir="./260414_run/lQPD_Al_Nb_SW"
+        run_dir="./260419_run/lQPD_Al_Nb_SW"
     elif [ "$pAbsProbSideWallSi" = "0.0" ]
     then
-        run_dir="./260414_run/lQPD_Al_Nb_PF"
+        run_dir="./260419_run/lQPD_Al_Nb_PF"
     else
-        run_dir="./260414_run/lQPD_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+        run_dir="./260419_run/lQPD_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
     fi
 fi 
 
