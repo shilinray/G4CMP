@@ -896,6 +896,15 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
   std::vector<std::vector<TH1F*> > hists_by_al(al_vals.size());
   std::vector<std::vector<TH1F*> > hists_by_ns(ns_vals.size());
 
+  // PCE [%] and binomial error tables, indexed [iA][iS], filled in the inner loop
+  // and used after the loop to build the PCE vs Al line graph.
+  // Binomial error: sigma_pce = 100 * sqrt(p*(1-p)/n_phonons), n_phonons = 10000
+  const int n_phonons_pce = 10000;
+  std::vector<std::vector<double> > pce_table(al_vals.size(),
+                                              std::vector<double>(ns_vals.size(), 0.0));
+  std::vector<std::vector<double> > pce_err_table(al_vals.size(),
+                                                  std::vector<double>(ns_vals.size(), 0.0));
+
   for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
     for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
 
@@ -990,6 +999,13 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
       h_pce_al_ns->SetBinContent(iA + 1, iS + 1, 100.0 * pce);
       h_nqp_al_ns->SetBinContent(iA + 1, iS + 1, totalQP);
 
+      // Store PCE and its binomial uncertainty for the line graph below
+      pce_table[iA][iS] = 100.0 * pce;
+      const double pce_err = (pce > 0.0 && pce < 1.0)
+                               ? 100.0 * std::sqrt(pce * (1.0 - pce) / n_phonons_pce)
+                               : 0.0;
+      pce_err_table[iA][iS] = pce_err;
+
       std::cout << "Al=" << al
                 << " ns=" << ns
                 << "  Total primary energy=" << totalPrimaryEnergy_eV << " eV"
@@ -1028,6 +1044,69 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
   h_nqp_al_ns->Draw("COLZ TEXT");
   c_nqp->Write();
   c_nqp->SaveAs("NQP_Al_ns.png");
+
+  // --------------------------------------------------------------------------
+  // PCE vs Al thickness: one line per chip area, with binomial error bars
+  // --------------------------------------------------------------------------
+  {
+    const int nsColors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1,
+                            kOrange+7, kCyan+2, kViolet, kPink+7, kAzure+2, kSpring+5};
+
+    std::vector<double> xAl(al_vals.size());
+    for (int iA = 0; iA < (int)al_vals.size(); ++iA)
+      xAl[iA] = al_vals[iA];
+
+    // TMultiGraph automatically scales axes to contain all constituent graphs
+    TMultiGraph* mg_pce = new TMultiGraph("mg_pce_vs_Al",
+        "PCE vs Al thickness;Al thickness [nm];PCE [%]");
+
+    TCanvas* c_pceVsAl = new TCanvas("c_pce_vs_Al", "PCE vs Al thickness", 900, 700);
+    TLegend* leg_pce = new TLegend(0.62, 0.55, 0.88, 0.88);
+    leg_pce->SetBorderSize(1);
+    leg_pce->SetFillStyle(0);
+
+    for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
+      const int ns = ns_vals[iS];
+      const double chipArea_cm2 = 1.0 / ns;
+
+      std::vector<double> yPCE(al_vals.size());
+      std::vector<double> yErr(al_vals.size());
+      std::vector<double> xErr(al_vals.size(), 0.0);
+      for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+        yPCE[iA] = pce_table[iA][iS];
+        yErr[iA] = pce_err_table[iA][iS];
+      }
+
+      TString gName = TString::Format("g_pce_vs_Al_ns%d", ns);
+      TGraphErrors* g = new TGraphErrors((int)al_vals.size(), xAl.data(), yPCE.data(),
+                                          xErr.data(), yErr.data());
+      g->SetName(gName);
+      g->SetLineWidth(2);
+      g->SetMarkerStyle(20);
+      g->SetMarkerSize(0.8);
+
+      const int color = nsColors[iS < 11 ? iS : 10];
+      g->SetLineColor(color);
+      g->SetMarkerColor(color);
+      g->SetFillColor(color);
+
+      fOut->cd();
+      g->Write();
+
+      mg_pce->Add(g, "LP");
+      leg_pce->AddEntry(g, TString::Format("%.3f cm^{2}", chipArea_cm2), "lp");
+    }
+
+    mg_pce->Draw("A");
+    leg_pce->Draw();
+    fOut->cd();
+    mg_pce->Write();
+    c_pceVsAl->Write();
+    c_pceVsAl->SaveAs("PCE_vs_Al_byChipArea.png");
+
+    delete leg_pce;
+    delete c_pceVsAl;
+  }
 
   // --------------------------------------------------------------------------
   // Fixed Al, varying ns
@@ -1469,13 +1548,16 @@ void Ns_QuasiparticleAnalysis()
     for (int iA = 0; iA < (int)al_vals.size(); ++iA)
       xAl[iA] = al_vals[iA];
 
+    // Use a TMultiGraph so the axis range automatically expands to fit all curves.
+    TMultiGraph* mg = new TMultiGraph("mg_peakQP_vs_Al",
+        "Peak concurrent QPs vs Al thickness;Al thickness [nm];Peak N_{QP}");
+
     // One canvas with all ns curves overlaid
     TCanvas* c_peakVsAl = new TCanvas("c_peakQP_vs_Al", "Peak QP vs Al thickness", 900, 700);
     TLegend* leg = new TLegend(0.62, 0.55, 0.88, 0.88);
     leg->SetBorderSize(1);
     leg->SetFillStyle(0);
 
-    bool firstDraw = true;
     for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
       const int ns = ns_vals[iS];
       const double chipArea_cm2 = 1.0 / ns;
@@ -1493,7 +1575,6 @@ void Ns_QuasiparticleAnalysis()
       TGraphErrors* g = new TGraphErrors((int)al_vals.size(), xAl.data(), yPeak.data(),
                                          xErr.data(), yErr.data());
       g->SetName(gName);
-      g->SetTitle("Peak concurrent QPs vs Al thickness;Al thickness [nm];Peak N_{QP}");
       g->SetLineWidth(2);
       g->SetMarkerStyle(20);
       g->SetMarkerSize(0.8);
@@ -1501,22 +1582,22 @@ void Ns_QuasiparticleAnalysis()
       const int color = nsColors[iS < 11 ? iS : 10];
       g->SetLineColor(color);
       g->SetMarkerColor(color);
+      g->SetFillColor(color);
 
       fOut->cd();
       g->Write();
 
-      if (firstDraw) {
-        g->Draw("ALP");
-        firstDraw = false;
-      } else {
-        g->Draw("LP SAME");
-      }
+      // Add to the TMultiGraph with "LP" draw option (line + markers + error bars)
+      mg->Add(g, "LP");
 
       leg->AddEntry(g, TString::Format("%.3f cm^{2}", chipArea_cm2), "lp");
     }
 
+    // Draw the TMultiGraph — axis range automatically covers all constituent graphs
+    mg->Draw("A");
     leg->Draw();
     fOut->cd();
+    mg->Write();
     c_peakVsAl->Write();
     c_peakVsAl->SaveAs("peakQP_vs_Al_byChipArea.png");
 
