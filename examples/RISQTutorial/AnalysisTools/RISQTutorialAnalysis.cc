@@ -28,6 +28,7 @@
 #include "TCanvas.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
+#include "TMultiGraph.h"
 #include "TLegend.h"
 #include "TLine.h"
 
@@ -1369,18 +1370,6 @@ void Ns_QuasiparticleAnalysis()
     h_qp_al_ns->GetYaxis()->SetBinLabel(j + 1, areaLabel.Data());
   }
 
-  // Number of initial phonons per event, used for binomial error estimation:
-  //   sigma_p = sqrt(p*(1-p)/n_phonons), where p = PCE
-  const int n_phonons = 10000;
-
-  // Table to accumulate peak QP for each (iA, iS) so we can build per-ns graphs after the main loop.
-  // peakQP_table[iA][iS] = peak concurrent QPs for Al=al_vals[iA], ns=ns_vals[iS]
-  std::vector<std::vector<double> > peakQP_table(al_vals.size(),
-                                                  std::vector<double>(ns_vals.size(), 0.0));
-  // peakQP_err_table[iA][iS] = binomial uncertainty on peak QP
-  std::vector<std::vector<double> > peakQP_err_table(al_vals.size(),
-                                                     std::vector<double>(ns_vals.size(), 0.0));
-
   // Loop over all (Al thickness, ns) combinations
   for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
     for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
@@ -1395,19 +1384,6 @@ void Ns_QuasiparticleAnalysis()
       // Parse all hits from the file; keyed by event ID
       const std::map<int, std::vector<Hit> > hitInfo =
           ParseHitTextFileForHits(hitPath.str());
-
-      // Parse primaries to obtain total injected energy (needed for PCE and binomial error)
-      std::ostringstream primPath;
-      primPath << baseDir << "/Primary_Al" << al << "_ns" << ns << ".txt";
-      const std::map<int, PrimaryInfo> primaryInfo =
-          ParsePrimaryTextFileForPrimaries(primPath.str());
-
-      double totalPrimaryEnergy_eV = 0.0;
-      for (const auto& kv : primaryInfo)
-        totalPrimaryEnergy_eV += kv.second.energy_eV;
-
-      // Total deposited energy across all hits (used to compute PCE for error estimation)
-      double totalHitEnergy_eV = 0.0;
 
       // A QPEvent represents a discrete change in the QP population at a given time:
       //   deltaQP > 0: QPs are created (phonon absorbed into film)
@@ -1430,7 +1406,6 @@ void Ns_QuasiparticleAnalysis()
             // endT_ns is the time the phonon arrived at the film (Final Time from G4CMP).
             const double nQP = (h.eDep_eV / alGap_eV) * 2.0;
             totalCreatedQP += nQP;
-            totalHitEnergy_eV += h.eDep_eV;
 
             // Push a creation event at the phonon arrival time (endT_ns)
             qpEvents.push_back({h.endT_ns, nQP});
@@ -1483,21 +1458,6 @@ void Ns_QuasiparticleAnalysis()
       // Fill the 2D summary histogram and the per-ns storage table with the peak QP count
       const double finalQP = netQP.empty() ? 0.0 : netQP.back();
       h_qp_al_ns->SetBinContent(iA + 1, iS + 1, peakQP);
-      peakQP_table[iA][iS] = peakQP;
-
-      // Binomial error propagation:
-      //   p = PCE = totalHitEnergy / totalPrimaryEnergy
-      //   sigma_p = sqrt(p*(1-p)/n_phonons)
-      //   sigma_peakQP = peakQP * (sigma_p / p) = peakQP * sqrt((1-p)/(n_phonons*p))
-      // This treats the peak QP as proportional to total collected energy (valid for
-      // the long-lifetime regime used here, where peakQP ≈ totalCreatedQP).
-      const double p_pce = (totalPrimaryEnergy_eV > 0.0)
-                             ? (totalHitEnergy_eV / totalPrimaryEnergy_eV)
-                             : 0.0;
-      const double peakQP_err = (p_pce > 0.0 && p_pce < 1.0 && peakQP > 0.0)
-                                  ? peakQP * std::sqrt((1.0 - p_pce) / (n_phonons * p_pce))
-                                  : 0.0;
-      peakQP_err_table[iA][iS] = peakQP_err;
 
       std::cout << "Al=" << al
                 << " ns=" << ns
@@ -1533,76 +1493,6 @@ void Ns_QuasiparticleAnalysis()
         delete c;
       }
     }
-  }
-
-  // --------------------------------------------------------------------------
-  // For each chip area (ns value), draw a line graph of peak QP vs Al thickness
-  // --------------------------------------------------------------------------
-  {
-    // Color palette: one color per ns value
-    const int nsColors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1,
-                            kOrange+7, kCyan+2, kViolet, kPink+7, kAzure+2, kSpring+5};
-
-    // Build x-axis: actual Al thickness values [nm]
-    std::vector<double> xAl(al_vals.size());
-    for (int iA = 0; iA < (int)al_vals.size(); ++iA)
-      xAl[iA] = al_vals[iA];
-
-    // Use a TMultiGraph so the axis range automatically expands to fit all curves.
-    TMultiGraph* mg = new TMultiGraph("mg_peakQP_vs_Al",
-        "Peak concurrent QPs vs Al thickness;Al thickness [nm];Peak N_{QP}");
-
-    // One canvas with all ns curves overlaid
-    TCanvas* c_peakVsAl = new TCanvas("c_peakQP_vs_Al", "Peak QP vs Al thickness", 900, 700);
-    TLegend* leg = new TLegend(0.62, 0.55, 0.88, 0.88);
-    leg->SetBorderSize(1);
-    leg->SetFillStyle(0);
-
-    for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
-      const int ns = ns_vals[iS];
-      const double chipArea_cm2 = 1.0 / ns;
-
-      // Build y-axis: peak QP and binomial errors for this ns, varying Al
-      std::vector<double> yPeak(al_vals.size());
-      std::vector<double> yErr(al_vals.size());
-      std::vector<double> xErr(al_vals.size(), 0.0);
-      for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
-        yPeak[iA] = peakQP_table[iA][iS];
-        yErr[iA]  = peakQP_err_table[iA][iS];
-      }
-
-      TString gName = TString::Format("g_peakQP_vs_Al_ns%d", ns);
-      TGraphErrors* g = new TGraphErrors((int)al_vals.size(), xAl.data(), yPeak.data(),
-                                         xErr.data(), yErr.data());
-      g->SetName(gName);
-      g->SetLineWidth(2);
-      g->SetMarkerStyle(20);
-      g->SetMarkerSize(0.8);
-
-      const int color = nsColors[iS < 11 ? iS : 10];
-      g->SetLineColor(color);
-      g->SetMarkerColor(color);
-      g->SetFillColor(color);
-
-      fOut->cd();
-      g->Write();
-
-      // Add to the TMultiGraph with "LP" draw option (line + markers + error bars)
-      mg->Add(g, "LP");
-
-      leg->AddEntry(g, TString::Format("%.3f cm^{2}", chipArea_cm2), "lp");
-    }
-
-    // Draw the TMultiGraph — axis range automatically covers all constituent graphs
-    mg->Draw("A");
-    leg->Draw();
-    fOut->cd();
-    mg->Write();
-    c_peakVsAl->Write();
-    c_peakVsAl->SaveAs("peakQP_vs_Al_byChipArea.png");
-
-    delete leg;
-    delete c_peakVsAl;
   }
 
   // Write the 2D peak-QP summary histogram and save as a color-map PNG
