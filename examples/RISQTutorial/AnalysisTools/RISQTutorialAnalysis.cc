@@ -27,6 +27,7 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TLegend.h"
 #include "TLine.h"
 
@@ -844,6 +845,10 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
 
   const std::string baseDir = "../G4Macros/260419_run/lQPD_Al_PF";
 
+  // Al superconducting gap energy [eV]. Used to convert deposited energy to
+  // total QPs: N_QP = 2 * E_dep / Delta_Al
+  const double alGap_eV = 0.34e-3;
+
   // Create the ROOT output file where all histograms and canvases will be saved.
   TFile* fOut = new TFile("PCE_Al_ns.root", "RECREATE");
   if (!fOut || fOut->IsZombie()) {
@@ -868,6 +873,21 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
     const double chipArea_cm2 = 1.0 / ns_vals[j];
     TString areaLabel = TString::Format("%.3f", chipArea_cm2);
     h_pce_al_ns->GetYaxis()->SetBinLabel(j + 1, areaLabel.Data());
+  }
+
+  // Create 2D total QP map: N_QP = 2 * totalHitEnergy / Delta_Al
+  TH2F* h_nqp_al_ns = new TH2F("h_nqp_al_ns",
+                               "Total QPs created vs Al thickness and chip area;Al thickness [nm];Chip area [cm^{2}];Total N_{QP}",
+                               (int)al_vals.size(), 0, (int)al_vals.size(),
+                               (int)ns_vals.size(), 0, (int)ns_vals.size());
+
+  for (int i = 0; i < (int)al_vals.size(); ++i) {
+    h_nqp_al_ns->GetXaxis()->SetBinLabel(i + 1, std::to_string(al_vals[i]).c_str());
+  }
+  for (int j = 0; j < (int)ns_vals.size(); ++j) {
+    const double chipArea_cm2 = 1.0 / ns_vals[j];
+    TString areaLabel = TString::Format("%.3f", chipArea_cm2);
+    h_nqp_al_ns->GetYaxis()->SetBinLabel(j + 1, areaLabel.Data());
   }
 
   // Group histograms two ways:
@@ -964,13 +984,18 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
                            ? (totalHitEnergy_eV / totalPrimaryEnergy_eV)
                            : 0.0;
 
+      // Total QPs = 2 * E_dep / Delta_Al (factor of 2: each broken Cooper pair yields 2 QPs)
+      const double totalQP = 2.0 * totalHitEnergy_eV / alGap_eV;
+
       h_pce_al_ns->SetBinContent(iA + 1, iS + 1, 100.0 * pce);
+      h_nqp_al_ns->SetBinContent(iA + 1, iS + 1, totalQP);
 
       std::cout << "Al=" << al
                 << " ns=" << ns
                 << "  Total primary energy=" << totalPrimaryEnergy_eV << " eV"
                 << "  Total hit energy=" << totalHitEnergy_eV << " eV"
-                << "  PCE=" << 100.0 * pce << " %" << std::endl;
+                << "  PCE=" << 100.0 * pce << " %"
+                << "  Total QP=" << totalQP << std::endl;
 
       fOut->cd();
       h_eDep->Write();
@@ -991,6 +1016,18 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
   h_pce_al_ns->Draw("COLZ TEXT");
   c_pce->Write();
   c_pce->SaveAs("PCE_Al_ns.png");
+
+  // Write the 2D total QP map
+  fOut->cd();
+  h_nqp_al_ns->Write();
+
+  // Save the total QP map as a png
+  TCanvas* c_nqp = new TCanvas("c_nqp_al_ns", "c_nqp_al_ns", 900, 700);
+  c_nqp->SetRightMargin(0.18);
+  h_nqp_al_ns->SetStats(0);
+  h_nqp_al_ns->Draw("COLZ TEXT");
+  c_nqp->Write();
+  c_nqp->SaveAs("NQP_Al_ns.png");
 
   // --------------------------------------------------------------------------
   // Fixed Al, varying ns
@@ -1176,6 +1213,7 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
   fOut->Close();
 
   delete c_pce;
+  delete c_nqp;
 }
 
 ///////////////////////////////////////////////////////
@@ -1184,16 +1222,49 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 
+// Ns_QuasiparticleAnalysis
+//
+// Estimates the peak number of concurrent quasiparticles (QPs) in the Al film
+// as a function of Al thickness and chip area (encoded via the downsampling
+// factor "ns", where chip area = 1/ns cm^2).
+//
+// The approach is a simplified "event-driven" QP population model:
+//   1. Each phonon hit deposits energy E in the Al film. G4CMP reports this
+//      as eDep_eV at the Final Time (endT_ns) -- i.e. the time the phonon
+//      arrived at the Al surface and was absorbed via KaplanQP.
+//   2. That deposited energy is converted to a number of QPs:
+//        nQP = 2 * E / Delta_Al
+//      where Delta_Al = 0.34 meV is the Al superconducting gap, and the
+//      factor of 2 accounts for the pair of QPs broken per Cooper pair.
+//   3. Each QP creation is modeled as an instantaneous step up at endT_ns,
+//      followed by a step down of the same magnitude at endT_ns + qpLifetime_ns,
+//      approximating an exponential decay by a rectangular pulse.
+//   4. All step events are sorted in time, then scanned to build a running
+//      total. The maximum of the running total is the peak concurrent QP count.
+//   5. A TGraph of net QP vs time is saved for each (Al, ns) combination,
+//      and the peak value is filled into a 2D summary histogram.
 void Ns_QuasiparticleAnalysis()
 {
+  // Al film thickness values [nm] scanned in the simulation
   std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
+
+  // Downsampling factors: the simulation was run with 1/ns of the full chip
+  // area, so ns=1 corresponds to the full 1 cm^2 chip, ns=2 to 0.5 cm^2, etc.
   std::vector<int> ns_vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
+  // Al superconducting gap energy [eV]. Each Cooper pair break produces 2 QPs,
+  // each requiring at least Delta_Al of energy.
   const double alGap_eV = 0.34e-3;
+
+  // QP lifetime [ns]: time after creation before a QP is assumed to have
+  // recombined or been lost. Set to 1e6 ns (1 ms) here, effectively treating
+  // QPs as persistent on the timescale of phonon arrival (~tens of microseconds).
   const double qpLifetime_ns = 1000000.0;
 
+  // Directory containing the G4CMP hit output files for this scan
   const std::string baseDir = "../G4Macros/260419_run/lQPD_Al_PF";
 
+  // Open the ROOT output file for all results
   TFile* fOut = new TFile("QP_Al_ns.root", "RECREATE");
   if (!fOut || fOut->IsZombie()) {
     std::cerr << "Error: could not create output file QP_Al_ns.root" << std::endl;
@@ -1201,94 +1272,163 @@ void Ns_QuasiparticleAnalysis()
   }
   fOut->cd();
 
+  // 2D summary histogram: peak concurrent QPs for each (Al thickness, chip area) pair.
+  // Each bin will be filled with the maximum QP population reached during the event.
   TH2F* h_qp_al_ns = new TH2F("h_qp_al_ns",
       "Peak concurrent quasiparticles vs Al thickness and chip area;Al thickness [nm];Chip area [cm^{2}];Peak N_{QP}",
       (int)al_vals.size(), 0, (int)al_vals.size(),
       (int)ns_vals.size(), 0, (int)ns_vals.size());
 
+  // Label x-axis bins with the Al thickness values [nm]
   for (int i = 0; i < (int)al_vals.size(); ++i) {
     h_qp_al_ns->GetXaxis()->SetBinLabel(i + 1, std::to_string(al_vals[i]).c_str());
   }
+  // Label y-axis bins with the corresponding chip area [cm^2] = 1/ns
   for (int j = 0; j < (int)ns_vals.size(); ++j) {
     const double chipArea_cm2 = 1.0 / ns_vals[j];
     TString areaLabel = TString::Format("%.3f", chipArea_cm2);
     h_qp_al_ns->GetYaxis()->SetBinLabel(j + 1, areaLabel.Data());
   }
 
+  // Number of initial phonons per event, used for binomial error estimation:
+  //   sigma_p = sqrt(p*(1-p)/n_phonons), where p = PCE
+  const int n_phonons = 10000;
+
+  // Table to accumulate peak QP for each (iA, iS) so we can build per-ns graphs after the main loop.
+  // peakQP_table[iA][iS] = peak concurrent QPs for Al=al_vals[iA], ns=ns_vals[iS]
+  std::vector<std::vector<double> > peakQP_table(al_vals.size(),
+                                                  std::vector<double>(ns_vals.size(), 0.0));
+  // peakQP_err_table[iA][iS] = binomial uncertainty on peak QP
+  std::vector<std::vector<double> > peakQP_err_table(al_vals.size(),
+                                                     std::vector<double>(ns_vals.size(), 0.0));
+
+  // Loop over all (Al thickness, ns) combinations
   for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
     for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
 
       const int al = al_vals[iA];
       const int ns = ns_vals[iS];
 
+      // Build the path to the hit output file for this (Al, ns) combination
       std::ostringstream hitPath;
       hitPath << baseDir << "/Hits_Al" << al << "_ns" << ns << ".txt";
 
+      // Parse all hits from the file; keyed by event ID
       const std::map<int, std::vector<Hit> > hitInfo =
           ParseHitTextFileForHits(hitPath.str());
 
+      // Parse primaries to obtain total injected energy (needed for PCE and binomial error)
+      std::ostringstream primPath;
+      primPath << baseDir << "/Primary_Al" << al << "_ns" << ns << ".txt";
+      const std::map<int, PrimaryInfo> primaryInfo =
+          ParsePrimaryTextFileForPrimaries(primPath.str());
+
+      double totalPrimaryEnergy_eV = 0.0;
+      for (const auto& kv : primaryInfo)
+        totalPrimaryEnergy_eV += kv.second.energy_eV;
+
+      // Total deposited energy across all hits (used to compute PCE for error estimation)
+      double totalHitEnergy_eV = 0.0;
+
+      // A QPEvent represents a discrete change in the QP population at a given time:
+      //   deltaQP > 0: QPs are created (phonon absorbed into film)
+      //   deltaQP < 0: QPs are removed (lifetime expiry)
       struct QPEvent {
         double time_ns;
         double deltaQP;
       };
       std::vector<QPEvent> qpEvents;
 
+      // Running tally of all QPs created (before recombination), for diagnostics
       double totalCreatedQP = 0.0;
 
+      // Loop over all events and hits to build the list of QP creation/removal events
       for (const auto& kv : hitInfo) {
         for (const Hit& h : kv.second) {
           if (h.eDep_eV > 0.0) {
+            // Convert deposited energy to number of QPs: nQP = 2 * E / Delta_Al.
+            // The factor of 2 is because each broken Cooper pair produces 2 QPs.
+            // endT_ns is the time the phonon arrived at the film (Final Time from G4CMP).
             const double nQP = (h.eDep_eV / alGap_eV) * 2.0;
             totalCreatedQP += nQP;
+            totalHitEnergy_eV += h.eDep_eV;
 
-            // Create quasiparticles at the hit time, then remove the same pulse 100 ns later.
+            // Push a creation event at the phonon arrival time (endT_ns)
             qpEvents.push_back({h.endT_ns, nQP});
+            // Push a matching removal event at endT_ns + lifetime, modeling QP recombination
             qpEvents.push_back({h.endT_ns + qpLifetime_ns, -nQP});
           }
         }
       }
 
+      // Sort all QP events chronologically. For events at exactly the same time,
+      // process creation (+) before removal (-) to avoid spurious negative counts.
       std::sort(qpEvents.begin(), qpEvents.end(),
                 [](const QPEvent& a, const QPEvent& b) {
                   if (a.time_ns == b.time_ns) return a.deltaQP > b.deltaQP;
                   return a.time_ns < b.time_ns;
                 });
 
+      // Scan through the sorted events to compute the running QP population vs time.
+      // Record the peak population and build vectors for plotting.
       double runningQP = 0.0;
       double peakQP = 0.0;
       std::vector<double> times;
       std::vector<double> netQP;
 
       if (!qpEvents.empty()) {
+        // Prepend a zero point just before the first event so the graph starts at 0
         times.push_back(qpEvents.front().time_ns);
         netQP.push_back(0.0);
 
         for (const auto& ev : qpEvents) {
           runningQP += ev.deltaQP;
+          // Clamp to zero: QP count cannot go negative due to floating-point imprecision
           if (runningQP < 0.0) runningQP = 0.0;
+          // Track the maximum concurrent QP population
           if (runningQP > peakQP) peakQP = runningQP;
 
           times.push_back(ev.time_ns);
           netQP.push_back(runningQP);
         }
 
+        // Append a trailing zero if the final QP count is non-zero
+        // (this shouldn't happen if all lifetimes are accounted for, but guards
+        // against floating-point residuals in the graph)
         if (netQP.back() != 0.0) {
           times.push_back(qpEvents.back().time_ns);
           netQP.push_back(0.0);
         }
       }
 
+      // Fill the 2D summary histogram and the per-ns storage table with the peak QP count
       const double finalQP = netQP.empty() ? 0.0 : netQP.back();
-  h_qp_al_ns->SetBinContent(iA + 1, iS + 1, peakQP);
+      h_qp_al_ns->SetBinContent(iA + 1, iS + 1, peakQP);
+      peakQP_table[iA][iS] = peakQP;
+
+      // Binomial error propagation:
+      //   p = PCE = totalHitEnergy / totalPrimaryEnergy
+      //   sigma_p = sqrt(p*(1-p)/n_phonons)
+      //   sigma_peakQP = peakQP * (sigma_p / p) = peakQP * sqrt((1-p)/(n_phonons*p))
+      // This treats the peak QP as proportional to total collected energy (valid for
+      // the long-lifetime regime used here, where peakQP ≈ totalCreatedQP).
+      const double p_pce = (totalPrimaryEnergy_eV > 0.0)
+                             ? (totalHitEnergy_eV / totalPrimaryEnergy_eV)
+                             : 0.0;
+      const double peakQP_err = (p_pce > 0.0 && p_pce < 1.0 && peakQP > 0.0)
+                                  ? peakQP * std::sqrt((1.0 - p_pce) / (n_phonons * p_pce))
+                                  : 0.0;
+      peakQP_err_table[iA][iS] = peakQP_err;
 
       std::cout << "Al=" << al
                 << " ns=" << ns
                 << " Total created QP=" << totalCreatedQP
-        << " Peak QP=" << peakQP
+                << " Peak QP=" << peakQP
                 << " Final QP=" << finalQP
                 << " Lifetime=" << qpLifetime_ns << " ns"
                 << std::endl;
 
+      // Save a TGraph of net QP population vs time for this (Al, ns) combination
       if (!times.empty()) {
         TString gName = TString::Format("g_netQP_Al%d_ns%d", al, ns);
         TGraph* g = new TGraph((int)times.size(), times.data(), netQP.data());
@@ -1305,6 +1445,7 @@ void Ns_QuasiparticleAnalysis()
         fOut->cd();
         g->Write();
 
+        // Draw and save a canvas for a quick visual check
         TString cName = TString::Format("c_netQP_Al%d_ns%d", al, ns);
         TCanvas* c = new TCanvas(cName, cName, 900, 700);
         g->Draw("AL");
@@ -1315,6 +1456,75 @@ void Ns_QuasiparticleAnalysis()
     }
   }
 
+  // --------------------------------------------------------------------------
+  // For each chip area (ns value), draw a line graph of peak QP vs Al thickness
+  // --------------------------------------------------------------------------
+  {
+    // Color palette: one color per ns value
+    const int nsColors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1,
+                            kOrange+7, kCyan+2, kViolet, kPink+7, kAzure+2, kSpring+5};
+
+    // Build x-axis: actual Al thickness values [nm]
+    std::vector<double> xAl(al_vals.size());
+    for (int iA = 0; iA < (int)al_vals.size(); ++iA)
+      xAl[iA] = al_vals[iA];
+
+    // One canvas with all ns curves overlaid
+    TCanvas* c_peakVsAl = new TCanvas("c_peakQP_vs_Al", "Peak QP vs Al thickness", 900, 700);
+    TLegend* leg = new TLegend(0.62, 0.55, 0.88, 0.88);
+    leg->SetBorderSize(1);
+    leg->SetFillStyle(0);
+
+    bool firstDraw = true;
+    for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
+      const int ns = ns_vals[iS];
+      const double chipArea_cm2 = 1.0 / ns;
+
+      // Build y-axis: peak QP and binomial errors for this ns, varying Al
+      std::vector<double> yPeak(al_vals.size());
+      std::vector<double> yErr(al_vals.size());
+      std::vector<double> xErr(al_vals.size(), 0.0);
+      for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+        yPeak[iA] = peakQP_table[iA][iS];
+        yErr[iA]  = peakQP_err_table[iA][iS];
+      }
+
+      TString gName = TString::Format("g_peakQP_vs_Al_ns%d", ns);
+      TGraphErrors* g = new TGraphErrors((int)al_vals.size(), xAl.data(), yPeak.data(),
+                                         xErr.data(), yErr.data());
+      g->SetName(gName);
+      g->SetTitle("Peak concurrent QPs vs Al thickness;Al thickness [nm];Peak N_{QP}");
+      g->SetLineWidth(2);
+      g->SetMarkerStyle(20);
+      g->SetMarkerSize(0.8);
+
+      const int color = nsColors[iS < 11 ? iS : 10];
+      g->SetLineColor(color);
+      g->SetMarkerColor(color);
+
+      fOut->cd();
+      g->Write();
+
+      if (firstDraw) {
+        g->Draw("ALP");
+        firstDraw = false;
+      } else {
+        g->Draw("LP SAME");
+      }
+
+      leg->AddEntry(g, TString::Format("%.3f cm^{2}", chipArea_cm2), "lp");
+    }
+
+    leg->Draw();
+    fOut->cd();
+    c_peakVsAl->Write();
+    c_peakVsAl->SaveAs("peakQP_vs_Al_byChipArea.png");
+
+    delete leg;
+    delete c_peakVsAl;
+  }
+
+  // Write the 2D peak-QP summary histogram and save as a color-map PNG
   fOut->cd();
   h_qp_al_ns->Write();
 
