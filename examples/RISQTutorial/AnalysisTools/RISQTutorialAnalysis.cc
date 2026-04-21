@@ -1190,9 +1190,7 @@ void Ns_QuasiparticleAnalysis()
   std::vector<int> ns_vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
   const double alGap_eV = 0.34e-3;
-  const bool useRecombination = true;  // set to false to turn recombination off
-  const double recombDelay_ns = 1.0e1; 
-  const double recombKillQP   = 2.0;   // kill 2 quasiparticles after 1 ms
+  const double qpLifetime_ns = 100.0;
 
   const std::string baseDir = "../G4Macros/260419_run/lQPD_Al_PF";
 
@@ -1204,7 +1202,7 @@ void Ns_QuasiparticleAnalysis()
   fOut->cd();
 
   TH2F* h_qp_al_ns = new TH2F("h_qp_al_ns",
-      "Number of Quasiparticles vs Al thickness and chip area;Al thickness [nm];Chip area [cm^{2}];N_{QP}",
+      "Peak concurrent quasiparticles vs Al thickness and chip area;Al thickness [nm];Chip area [cm^{2}];Peak N_{QP}",
       (int)al_vals.size(), 0, (int)al_vals.size(),
       (int)ns_vals.size(), 0, (int)ns_vals.size());
 
@@ -1243,13 +1241,9 @@ void Ns_QuasiparticleAnalysis()
             const double nQP = (h.eDep_eV / alGap_eV) * 2.0;
             totalCreatedQP += nQP;
 
-            // Always add creation event
+            // Create quasiparticles at the hit time, then remove the same pulse 100 ns later.
             qpEvents.push_back({h.endT_ns, nQP});
-
-            // Only add recombination event if enabled
-            if (useRecombination) {
-              qpEvents.push_back({h.endT_ns + recombDelay_ns, -recombKillQP});
-            }
+            qpEvents.push_back({h.endT_ns + qpLifetime_ns, -nQP});
           }
         }
       }
@@ -1261,25 +1255,38 @@ void Ns_QuasiparticleAnalysis()
                 });
 
       double runningQP = 0.0;
+      double peakQP = 0.0;
       std::vector<double> times;
       std::vector<double> netQP;
 
-      for (const auto& ev : qpEvents) {
-        runningQP += ev.deltaQP;
-        if (runningQP < 0.0) runningQP = 0.0;
+      if (!qpEvents.empty()) {
+        times.push_back(qpEvents.front().time_ns);
+        netQP.push_back(0.0);
 
-        times.push_back(ev.time_ns);
-        netQP.push_back(runningQP);
+        for (const auto& ev : qpEvents) {
+          runningQP += ev.deltaQP;
+          if (runningQP < 0.0) runningQP = 0.0;
+          if (runningQP > peakQP) peakQP = runningQP;
+
+          times.push_back(ev.time_ns);
+          netQP.push_back(runningQP);
+        }
+
+        if (netQP.back() != 0.0) {
+          times.push_back(qpEvents.back().time_ns);
+          netQP.push_back(0.0);
+        }
       }
 
       const double finalQP = netQP.empty() ? 0.0 : netQP.back();
-      h_qp_al_ns->SetBinContent(iA + 1, iS + 1, finalQP);
+  h_qp_al_ns->SetBinContent(iA + 1, iS + 1, peakQP);
 
       std::cout << "Al=" << al
                 << " ns=" << ns
                 << " Total created QP=" << totalCreatedQP
+        << " Peak QP=" << peakQP
                 << " Final QP=" << finalQP
-                << " Recombination=" << (useRecombination ? "ON" : "OFF")
+                << " Lifetime=" << qpLifetime_ns << " ns"
                 << std::endl;
 
       if (!times.empty()) {
@@ -1288,15 +1295,9 @@ void Ns_QuasiparticleAnalysis()
         g->SetName(gName);
 
         TString title;
-        if (useRecombination) {
-          title = TString::Format(
-              "Net QP vs Time with Recombination, Al=%d nm, ns=%d;Time [ns];Net N_{QP}",
-              al, ns);
-        } else {
-          title = TString::Format(
-              "Cumulative QP vs Time, Al=%d nm, ns=%d;Time [ns];N_{QP}",
-              al, ns);
-        }
+        title = TString::Format(
+            "Net QP vs Time, Al=%d nm, ns=%d;Time [ns];Net N_{QP}",
+            al, ns);
 
         g->SetTitle(title);
         g->SetLineWidth(2);
