@@ -87,6 +87,7 @@
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TAttCanvas.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TGraph.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TGraphErrors.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TMultiGraph.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TLegend.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TPave.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TBox.h
