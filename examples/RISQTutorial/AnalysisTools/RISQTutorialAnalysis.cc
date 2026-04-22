@@ -1312,19 +1312,6 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
       ++color_index;
     }
 
-    TLine* line_Nb1 = new TLine(1.5e-3, 0, 1.5e-3, 1.15 * maxY);
-    TLine* line_Nb2 = new TLine(3.0e-3, 0, 3.0e-3, 1.15 * maxY);
-    TLine* line_Nb3 = new TLine(4.5e-3, 0, 4.5e-3, 1.15 * maxY);
-    line_Nb1->SetLineColor(kOrange+1);
-    line_Nb2->SetLineColor(kOrange+1);
-    line_Nb3->SetLineColor(kOrange+1);
-    line_Nb1->SetLineStyle(2);
-    line_Nb2->SetLineStyle(2);
-    line_Nb3->SetLineStyle(2);
-    line_Nb1->SetLineWidth(2);
-    line_Nb2->SetLineWidth(2);
-    line_Nb3->SetLineWidth(2);
-
     TLine* line_Al1 = new TLine(0.34e-3, 0, 0.34e-3, 1.15 * maxY);
     TLine* line_Al2 = new TLine(0.68e-3, 0, 0.68e-3, 1.15 * maxY);
     TLine* line_Al3 = new TLine(1.02e-3, 0, 1.02e-3, 1.15 * maxY);
@@ -1345,7 +1332,6 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
     line_Al2->Draw();
     line_Al3->Draw();
 
-    leg->AddEntry(line_Nb1, "Nb gap", "l");
     leg->AddEntry(line_Al1, "Al gap", "l");
 
     leg->Draw();
