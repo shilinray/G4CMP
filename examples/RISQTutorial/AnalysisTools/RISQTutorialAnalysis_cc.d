@@ -93,5 +93,8 @@
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TBox.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TAttText.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TLine.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TRandom3.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TRandom.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/Math/TRandomEngine.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/RVersion.h /usr/local/include/ROOT/RConfig.hxx /usr/local/include/TClass.h /usr/local/include/TDictAttributeMap.h /usr/local/include/TInterpreter.h /usr/local/include/TROOT.h /usr/local/include/TBuffer.h /usr/local/include/TMemberInspector.h /usr/local/include/TError.h /usr/local/include/RtypesImp.h /usr/local/include/TIsAProxy.h /usr/local/include/TFileMergeInfo.h /usr/local/include/TCollectionProxyInfo.h /usr/local/bin/rootcling
 RISQTutorialAnalysis_cc__ROOTBUILDVERSION= 6.28/10
