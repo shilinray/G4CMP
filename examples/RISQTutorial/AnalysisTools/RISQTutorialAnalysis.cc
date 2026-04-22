@@ -899,8 +899,18 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
 
   // PCE [%] and binomial error tables, indexed [iA][iS], filled in the inner loop
   // and used after the loop to build the PCE vs Al line graph.
-  // Binomial error: sigma_pce = 100 * sqrt(p*(1-p)/n_phonons), n_phonons = 10000
-  const int n_phonons_pce = 10000;
+  // Binomial error: sigma_pce = 100 * sqrt(p*(1-p)/n_phonons).
+  // n_phonons_pce is set dynamically from the number of events in Primary_Al100_ns1.txt.
+  const std::string refPrimPath = baseDir + "/Primary_Al100_ns1.txt";
+  const std::map<int, PrimaryInfo> refPrimInfo = ParsePrimaryTextFileForPrimaries(refPrimPath);
+  if (refPrimInfo.empty()) {
+    std::cerr << "Error: could not read primaries file for n_phonons_pce: " << refPrimPath << std::endl;
+    fOut->Close();
+    delete fOut;
+    return;
+  }
+  const int n_phonons_pce = (int)refPrimInfo.size();
+  std::cout << "n_phonons_pce = " << n_phonons_pce << " (from " << refPrimPath << ")" << std::endl;
   std::vector<std::vector<double> > pce_table(al_vals.size(),
                                               std::vector<double>(ns_vals.size(), 0.0));
   std::vector<std::vector<double> > pce_err_table(al_vals.size(),
@@ -947,7 +957,7 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
       TString hTitle = TString::Format("Hit EDeps for Al=%d nm, ns=%d;eDep [eV];nEvents",
                                        al, ns);
 
-      TH1F* h_eDep = new TH1F(hName, hTitle, 200, 0, 10e-3);
+      TH1F* h_eDep = new TH1F(hName, hTitle, 200, 0, 5e-3);
       h_eDep->SetDirectory(fOut);
       h_eDep->SetLineWidth(2);
       h_eDep->SetStats(0);
@@ -1425,6 +1435,11 @@ void Ns_QuasiparticleAnalysis()
     h_qp_al_ns->GetYaxis()->SetBinLabel(j + 1, areaLabel.Data());
   }
 
+  // Storage for net-QP-vs-time graphs, indexed [iA][iS].
+  // Filled in the main loop; used after the loop for overlay plots.
+  std::vector<std::vector<TGraph*> > netQP_graphs(
+      al_vals.size(), std::vector<TGraph*>(ns_vals.size(), nullptr));
+
   // Loop over all (Al thickness, ns) combinations
   for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
     for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
@@ -1522,31 +1537,143 @@ void Ns_QuasiparticleAnalysis()
                 << " Lifetime=" << qpLifetime_ns << " ns"
                 << std::endl;
 
-      // Save a TGraph of net QP population vs time for this (Al, ns) combination
+      // Store the TGraph for this (Al, ns) combination.
+      // Overlay plots (fixed-ns and fixed-Al) are produced after the main loop.
       if (!times.empty()) {
         TString gName = TString::Format("g_netQP_Al%d_ns%d", al, ns);
         TGraph* g = new TGraph((int)times.size(), times.data(), netQP.data());
         g->SetName(gName);
-
-        TString title;
-        title = TString::Format(
-            "Net QP vs Time, Al=%d nm, ns=%d;Time [ns];Net N_{QP}",
-            al, ns);
-
-        g->SetTitle(title);
+        g->SetTitle(TString::Format(
+            "Net QP vs Time, Al=%d nm, ns=%d;Time [ns];Net N_{QP}", al, ns));
         g->SetLineWidth(2);
 
         fOut->cd();
         g->Write();
 
-        // Draw and save a canvas for a quick visual check
-        TString cName = TString::Format("c_netQP_Al%d_ns%d", al, ns);
-        TCanvas* c = new TCanvas(cName, cName, 900, 700);
-        g->Draw("AL");
-        c->Write();
-        c->SaveAs(TString::Format("netQP_Al%d_ns%d.png", al, ns));
-        delete c;
+        netQP_graphs[iA][iS] = g;
       }
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Overlay plots: fixed ns (chip area), all Al thicknesses on one canvas
+  // --------------------------------------------------------------------------
+  {
+    const int alColors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1,
+                            kOrange+7, kCyan+2, kViolet, kPink+7, kAzure+2};
+
+    for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
+      const int ns = ns_vals[iS];
+      const double chipArea_cm2 = 1.0 / ns;
+
+      // Compute global axis range across all Al thicknesses for this ns
+      double xMin = 1e99, xMax = -1e99, yMax = 0.0;
+      for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+        TGraph* g = netQP_graphs[iA][iS];
+        if (!g) continue;
+        for (int ip = 0; ip < g->GetN(); ++ip) {
+          double x, y;
+          g->GetPoint(ip, x, y);
+          if (x < xMin) xMin = x;
+          if (x > xMax) xMax = x;
+          if (y > yMax) yMax = y;
+        }
+      }
+      if (xMin > xMax) continue;
+
+      TString cName  = TString::Format("c_netQP_ns%d", ns);
+      TString cTitle = TString::Format(
+          "Net QP vs Time, chip area=%.3f cm^{2}", chipArea_cm2);
+      TCanvas* c = new TCanvas(cName, cTitle, 900, 700);
+
+      TLegend* leg = new TLegend(0.62, 0.55, 0.88, 0.88);
+      leg->SetBorderSize(1);
+      leg->SetFillStyle(0);
+
+      bool firstDraw = true;
+      for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+        TGraph* g = netQP_graphs[iA][iS];
+        if (!g) continue;
+        g->SetLineColor(alColors[iA < 10 ? iA : 9]);
+        g->SetLineWidth(2);
+        if (firstDraw) {
+          g->Draw("AL");
+          g->GetXaxis()->SetLimits(xMin, xMax);
+          g->SetMinimum(0.0);
+          g->SetMaximum(1.1 * yMax);
+          firstDraw = false;
+        } else {
+          g->Draw("L SAME");
+        }
+        leg->AddEntry(g, TString::Format("Al = %d nm", al_vals[iA]), "l");
+      }
+
+      leg->Draw();
+      fOut->cd();
+      c->Write();
+      c->SaveAs(TString::Format("netQP_ns%d_allAl.png", ns));
+      delete leg;
+      delete c;
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Overlay plots: fixed Al thickness, all ns values (chip areas) on one canvas
+  // --------------------------------------------------------------------------
+  {
+    const int nsColors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1,
+                            kOrange+7, kCyan+2, kViolet, kPink+7, kAzure+2, kSpring+5};
+
+    for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+      const int al = al_vals[iA];
+
+      // Compute global axis range across all ns values for this Al
+      double xMin = 1e99, xMax = -1e99, yMax = 0.0;
+      for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
+        TGraph* g = netQP_graphs[iA][iS];
+        if (!g) continue;
+        for (int ip = 0; ip < g->GetN(); ++ip) {
+          double x, y;
+          g->GetPoint(ip, x, y);
+          if (x < xMin) xMin = x;
+          if (x > xMax) xMax = x;
+          if (y > yMax) yMax = y;
+        }
+      }
+      if (xMin > xMax) continue;
+
+      TString cName  = TString::Format("c_netQP_Al%d", al);
+      TString cTitle = TString::Format("Net QP vs Time, Al=%d nm", al);
+      TCanvas* c = new TCanvas(cName, cTitle, 900, 700);
+
+      TLegend* leg = new TLegend(0.62, 0.55, 0.88, 0.88);
+      leg->SetBorderSize(1);
+      leg->SetFillStyle(0);
+
+      bool firstDraw = true;
+      for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
+        TGraph* g = netQP_graphs[iA][iS];
+        if (!g) continue;
+        g->SetLineColor(nsColors[iS < 11 ? iS : 10]);
+        g->SetLineWidth(2);
+        if (firstDraw) {
+          g->Draw("AL");
+          g->GetXaxis()->SetLimits(xMin, xMax);
+          g->SetMinimum(0.0);
+          g->SetMaximum(1.1 * yMax);
+          firstDraw = false;
+        } else {
+          g->Draw("L SAME");
+        }
+        leg->AddEntry(g, TString::Format("%.3f cm^{2}", 1.0 / ns_vals[iS]), "l");
+      }
+
+      leg->Draw();
+      fOut->cd();
+      c->Write();
+      c->SaveAs(TString::Format("netQP_Al%d_allNs.png", al));
+      delete leg;
+      delete c;
     }
   }
 
