@@ -944,10 +944,10 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
           ParseHitTextFileForHits(hitsFilename);
 
       TString hName = TString::Format("h_eDep_Al%d_ns%d", al, ns);
-      TString hTitle = TString::Format("Hit EDeps for Al=%d nm, ns=%d;log10(eDep[eV]);nEvents",
+      TString hTitle = TString::Format("Hit EDeps for Al=%d nm, ns=%d;eDep [eV];nEvents",
                                        al, ns);
 
-      TH1F* h_eDep = new TH1F(hName, hTitle, 200, -6, 1);
+      TH1F* h_eDep = new TH1F(hName, hTitle, 200, 0, 10e-3);
       h_eDep->SetDirectory(fOut);
       h_eDep->SetLineWidth(2);
       h_eDep->SetStats(0);
@@ -981,7 +981,7 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
           totalHitEnergy_eV += h.eDep_eV;
 
           if (h.eDep_eV > 0.0) {
-            h_eDep->Fill(TMath::Log10(h.eDep_eV));
+            h_eDep->Fill(h.eDep_eV);
           }
 
           if (h.eDep_eV < 0.0) {
@@ -1110,6 +1110,75 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
   }
 
   // --------------------------------------------------------------------------
+  // Normalized PCE vs Al thickness: each chip area's PCE is divided by its
+  // value at 100 nm (the first Al thickness), so all curves start at 1.0.
+  // Error bars use sigma_norm = sigma_pce[iA] / pce[iA=0]; the reference
+  // point is defined to be exactly 1 (zero error bar at 100 nm).
+  // --------------------------------------------------------------------------
+  {
+    const int nsColors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1,
+                            kOrange+7, kCyan+2, kViolet, kPink+7, kAzure+2, kSpring+5};
+
+    std::vector<double> xAl(al_vals.size());
+    for (int iA = 0; iA < (int)al_vals.size(); ++iA)
+      xAl[iA] = al_vals[iA];
+
+    TMultiGraph* mg_norm = new TMultiGraph("mg_pce_vs_Al_norm",
+        "Normalized PCE vs Al thickness (100 nm = 1);Al thickness [nm];Normalized PCE");
+
+    TCanvas* c_pceNorm = new TCanvas("c_pce_vs_Al_norm", "Normalized PCE vs Al thickness", 900, 700);
+    TLegend* leg_norm = new TLegend(0.62, 0.55, 0.88, 0.88);
+    leg_norm->SetBorderSize(1);
+    leg_norm->SetFillStyle(0);
+
+    for (int iS = 0; iS < (int)ns_vals.size(); ++iS) {
+      const int ns = ns_vals[iS];
+      const double chipArea_cm2 = 1.0 / ns;
+
+      const double ref = pce_table[0][iS];
+      if (ref <= 0.0) continue;
+
+      std::vector<double> yNorm(al_vals.size());
+      std::vector<double> yErr(al_vals.size());
+      std::vector<double> xErr(al_vals.size(), 0.0);
+      for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
+        yNorm[iA] = pce_table[iA][iS] / ref;
+        // Reference point is defined as exactly 1: assign zero error there
+        yErr[iA]  = (iA == 0) ? 0.0 : pce_err_table[iA][iS] / ref;
+      }
+
+      TString gName = TString::Format("g_pce_norm_vs_Al_ns%d", ns);
+      TGraphErrors* g = new TGraphErrors((int)al_vals.size(), xAl.data(), yNorm.data(),
+                                          xErr.data(), yErr.data());
+      g->SetName(gName);
+      g->SetLineWidth(2);
+      g->SetMarkerStyle(20);
+      g->SetMarkerSize(0.8);
+
+      const int color = nsColors[iS < 11 ? iS : 10];
+      g->SetLineColor(color);
+      g->SetMarkerColor(color);
+      g->SetFillColor(color);
+
+      fOut->cd();
+      g->Write();
+
+      mg_norm->Add(g, "LP");
+      leg_norm->AddEntry(g, TString::Format("%.3f cm^{2}", chipArea_cm2), "lp");
+    }
+
+    mg_norm->Draw("A");
+    leg_norm->Draw();
+    fOut->cd();
+    mg_norm->Write();
+    c_pceNorm->Write();
+    c_pceNorm->SaveAs("PCE_vs_Al_byChipArea_norm.png");
+
+    delete leg_norm;
+    delete c_pceNorm;
+  }
+
+  // --------------------------------------------------------------------------
   // Fixed Al, varying ns
   // --------------------------------------------------------------------------
   for (int iA = 0; iA < (int)al_vals.size(); ++iA) {
@@ -1133,7 +1202,7 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
 
     bool first = true;
     for (TH1F* h : hists_by_al[iA]) {
-      h->SetTitle(TString::Format("Hit EDeps for Al=%d nm, varying ns;log10(eDep[eV]);nEvents",
+      h->SetTitle(TString::Format("Hit EDeps for Al=%d nm, varying ns;eDep [eV];nEvents",
                                   al_val));
       h->SetMaximum(1.15 * maxY);
       h->SetMinimum(0.5);
@@ -1153,9 +1222,9 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
       leg->AddEntry(h, TString::Format("ns = %d", ns_val), "l");
     }
 
-    TLine* line_Al1 = new TLine(TMath::Log10(0.34e-3), 0, TMath::Log10(0.34e-3), 1.15 * maxY);
-    TLine* line_Al2 = new TLine(TMath::Log10(0.68e-3), 0, TMath::Log10(0.68e-3), 1.15 * maxY);
-    TLine* line_Al3 = new TLine(TMath::Log10(1.02e-3), 0, TMath::Log10(1.02e-3), 1.15 * maxY);
+    TLine* line_Al1 = new TLine(0.34e-3, 0, 0.34e-3, 1.15 * maxY);
+    TLine* line_Al2 = new TLine(0.68e-3, 0, 0.68e-3, 1.15 * maxY);
+    TLine* line_Al3 = new TLine(1.02e-3, 0, 1.02e-3, 1.15 * maxY);
     line_Al1->SetLineColor(kGreen+2);
     line_Al2->SetLineColor(kGreen+2);
     line_Al3->SetLineColor(kGreen+2);
@@ -1208,7 +1277,7 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
     int color_index = 0;
 
     for (TH1F* h : hists_by_ns[iS]) {
-      h->SetTitle(TString::Format("Hit EDeps for ns=%d, varying Al;log10(eDep[eV]);nEvents",
+      h->SetTitle(TString::Format("Hit EDeps for ns=%d, varying Al;eDep [eV];nEvents",
                                   ns_val));
       h->SetMaximum(1.15 * maxY);
       h->SetMinimum(0.5);
@@ -1243,9 +1312,9 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
       ++color_index;
     }
 
-    TLine* line_Nb1 = new TLine(TMath::Log10(1.5e-3), 0, TMath::Log10(1.5e-3), 1.15 * maxY);
-    TLine* line_Nb2 = new TLine(TMath::Log10(3.0e-3), 0, TMath::Log10(3.0e-3), 1.15 * maxY);
-    TLine* line_Nb3 = new TLine(TMath::Log10(4.5e-3), 0, TMath::Log10(4.5e-3), 1.15 * maxY);
+    TLine* line_Nb1 = new TLine(1.5e-3, 0, 1.5e-3, 1.15 * maxY);
+    TLine* line_Nb2 = new TLine(3.0e-3, 0, 3.0e-3, 1.15 * maxY);
+    TLine* line_Nb3 = new TLine(4.5e-3, 0, 4.5e-3, 1.15 * maxY);
     line_Nb1->SetLineColor(kOrange+1);
     line_Nb2->SetLineColor(kOrange+1);
     line_Nb3->SetLineColor(kOrange+1);
@@ -1256,9 +1325,9 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
     line_Nb2->SetLineWidth(2);
     line_Nb3->SetLineWidth(2);
 
-    TLine* line_Al1 = new TLine(TMath::Log10(0.34e-3), 0, TMath::Log10(0.34e-3), 1.15 * maxY);
-    TLine* line_Al2 = new TLine(TMath::Log10(0.68e-3), 0, TMath::Log10(0.68e-3), 1.15 * maxY);
-    TLine* line_Al3 = new TLine(TMath::Log10(1.02e-3), 0, TMath::Log10(1.02e-3), 1.15 * maxY);
+    TLine* line_Al1 = new TLine(0.34e-3, 0, 0.34e-3, 1.15 * maxY);
+    TLine* line_Al2 = new TLine(0.68e-3, 0, 0.68e-3, 1.15 * maxY);
+    TLine* line_Al3 = new TLine(1.02e-3, 0, 1.02e-3, 1.15 * maxY);
     line_Al1->SetLineColor(kGreen+2);
     line_Al2->SetLineColor(kGreen+2);
     line_Al3->SetLineColor(kGreen+2);
