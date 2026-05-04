@@ -814,7 +814,7 @@ void Ns_PrintPhononCollectionEfficiencyAndPlot()
   std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
   std::vector<int> ns_vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
-  const std::string baseDir = "../G4Macros/260419_run/lQPD_Al_Nb_PF";
+  const std::string baseDir = "../G4Macros/260419_run/SQUAT_Al_PF";
 
   // Al superconducting gap energy [eV]. Used to convert deposited energy to
   // total QPs: N_QP = 2 * E_dep / Delta_Al
@@ -1375,7 +1375,7 @@ void Ns_QuasiparticleAnalysis()
   const double qpLifetimeSigma_ns =   20000.0;  //   20 us in ns
 
   // Directory containing the G4CMP hit output files for this scan
-  const std::string baseDir = "../G4Macros/260419_run/lQPD_Al_Nb_PF";
+  const std::string baseDir = "../G4Macros/260419_run/SQUAT_Al_PF";
 
   // Open the ROOT output file for all results
   TFile* fOut = new TFile("QP_Al_ns.root", "RECREATE");
