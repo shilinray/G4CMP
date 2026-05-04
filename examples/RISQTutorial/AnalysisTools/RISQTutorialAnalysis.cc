@@ -1447,17 +1447,18 @@ void Ns_QuasiparticleAnalysis()
             // Convert deposited energy to number of QPs: nQP = 2 * E / Delta_Al.
             // The factor of 2 is because each broken Cooper pair produces 2 QPs.
             // endT_ns is the time the phonon arrived at the film (Final Time from G4CMP).
-            const double nQP = (h.eDep_eV / alGap_eV) * 2.0;
+            const int nQP = (int)std::round((h.eDep_eV / alGap_eV) * 2.0);
             totalCreatedQP += nQP;
 
             // Push a creation event at the phonon arrival time (endT_ns)
-            qpEvents.push_back({h.endT_ns, nQP});
-            // Push a matching removal event at endT_ns + lifetime, modeling QP recombination.
-            // Lifetime is drawn per-hit from an exponential distribution with
-            // mean (tau) = qpLifetimeMean_ns. Exponential values are always > 0.
-            const double qpLifetime_ns = rng.Exp(qpLifetimeMean_ns);
-            usedLifetimes.push_back(qpLifetime_ns);
-            qpEvents.push_back({h.endT_ns + qpLifetime_ns, -nQP});
+            qpEvents.push_back({h.endT_ns, (double)nQP});
+            // Push one removal event per individual QP, each with its own exponentially-
+            // drawn lifetime. This removes one QP at a time rather than all at once.
+            for (int iQP = 0; iQP < nQP; ++iQP) {
+              const double qpLifetime_ns = rng.Exp(qpLifetimeMean_ns);
+              usedLifetimes.push_back(qpLifetime_ns);
+              qpEvents.push_back({h.endT_ns + qpLifetime_ns, -1.0});
+            }
           }
         }
       }
