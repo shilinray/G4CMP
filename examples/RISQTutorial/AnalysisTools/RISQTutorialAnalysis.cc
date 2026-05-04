@@ -31,6 +31,7 @@
 #include "TMultiGraph.h"
 #include "TLegend.h"
 #include "TLine.h"
+#include "TF1.h"
 #include "TRandom3.h"
 
 //---------------------------------------------------------------------------------------
@@ -1368,11 +1369,11 @@ void Ns_QuasiparticleAnalysis()
   // each requiring at least Delta_Al of energy.
   const double alGap_eV = 0.34e-3;
 
-  // QP lifetime [ns]: drawn per-hit from a Gaussian with mean 100 us (100000 ns)
-  // and standard deviation 1 us (1000 ns).
+  // QP lifetime [ns]: drawn per-hit from an exponential distribution with
+  // mean 100 us (100000 ns). For an exponential, the mean equals the decay
+  // constant tau, so rng.Exp(qpLifetimeMean_ns) gives the correct distribution.
   TRandom3 rng(0);
-  const double qpLifetimeMean_ns  = 100000.0;  // 100 us in ns
-  const double qpLifetimeSigma_ns =   20000.0;  //   20 us in ns
+  const double qpLifetimeMean_ns = 100000.0;  // 100 us in ns (exponential mean = tau)
 
   // Directory containing the G4CMP hit output files for this scan
   const std::string baseDir = "../G4Macros/260419_run/SQUAT_Al_PF";
@@ -1452,11 +1453,9 @@ void Ns_QuasiparticleAnalysis()
             // Push a creation event at the phonon arrival time (endT_ns)
             qpEvents.push_back({h.endT_ns, nQP});
             // Push a matching removal event at endT_ns + lifetime, modeling QP recombination.
-            // Lifetime is drawn per-hit from Gaussian(mean=100 us, sigma=1 us);
-            // redraw if the sampled value is <= 0.
-            double qpLifetime_ns;
-            do { qpLifetime_ns = rng.Gaus(qpLifetimeMean_ns, qpLifetimeSigma_ns); }
-            while (qpLifetime_ns <= 0.0);
+            // Lifetime is drawn per-hit from an exponential distribution with
+            // mean (tau) = qpLifetimeMean_ns. Exponential values are always > 0.
+            const double qpLifetime_ns = rng.Exp(qpLifetimeMean_ns);
             usedLifetimes.push_back(qpLifetime_ns);
             qpEvents.push_back({h.endT_ns + qpLifetime_ns, -nQP});
           }
@@ -1512,7 +1511,7 @@ void Ns_QuasiparticleAnalysis()
                 << " Total created QP=" << totalCreatedQP
                 << " Peak QP=" << peakQP
                 << " Final QP=" << finalQP
-                << " Lifetime=" << qpLifetimeMean_ns << " ns (Gaussian mean)"
+                << " Lifetime=" << qpLifetimeMean_ns << " ns (exponential mean)"
                 << std::endl;
 
       // Store the TGraph for this (Al, ns) combination.
@@ -1673,18 +1672,40 @@ void Ns_QuasiparticleAnalysis()
     // Add a small margin so the outermost values are not on the bin edge
     const double margin = (ltMax - ltMin) * 0.05;
     TH1F* h_lt = new TH1F("h_qpLifetime",
-        "QP lifetime distribution (used values);Lifetime [ns];Counts",
+        "QP lifetime distribution (exponential, #tau=100 #mus);Lifetime [ns];Counts",
         200, ltMin - margin, ltMax + margin);
     for (double v : usedLifetimes) h_lt->Fill(v);
 
-    TCanvas* c_lt = new TCanvas("c_qpLifetime", "QP lifetime distribution", 800, 600);
+    // Overlay an exponential reference curve: f(x) = N * binWidth * (1/tau) * exp(-x/tau)
+    const double tau = qpLifetimeMean_ns;
+    const double binWidth = h_lt->GetBinWidth(1);
+    const double nEntries = (double)usedLifetimes.size();
+    TF1* f_exp = new TF1("f_qpLifetimeExp", "[0]*exp(-x/[1])",
+                         ltMin - margin, ltMax + margin);
+    f_exp->SetParameter(0, nEntries * binWidth / tau);
+    f_exp->SetParameter(1, tau);
+    f_exp->SetLineColor(kRed);
+    f_exp->SetLineWidth(2);
+
+    TCanvas* c_lt = new TCanvas("c_qpLifetime", "QP lifetime distribution (exponential)", 800, 600);
     h_lt->SetLineColor(kBlue + 1);
     h_lt->SetLineWidth(2);
     h_lt->Draw("HIST");
+    f_exp->Draw("SAME");
+
+    TLegend* leg_lt = new TLegend(0.55, 0.70, 0.88, 0.88);
+    leg_lt->SetBorderSize(1);
+    leg_lt->SetFillStyle(0);
+    leg_lt->AddEntry(h_lt, "Sampled lifetimes", "l");
+    leg_lt->AddEntry(f_exp, TString::Format("Exp(#tau=%.0f ns)", tau), "l");
+    leg_lt->Draw();
+
     fOut->cd();
     h_lt->Write();
+    f_exp->Write();
     c_lt->Write();
     c_lt->SaveAs("qpLifetime_distribution.png");
+    delete leg_lt;
     delete c_lt;
   }
 
