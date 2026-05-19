@@ -93,6 +93,13 @@
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TBox.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TAttText.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TLine.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TF1.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TFormula.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TBits.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/Math/Types.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TMethodCall.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/TF1AbsComposition.h
+./RISQTutorialAnalysis_cc.so: /usr/local/include/Math/ParamFunctor.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TRandom3.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/TRandom.h
 ./RISQTutorialAnalysis_cc.so: /usr/local/include/Math/TRandomEngine.h
