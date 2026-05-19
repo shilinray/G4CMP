@@ -1893,7 +1893,7 @@ static void DrawDetectorOverlayXY(double chipHalf_mm,
 // Expected file naming (from mems.sh / run_mems.sh):
 //   ../G4Macros/260519_run/<config>/Hits_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
 //   ../G4Macros/260519_run/<config>/Primary_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
-void Mems_PCEStudy(int grid_size = 8, std::string stlDir = "../../single_squat")
+void Mems_PCEStudy(int grid_size = 3, std::string stlDir = "../../single_squat")
 {
   const int al = 600;
   const int nb = 20;
