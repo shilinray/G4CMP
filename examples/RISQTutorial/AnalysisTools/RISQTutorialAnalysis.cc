@@ -1722,6 +1722,165 @@ void Ns_QuasiparticleAnalysis()
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 
+//---------------------------------------------------------------------------------------
+// Helpers for Mems_PCEStudy: draw detector geometry overlay on a ROOT pad.
+// Geometry is taken from RISQTutorialDetectorConstruction.cc and the
+// single_squat STL files (ASCII format, coordinates in µm).
+//---------------------------------------------------------------------------------------
+
+// Scan an ASCII STL file and accumulate the bounding box in mm (coords * 1e-3).
+static void UpdateSTLBounds(const std::string& path,
+                             double& xmin, double& xmax,
+                             double& ymin, double& ymax)
+{
+  std::ifstream f(path.c_str());
+  if (!f.is_open()) return;
+  std::string line;
+  while (std::getline(f, line)) {
+    std::istringstream ss(line);
+    std::string tok; ss >> tok;
+    if (tok != "vertex") continue;
+    double x, y, z; ss >> x >> y >> z;
+    x *= 1e-3; y *= 1e-3;   // µm → mm
+    xmin = std::min(xmin, x); xmax = std::max(xmax, x);
+    ymin = std::min(ymin, y); ymax = std::max(ymax, y);
+  }
+}
+
+// Draw the boundary edges of the top face (|nz| > 0.9) of one ASCII STL part
+// projected onto XY.  off_x / off_y are the placement offsets in mm.
+static void DrawSTLTopFaceXY(const std::string& path,
+                              double off_x, double off_y,
+                              Color_t color, Width_t lw)
+{
+  std::ifstream f(path.c_str());
+  if (!f.is_open()) {
+    std::cerr << "DrawSTLTopFaceXY: cannot open " << path << std::endl;
+    return;
+  }
+
+  // Quantize to 1 nm (1e-6 mm) for edge deduplication.
+  typedef std::pair<long long, long long>  Pt2;
+  typedef std::pair<Pt2, Pt2>             EdgeKey;
+
+  std::map<EdgeKey, int>                     edgeCnt;
+  std::map<EdgeKey, std::array<double, 4> >  edgeCoords;
+
+  std::string line;
+  double nx = 0, ny = 0, nz = 0;
+  double vx[3], vy[3];
+  int vi = -1;
+
+  while (std::getline(f, line)) {
+    std::istringstream ss(line);
+    std::string tok; ss >> tok;
+    if (tok == "facet") {
+      std::string tmp; ss >> tmp;   // skip "normal"
+      ss >> nx >> ny >> nz;
+      vi = 0;
+    } else if (tok == "vertex" && vi >= 0 && vi < 3) {
+      double x, y, z; ss >> x >> y >> z;
+      vx[vi] = x * 1e-3;
+      vy[vi] = y * 1e-3;
+      ++vi;
+    } else if (tok == "endfacet") {
+      if (vi == 3 && TMath::Abs(nz) > 0.9) {
+        for (int j = 0; j < 3; ++j) {
+          int k = (j + 1) % 3;
+          Pt2 pa = std::make_pair((long long)(vx[j] * 1e6 + 0.5),
+                                  (long long)(vy[j] * 1e6 + 0.5));
+          Pt2 pb = std::make_pair((long long)(vx[k] * 1e6 + 0.5),
+                                  (long long)(vy[k] * 1e6 + 0.5));
+          if (pa > pb) std::swap(pa, pb);
+          EdgeKey ek = std::make_pair(pa, pb);
+          edgeCnt[ek]++;
+          if (edgeCnt[ek] == 1) {
+            std::array<double, 4> c = { {vx[j], vy[j], vx[k], vy[k]} };
+            edgeCoords[ek] = c;
+          }
+        }
+      }
+      vi = -1;
+    }
+  }
+
+  for (std::map<EdgeKey,int>::iterator it = edgeCnt.begin(); it != edgeCnt.end(); ++it) {
+    if (it->second != 1) continue;   // interior edge
+    const std::array<double, 4>& c = edgeCoords[it->first];
+    TLine* l = new TLine(c[0] + off_x, c[1] + off_y, c[2] + off_x, c[3] + off_y);
+    l->SetLineColor(color);
+    l->SetLineWidth(lw);
+    l->Draw();
+  }
+}
+
+// Draw the SQUAT KID outline on the current pad.  Placement mirrors
+// RISQTutorialDetectorConstruction: the combined bounding-box centre of all
+// 5 parts is removed, then (targetX_mm, targetY_mm) is added.
+static void DrawSquatOverlayXY(const std::string& stlDir,
+                                double targetX_mm, double targetY_mm,
+                                Color_t color, Width_t lw)
+{
+  double xmin =  1e18, xmax = -1e18;
+  double ymin =  1e18, ymax = -1e18;
+  for (int i = 1; i <= 5; ++i) {
+    std::string path = stlDir + "/single_squat_BE" + std::to_string(i) + ".STL";
+    UpdateSTLBounds(path, xmin, xmax, ymin, ymax);
+  }
+  if (xmin > xmax) return;
+  const double offX = targetX_mm - 0.5 * (xmin + xmax);
+  const double offY = targetY_mm - 0.5 * (ymin + ymax);
+  for (int i = 1; i <= 5; ++i) {
+    std::string path = stlDir + "/single_squat_BE" + std::to_string(i) + ".STL";
+    DrawSTLTopFaceXY(path, offX, offY, color, lw);
+  }
+}
+
+// Draw chip boundary, feedline, ground planes, and SQUAT KID on the current
+// ROOT pad.  All dimensions computed from RISQTutorialDetectorConstruction.
+// chipHalf_mm : Ge chip half-width (5.0 mm for numsensors = 1).
+// stlDir      : directory containing single_squat_BE[1-5].STL.
+static void DrawDetectorOverlayXY(double chipHalf_mm,
+                                   const std::string& stlDir,
+                                   Color_t color = kWhite, Width_t lw = 1)
+{
+  // Chip boundary
+  TBox* chipBox = new TBox(-chipHalf_mm, -chipHalf_mm, chipHalf_mm, chipHalf_mm);
+  chipBox->SetLineColor(color);
+  chipBox->SetLineWidth(lw);
+  chipBox->SetFillStyle(0);
+  chipBox->Draw("l");
+
+  // Feedline central conductor: full chip width, half-height = 4.5 µm
+  const double flHY = 4.5e-3;
+  TBox* flBox = new TBox(-chipHalf_mm, -flHY, chipHalf_mm, flHY);
+  flBox->SetLineColor(color);
+  flBox->SetLineWidth(lw);
+  flBox->SetFillStyle(0);
+  flBox->Draw("l");
+
+  // Upper ground plane: centre +56.5 µm, half-height 50 µm
+  TBox* ugpBox = new TBox(-chipHalf_mm, 56.5e-3 - 50.0e-3,
+                           chipHalf_mm, 56.5e-3 + 50.0e-3);
+  ugpBox->SetLineColor(color);
+  ugpBox->SetLineWidth(lw);
+  ugpBox->SetFillStyle(0);
+  ugpBox->Draw("l");
+
+  // Lower ground plane: centre -8.5 µm, half-height 2 µm
+  TBox* lgpBox = new TBox(-chipHalf_mm, -8.5e-3 - 2.0e-3,
+                           chipHalf_mm, -8.5e-3 + 2.0e-3);
+  lgpBox->SetLineColor(color);
+  lgpBox->SetLineWidth(lw);
+  lgpBox->SetFillStyle(0);
+  lgpBox->Draw("l");
+
+  // SQUAT KID placed at (0, -200 µm) per RISQTutorialDetectorConstruction
+  DrawSquatOverlayXY(stlDir, 0.0, -0.2, color, lw);
+}
+
+//---------------------------------------------------------------------------------------
+
 // Mems_PCEStudy
 //
 // Reads G4CMP output from the MEMS grid scan: phonons launched from each
@@ -1734,7 +1893,7 @@ void Ns_QuasiparticleAnalysis()
 // Expected file naming (from mems.sh / run_mems.sh):
 //   ../G4Macros/260519_run/<config>/Hits_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
 //   ../G4Macros/260519_run/<config>/Primary_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
-void Mems_PCEStudy(int grid_size = 3)
+void Mems_PCEStudy(int grid_size = 8, std::string stlDir = "../../single_squat")
 {
   const int al = 600;
   const int nb = 20;
@@ -1829,6 +1988,7 @@ void Mems_PCEStudy(int grid_size = 3)
         900, 700);
     c->SetRightMargin(0.18);
     h_pce->Draw("COLZ");
+    DrawDetectorOverlayXY(5.0, stlDir);
     fOut->cd();
     c->Write();
     c->SaveAs(TString::Format("Mems_PCE_%s.png", tag.Data()));
