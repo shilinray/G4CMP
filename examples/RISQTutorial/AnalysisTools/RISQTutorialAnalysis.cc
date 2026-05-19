@@ -1716,6 +1716,130 @@ void Ns_QuasiparticleAnalysis()
   delete c_qp;
 }
 
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+// Mems_PCEStudy
+//
+// Reads G4CMP output from the MEMS grid scan: phonons launched from each
+// point of a grid_size x grid_size grid across the 1 cm x 1 cm chip.
+// For each of the four configurations (Al-only vs Al+Nb) x (SW vs PF loss),
+// computes the phonon collection efficiency (PCE = total hit energy / total
+// primary energy) and produces a 2D histogram of PCE with X position on the
+// x-axis and Y position on the y-axis.
+//
+// Expected file naming (from mems.sh / run_mems.sh):
+//   ../G4Macros/260519_run/<config>/Hits_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
+//   ../G4Macros/260519_run/<config>/Primary_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
+void Mems_PCEStudy(int grid_size = 9)
+{
+  const int al = 600;
+  const int nb = 20;
+  const std::string baseRunDir = "../G4Macros/260519_run";
+
+  // The four run configurations produced by run_mems.sh
+  struct Config {
+    std::string dirName;
+    std::string label;
+  };
+  const std::vector<Config> configs = {
+    {"MEMS_Al_SW",    "Al only, SW loss"},
+    {"MEMS_Al_PF",    "Al only, PF loss"},
+    {"MEMS_Al_Nb_SW", "Al+Nb, SW loss"},
+    {"MEMS_Al_Nb_PF", "Al+Nb, PF loss"},
+  };
+
+  TFile* fOut = new TFile("Mems_PCE.root", "RECREATE");
+  if (!fOut || fOut->IsZombie()) {
+    std::cerr << "Error: could not create output file Mems_PCE.root" << std::endl;
+    return;
+  }
+  fOut->cd();
+
+  for (const Config& cfg : configs) {
+    const std::string baseDir = baseRunDir + "/" + cfg.dirName;
+    const TString tag = TString(cfg.dirName.c_str());
+
+    // 2D PCE map: x-axis = X position [mm], y-axis = Y position [mm], z = PCE
+    TH2F* h_pce = new TH2F(
+        TString::Format("h_pce_%s", tag.Data()),
+        TString::Format("PCE Map (%s);X [mm];Y [mm];PCE", cfg.label.c_str()),
+        grid_size, -5.0, 5.0,
+        grid_size, -5.0, 5.0);
+    h_pce->SetDirectory(fOut);
+    h_pce->SetStats(0);
+
+    for (int ix = 0; ix < grid_size; ++ix) {
+      for (int iy = 0; iy < grid_size; ++iy) {
+
+        std::ostringstream primPath, hitPath;
+        primPath << baseDir << "/Primary_Al" << al << "_Nb" << nb
+                 << "_ix" << ix << "_iy" << iy << ".txt";
+        hitPath  << baseDir << "/Hits_Al"    << al << "_Nb" << nb
+                 << "_ix" << ix << "_iy" << iy << ".txt";
+
+        const std::map<int, PrimaryInfo> primaryInfo =
+            ParsePrimaryTextFileForPrimaries(primPath.str());
+        const std::map<int, std::vector<Hit> > hitInfo =
+            ParseHitTextFileForHits(hitPath.str());
+
+        // All primaries in this file share the same launch position;
+        // use the accumulated position from the first entry for the grid coordinates.
+        double primX_mm = 0.0;
+        double primY_mm = 0.0;
+        double totalPrimaryEnergy_eV = 0.0;
+        for (const auto& kv : primaryInfo) {
+          primX_mm = kv.second.X_mm;
+          primY_mm = kv.second.Y_mm;
+          totalPrimaryEnergy_eV += kv.second.energy_eV;
+        }
+
+        double totalHitEnergy_eV = 0.0;
+        for (const auto& kv : hitInfo) {
+          for (const Hit& h : kv.second) {
+            totalHitEnergy_eV += h.eDep_eV;
+          }
+        }
+
+        const double pce = (totalPrimaryEnergy_eV > 0.0)
+                             ? (totalHitEnergy_eV / totalPrimaryEnergy_eV)
+                             : 0.0;
+
+        const int binX = h_pce->GetXaxis()->FindBin(primX_mm);
+        const int binY = h_pce->GetYaxis()->FindBin(primY_mm);
+        h_pce->SetBinContent(binX, binY, pce);
+
+        std::cout << cfg.dirName
+                  << "  ix=" << ix << " iy=" << iy
+                  << "  pos=(" << primX_mm << ", " << primY_mm << ") mm"
+                  << "  PCE=" << 100.0 * pce << " %"
+                  << std::endl;
+      }
+    }
+
+    fOut->cd();
+    h_pce->Write();
+
+    TCanvas* c = new TCanvas(
+        TString::Format("c_pce_%s", tag.Data()),
+        TString::Format("PCE Map: %s", cfg.label.c_str()),
+        900, 700);
+    c->SetRightMargin(0.18);
+    h_pce->Draw("COLZ");
+    fOut->cd();
+    c->Write();
+    c->SaveAs(TString::Format("Mems_PCE_%s.png", tag.Data()));
+    delete c;
+  }
+
+  fOut->Write();
+  fOut->Close();
+  delete fOut;
+}
+
 
 //---------------------------------------------------------------------------------------
 // Parsing function

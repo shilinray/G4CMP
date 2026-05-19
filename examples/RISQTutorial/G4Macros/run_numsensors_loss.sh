@@ -5,15 +5,6 @@ Nb_z="20"
 Al_bools="true false"
 numsensors="1 2 3 4 5 6 7 8 9 10 11"
 
-# Log file
-logfile="loop_timing.log"
-
-# Write overall start time
-{
-    echo "========================================"
-    echo "loop started at: $(date '+%Y-%m-%d %H:%M:%S')"
-    echo "========================================"
-} > "$logfile"
 
 # First parameters: pAbsProbSideWallSi=0.01 pAbsProbPolishedWallSi=0.0
 # Second parameters: pAbsProbSideWallSi=0.0 pAbsProbPolishedWallSi=0.0025
@@ -37,10 +28,3 @@ do
         done
     done
 done
-
-# Write overall end time
-{
-    echo "========================================"
-    echo "loop ended at:   $(date '+%Y-%m-%d %H:%M:%S')"
-    echo "========================================"
-} >> "$logfile"
