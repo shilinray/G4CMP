@@ -1734,7 +1734,7 @@ void Ns_QuasiparticleAnalysis()
 // Expected file naming (from mems.sh / run_mems.sh):
 //   ../G4Macros/260519_run/<config>/Hits_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
 //   ../G4Macros/260519_run/<config>/Primary_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
-void Mems_PCEStudy(int grid_size = 9)
+void Mems_PCEStudy(int grid_size = 3)
 {
   const int al = 600;
   const int nb = 20;
