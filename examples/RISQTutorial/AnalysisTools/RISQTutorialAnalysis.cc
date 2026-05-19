@@ -1893,7 +1893,7 @@ static void DrawDetectorOverlayXY(double chipHalf_mm,
 // Expected file naming (from mems.sh / run_mems.sh):
 //   ../G4Macros/260519_run/<config>/Hits_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
 //   ../G4Macros/260519_run/<config>/Primary_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
-void Mems_PCEStudy(int grid_size = 3, std::string stlDir = "../../single_squat")
+void Mems_PCEStudy(int grid_size = 11, bool drawOverlay = false, std::string stlDir = "../../single_squat")
 {
   const int al = 600;
   const int nb = 20;
@@ -1988,7 +1988,7 @@ void Mems_PCEStudy(int grid_size = 3, std::string stlDir = "../../single_squat")
         900, 700);
     c->SetRightMargin(0.18);
     h_pce->Draw("COLZ");
-    DrawDetectorOverlayXY(5.0, stlDir);
+    if (drawOverlay) DrawDetectorOverlayXY(5.0, stlDir);
     fOut->cd();
     c->Write();
     c->SaveAs(TString::Format("Mems_PCE_%s.png", tag.Data()));
