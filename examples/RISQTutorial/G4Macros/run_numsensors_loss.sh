@@ -1,9 +1,9 @@
 #!/bin/bash
 
-Al_z="100 200 300 400 500 600 700 800 900 1000"
+Al_z="100 300 500 700 900"
 Nb_z="20"
 Al_bools="true false"
-numsensors="1 2 3 4 5 6 7 8 9 10 11"
+numsensors="1 5 10 20 40 80 100"
 
 
 # First parameters: pAbsProbSideWallSi=0.01 pAbsProbPolishedWallSi=0.0
