@@ -812,10 +812,10 @@ void PlotCumulativeHitEnergyVsEndTime_OverlayNb20()
 
 void Ns_PrintPhononCollectionEfficiencyAndPlot()
 {
-  std::vector<int> al_vals = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
-  std::vector<int> ns_vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+  std::vector<int> al_vals = {100, 300, 500, 700, 900};
+  std::vector<int> ns_vals = {1, 5, 10, 20, 40, 80, 100};
 
-  const std::string baseDir = "../G4Macros/260419_run/lQPD_Al_PF";
+  const std::string baseDir = "../G4Macros/260419_run/SQUAT_Al_Nb_PF";
 
   // Al superconducting gap energy [eV]. Used to convert deposited energy to
   // total QPs: N_QP = 2 * E_dep / Delta_Al

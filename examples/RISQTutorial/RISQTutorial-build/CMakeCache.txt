@@ -103,6 +103,9 @@ CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 //Enable/Disable output of compile commands during generation.
 CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=
 
+//Value Computed by CMake.
+CMAKE_FIND_PACKAGE_REDIRECTS_DIR:STATIC=/sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/RISQTutorial-build/CMakeFiles/pkgRedirects
+
 //Install path prefix, prepended onto install directories.
 CMAKE_INSTALL_PREFIX:PATH=/sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/RISQTutorial-install
 
@@ -1018,6 +1021,8 @@ XercesC_INCLUDE_DIR-ADVANCED:INTERNAL=1
 XercesC_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: XercesC_LIBRARY_RELEASE
 XercesC_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//linker supports push/pop state
+_CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED:INTERNAL=TRUE
 __pkg_config_arguments_PC_EXPAT:INTERNAL=QUIET;expat
 __pkg_config_arguments_PKG_FONTCONFIG:INTERNAL=QUIET;fontconfig
 __pkg_config_checked_PC_EXPAT:INTERNAL=1
