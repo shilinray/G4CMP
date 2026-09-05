@@ -2000,6 +2000,129 @@ void Mems_PCEStudy(int grid_size = 11, bool drawOverlay = false, std::string stl
   delete fOut;
 }
 
+//---------------------------------------------------------------------------------------
+// Plot PCE for the sensor-count scan submitted by G4Macros/run_numsensors.sh.
+//---------------------------------------------------------------------------------------
+void NumSensors_PCEStudy()
+{
+  const int al = 100;
+  const std::vector<int> numSensors = {1, 5, 10, 20, 30, 40, 50,
+                                       60, 70, 80, 90, 100, 200};
+  const std::string baseRunDir = "../G4Macros/260905_run";
+
+  struct Config {
+    std::string directory;
+    std::string label;
+    Color_t color;
+  };
+  const std::vector<Config> configs = {
+    {"SQUAT_Al_Nb_SW", "Side-wall loss", kBlue + 1},
+    {"SQUAT_Al_Nb_PF", "Polished-wall loss", kRed + 1},
+  };
+
+  TFile* fOut = new TFile("PCE_vs_NumSensors.root", "RECREATE");
+  if (!fOut || fOut->IsZombie()) {
+    std::cerr << "Error: could not create PCE_vs_NumSensors.root" << std::endl;
+    return;
+  }
+
+  TCanvas* canvas = new TCanvas("c_pce_vs_numSensors",
+                                "PCE vs number of sensors", 900, 700);
+  TMultiGraph* multigraph = new TMultiGraph(
+      "mg_pce_vs_numSensors",
+      "Phonon Collection Efficiency vs Number of Sensors;Number of sensors;PCE [%]");
+  TLegend* legend = new TLegend(0.62, 0.72, 0.88, 0.88);
+  legend->SetBorderSize(1);
+  legend->SetFillStyle(0);
+
+  for (const Config& config : configs) {
+    std::vector<double> sensorValues;
+    std::vector<double> pceValues;
+
+    for (int ns : numSensors) {
+      const std::string tag = "Al" + std::to_string(al) + "_ns" + std::to_string(ns);
+      const std::string runDir = baseRunDir + "/" + config.directory;
+      const std::string primaryFilename = runDir + "/Primary_" + tag + ".txt";
+      const std::string hitsFilename = runDir + "/Hits_" + tag + ".txt";
+
+      std::ifstream primaryFile(primaryFilename.c_str());
+      std::ifstream hitsFile(hitsFilename.c_str());
+      if (!primaryFile.good() || !hitsFile.good()) {
+        std::cerr << "Skipping ns=" << ns << " for " << config.label
+                  << ": missing primary or hit file." << std::endl;
+        continue;
+      }
+
+      const std::map<int, PrimaryInfo> primaryInfo =
+          ParsePrimaryTextFileForPrimaries(primaryFilename);
+      const std::map<int, std::vector<Hit> > hitInfo =
+          ParseHitTextFileForHits(hitsFilename);
+
+      double totalPrimaryEnergy_eV = 0.0;
+      for (const auto& entry : primaryInfo) {
+        totalPrimaryEnergy_eV += entry.second.energy_eV;
+      }
+
+      double totalHitEnergy_eV = 0.0;
+      for (const auto& entry : hitInfo) {
+        for (const Hit& hit : entry.second) {
+          totalHitEnergy_eV += hit.eDep_eV;
+        }
+      }
+
+      if (totalPrimaryEnergy_eV <= 0.0) {
+        std::cerr << "Skipping ns=" << ns << " for " << config.label
+                  << ": primary energy is zero." << std::endl;
+        continue;
+      }
+
+      const double pcePercent = 100.0 * totalHitEnergy_eV / totalPrimaryEnergy_eV;
+      sensorValues.push_back(ns);
+      pceValues.push_back(pcePercent);
+      std::cout << config.label << "  ns=" << ns
+                << "  PCE=" << pcePercent << " %" << std::endl;
+    }
+
+    if (sensorValues.empty()) continue;
+
+    TString graphName = TString::Format("g_pce_vs_numSensors_%s", config.directory.c_str());
+    TGraph* graph = new TGraph((int)sensorValues.size(), sensorValues.data(), pceValues.data());
+    graph->SetName(graphName);
+    graph->SetLineColor(config.color);
+    graph->SetMarkerColor(config.color);
+    graph->SetLineWidth(2);
+    graph->SetMarkerStyle(20);
+    graph->SetMarkerSize(0.9);
+    fOut->cd();
+    graph->Write();
+    multigraph->Add(graph, "LP");
+    legend->AddEntry(graph, config.label.c_str(), "lp");
+  }
+
+  if (multigraph->GetListOfGraphs()->GetSize() == 0) {
+    std::cerr << "Error: no valid num-sensor scan files were found." << std::endl;
+    fOut->Close();
+    delete legend;
+    delete canvas;
+    delete fOut;
+    return;
+  }
+
+  canvas->SetGrid();
+  multigraph->Draw("A");
+  legend->Draw();
+  fOut->cd();
+  multigraph->Write();
+  canvas->Write();
+  canvas->SaveAs("PCE_vs_NumSensors.png");
+  fOut->Write();
+  fOut->Close();
+
+  delete legend;
+  delete canvas;
+  delete fOut;
+}
+
 
 //---------------------------------------------------------------------------------------
 // Parsing function
