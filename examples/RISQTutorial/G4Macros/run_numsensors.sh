@@ -3,7 +3,7 @@
 Al_z="100"
 Nb_z="20"
 Al_bools="false"
-numsensors="1 5 10 20 30 40 50 60 70 80 90 100 200"
+numsensors="1 2 5 10 20 30 40 50 60 70 80 90 100 125 150 175 200"
 
 
 # First parameters: pAbsProbSideWallSi=0.01 pAbsProbPolishedWallSi=0.0

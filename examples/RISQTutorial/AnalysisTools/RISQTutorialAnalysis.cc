@@ -2006,9 +2006,9 @@ void Mems_PCEStudy(int grid_size = 11, bool drawOverlay = false, std::string stl
 void NumSensors_PCEStudy()
 {
   const int al = 100;
-  const std::vector<int> numSensors = {1, 5, 10, 20, 30, 40, 50,
-                                       60, 70, 80, 90, 100, 200};
-  const std::string baseRunDir = "../G4Macros/260905_run";
+  const std::vector<int> numSensors = {1, 2, 5, 10, 20, 30, 40, 50,
+                                       60, 70, 80, 90, 100, 125, 150, 175, 200};
+  const std::string baseRunDir = "../G4Macros/260906_run";
 
   struct Config {
     std::string directory;
