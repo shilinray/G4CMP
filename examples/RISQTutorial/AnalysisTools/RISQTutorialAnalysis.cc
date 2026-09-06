@@ -2020,6 +2020,10 @@ void NumSensors_PCEStudy()
     {"SQUAT_Al_Nb_PF", "Polished-wall loss", kRed + 1},
   };
 
+  // Resolution on energy absorbed by a single sensor [eV]: 100 meV to 1 eV in 200 meV steps
+  std::vector<double> resAbsorbed_eV;
+  for (double r = 0.1; r <= 1.0 + 1e-9; r += 0.2) resAbsorbed_eV.push_back(r);
+
   TFile* fOut = new TFile("PCE_vs_NumSensors.root", "RECREATE");
   if (!fOut || fOut->IsZombie()) {
     std::cerr << "Error: could not create PCE_vs_NumSensors.root" << std::endl;
@@ -2084,6 +2088,47 @@ void NumSensors_PCEStudy()
     }
 
     if (sensorValues.empty()) continue;
+
+    // 2D map: x = number of sensors N (with PCE in parentheses), y = resolution on
+    // energy absorbed by a single sensor, z = resolution on energy deposited, where
+    //   res_deposited(N) = res_absorbed_1sensor * sqrt(N) / PCE
+    TString hResName = TString::Format("h_resDeposited_%s", config.directory.c_str());
+    TH2F* h_resDeposited = new TH2F(hResName,
+        TString::Format("Resolution on Deposited Energy (%s);Number of sensors N (PCE);Resolution on energy absorbed [eV]",
+                        config.label.c_str()),
+        (int)sensorValues.size(), 0, (int)sensorValues.size(),
+        (int)resAbsorbed_eV.size(), 0, (int)resAbsorbed_eV.size());
+    h_resDeposited->SetStats(0);
+
+    for (int iN = 0; iN < (int)sensorValues.size(); ++iN) {
+      const double N = sensorValues[iN];
+      const double pceFraction = pceValues[iN] / 100.0;
+      h_resDeposited->GetXaxis()->SetBinLabel(iN + 1,
+          TString::Format("%d (%.1f%%)", (int)N, pceValues[iN]).Data());
+
+      for (int iR = 0; iR < (int)resAbsorbed_eV.size(); ++iR) {
+        const double resAbsorbed_eV_val = resAbsorbed_eV[iR];
+        const double resDeposited_eV = (pceFraction > 0.0)
+                                         ? (resAbsorbed_eV_val * std::sqrt(N) / pceFraction)
+                                         : 0.0;
+        h_resDeposited->SetBinContent(iN + 1, iR + 1, resDeposited_eV);
+      }
+    }
+    for (int iR = 0; iR < (int)resAbsorbed_eV.size(); ++iR) {
+      h_resDeposited->GetYaxis()->SetBinLabel(iR + 1,
+          TString::Format("%.0f meV", resAbsorbed_eV[iR] * 1000.0).Data());
+    }
+
+    fOut->cd();
+    h_resDeposited->Write();
+
+    TCanvas* c_res = new TCanvas(TString::Format("c_resDeposited_%s", config.directory.c_str()),
+        TString::Format("Resolution on Deposited Energy: %s", config.label.c_str()), 900, 700);
+    c_res->SetRightMargin(0.18);
+    h_resDeposited->Draw("COLZ TEXT");
+    c_res->Write();
+    c_res->SaveAs(TString::Format("ResDeposited_%s.png", config.directory.c_str()));
+    delete c_res;
 
     TString graphName = TString::Format("g_pce_vs_numSensors_%s", config.directory.c_str());
     TGraph* graph = new TGraph((int)sensorValues.size(), sensorValues.data(), pceValues.data());
