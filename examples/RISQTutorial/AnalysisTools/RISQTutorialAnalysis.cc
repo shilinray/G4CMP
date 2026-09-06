@@ -2035,9 +2035,10 @@ void NumSensors_PCEStudy()
   TMultiGraph* multigraph = new TMultiGraph(
       "mg_pce_vs_numSensors",
       "Phonon Collection Efficiency vs Number of Sensors;Number of sensors;PCE [%]");
-  TLegend* legend = new TLegend(0.62, 0.72, 0.88, 0.88);
+  TLegend* legend = new TLegend(0.72, 0.80, 0.88, 0.88);
   legend->SetBorderSize(1);
   legend->SetFillStyle(0);
+  legend->SetTextSize(0.025);
 
   for (const Config& config : configs) {
     std::vector<double> sensorValues;
@@ -2089,6 +2090,19 @@ void NumSensors_PCEStudy()
 
     if (sensorValues.empty()) continue;
 
+    // Table of number-of-sensors vs PCE for this loss configuration
+    {
+      std::cout << "\n=== PCE vs Number of Sensors (" << config.label << ") ===\n"
+                << "NumSensors\tPCE[%]\n";
+      std::ofstream tableOut(TString::Format("PCE_table_%s.txt", config.directory.c_str()).Data());
+      tableOut << "NumSensors\tPCE[%]\n";
+      for (int iN = 0; iN < (int)sensorValues.size(); ++iN) {
+        std::cout << (int)sensorValues[iN] << "\t\t" << pceValues[iN] << "\n";
+        tableOut << (int)sensorValues[iN] << "\t" << pceValues[iN] << "\n";
+      }
+      std::cout << "========================================\n";
+    }
+
     // One line per resolution-on-energy-absorbed value: x = number of sensors N,
     // y = resolution on deposited energy, where
     //   res_deposited(N) = res_absorbed_1sensor * sqrt(N) / PCE
@@ -2103,9 +2117,10 @@ void NumSensors_PCEStudy()
 
       TCanvas* c_res = new TCanvas(TString::Format("c_resDeposited_%s", config.directory.c_str()),
           TString::Format("Resolution on Deposited Energy: %s", config.label.c_str()), 900, 700);
-      TLegend* leg_res = new TLegend(0.62, 0.55, 0.88, 0.88);
+      TLegend* leg_res = new TLegend(0.76, 0.62, 0.88, 0.88);
       leg_res->SetBorderSize(1);
       leg_res->SetFillStyle(0);
+      leg_res->SetTextSize(0.022);
 
       for (int iR = 0; iR < (int)resAbsorbed_eV.size(); ++iR) {
         const double resAbsorbed_eV_val = resAbsorbed_eV[iR];
