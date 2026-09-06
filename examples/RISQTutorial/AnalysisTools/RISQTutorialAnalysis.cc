@@ -2089,46 +2089,66 @@ void NumSensors_PCEStudy()
 
     if (sensorValues.empty()) continue;
 
-    // 2D map: x = number of sensors N (with PCE in parentheses), y = resolution on
-    // energy absorbed by a single sensor, z = resolution on energy deposited, where
+    // One line per resolution-on-energy-absorbed value: x = number of sensors N,
+    // y = resolution on deposited energy, where
     //   res_deposited(N) = res_absorbed_1sensor * sqrt(N) / PCE
-    TString hResName = TString::Format("h_resDeposited_%s", config.directory.c_str());
-    TH2F* h_resDeposited = new TH2F(hResName,
-        TString::Format("Resolution on Deposited Energy (%s);Number of sensors N (PCE);Resolution on energy absorbed [eV]",
-                        config.label.c_str()),
-        (int)sensorValues.size(), 0, (int)sensorValues.size(),
-        (int)resAbsorbed_eV.size(), 0, (int)resAbsorbed_eV.size());
-    h_resDeposited->SetStats(0);
+    {
+      const int resColors[] = {kBlack, kRed, kBlue, kGreen + 2, kMagenta + 1,
+                               kOrange + 7, kCyan + 2, kViolet, kPink + 7, kAzure + 2};
 
-    for (int iN = 0; iN < (int)sensorValues.size(); ++iN) {
-      const double N = sensorValues[iN];
-      const double pceFraction = pceValues[iN] / 100.0;
-      h_resDeposited->GetXaxis()->SetBinLabel(iN + 1,
-          TString::Format("%d (%.1f%%)", (int)N, pceValues[iN]).Data());
+      TMultiGraph* mg_resDeposited = new TMultiGraph(
+          TString::Format("mg_resDeposited_%s", config.directory.c_str()),
+          TString::Format("Resolution on Deposited Energy (%s);Number of sensors N;Resolution on deposited energy [eV]",
+                          config.label.c_str()));
+
+      TCanvas* c_res = new TCanvas(TString::Format("c_resDeposited_%s", config.directory.c_str()),
+          TString::Format("Resolution on Deposited Energy: %s", config.label.c_str()), 900, 700);
+      TLegend* leg_res = new TLegend(0.62, 0.55, 0.88, 0.88);
+      leg_res->SetBorderSize(1);
+      leg_res->SetFillStyle(0);
 
       for (int iR = 0; iR < (int)resAbsorbed_eV.size(); ++iR) {
         const double resAbsorbed_eV_val = resAbsorbed_eV[iR];
-        const double resDeposited_eV = (pceFraction > 0.0)
-                                         ? (resAbsorbed_eV_val * std::sqrt(N) / pceFraction)
-                                         : 0.0;
-        h_resDeposited->SetBinContent(iN + 1, iR + 1, resDeposited_eV);
+
+        std::vector<double> yResDeposited(sensorValues.size());
+        for (int iN = 0; iN < (int)sensorValues.size(); ++iN) {
+          const double N = sensorValues[iN];
+          const double pceFraction = pceValues[iN] / 100.0;
+          yResDeposited[iN] = (pceFraction > 0.0)
+                                ? (resAbsorbed_eV_val * std::sqrt(N) / pceFraction)
+                                : 0.0;
+        }
+
+        TString gName = TString::Format("g_resDeposited_%s_res%dmeV",
+                                        config.directory.c_str(), (int)(resAbsorbed_eV_val * 1000.0));
+        TGraph* g = new TGraph((int)sensorValues.size(), sensorValues.data(), yResDeposited.data());
+        g->SetName(gName);
+        g->SetLineWidth(2);
+        g->SetMarkerStyle(20);
+        g->SetMarkerSize(0.8);
+
+        const int color = resColors[iR < 10 ? iR : 9];
+        g->SetLineColor(color);
+        g->SetMarkerColor(color);
+
+        fOut->cd();
+        g->Write();
+
+        mg_resDeposited->Add(g, "LP");
+        leg_res->AddEntry(g, TString::Format("%.0f meV", resAbsorbed_eV_val * 1000.0), "lp");
       }
-    }
-    for (int iR = 0; iR < (int)resAbsorbed_eV.size(); ++iR) {
-      h_resDeposited->GetYaxis()->SetBinLabel(iR + 1,
-          TString::Format("%.0f meV", resAbsorbed_eV[iR] * 1000.0).Data());
-    }
 
-    fOut->cd();
-    h_resDeposited->Write();
+      c_res->SetGrid();
+      mg_resDeposited->Draw("A");
+      leg_res->Draw();
+      fOut->cd();
+      mg_resDeposited->Write();
+      c_res->Write();
+      c_res->SaveAs(TString::Format("ResDeposited_%s.png", config.directory.c_str()));
 
-    TCanvas* c_res = new TCanvas(TString::Format("c_resDeposited_%s", config.directory.c_str()),
-        TString::Format("Resolution on Deposited Energy: %s", config.label.c_str()), 900, 700);
-    c_res->SetRightMargin(0.18);
-    h_resDeposited->Draw("COLZ TEXT");
-    c_res->Write();
-    c_res->SaveAs(TString::Format("ResDeposited_%s.png", config.directory.c_str()));
-    delete c_res;
+      delete leg_res;
+      delete c_res;
+    }
 
     TString graphName = TString::Format("g_pce_vs_numSensors_%s", config.directory.c_str());
     TGraph* graph = new TGraph((int)sensorValues.size(), sensorValues.data(), pceValues.data());
