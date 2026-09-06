@@ -2136,9 +2136,25 @@ void NumSensors_PCEStudy()
 
         mg_resDeposited->Add(g, "LP");
         leg_res->AddEntry(g, TString::Format("%.0f meV", resAbsorbed_eV_val * 1000.0), "lp");
+
+        // Highlight the lowest (best) resolution point on this line
+        int minIdx = 0;
+        for (int iN = 1; iN < (int)yResDeposited.size(); ++iN) {
+          if (yResDeposited[iN] < yResDeposited[minIdx]) minIdx = iN;
+        }
+        TGraph* gMin = new TGraph(1, &sensorValues[minIdx], &yResDeposited[minIdx]);
+        gMin->SetName(TString::Format("%s_min", gName.Data()));
+        gMin->SetMarkerStyle(29);
+        gMin->SetMarkerSize(2.2);
+        gMin->SetMarkerColor(color);
+        fOut->cd();
+        gMin->Write();
+        mg_resDeposited->Add(gMin, "P");
       }
 
       c_res->SetGrid();
+      c_res->SetLogx();
+      c_res->SetLogy();
       mg_resDeposited->Draw("A");
       leg_res->Draw();
       fOut->cd();
