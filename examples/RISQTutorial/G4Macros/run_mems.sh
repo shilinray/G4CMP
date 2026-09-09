@@ -1,9 +1,9 @@
 #!/bin/bash
 
-Al_z="600"
+Al_z="100"
 Nb_z="20"
-Al_bools="true false"
-grid_size=11   # number of points along each axis (grid_size x grid_size total)
+Al_bools="false"
+grid_size=20   # number of points along each axis (grid_size x grid_size total)
 
 grid_indices=$(seq 0 $((grid_size - 1)))
 
