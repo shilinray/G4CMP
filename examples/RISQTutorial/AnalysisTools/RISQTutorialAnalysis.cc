@@ -2031,10 +2031,10 @@ void NumSensors_PCEStudy()
   }
 
   TCanvas* canvas = new TCanvas("c_pce_vs_numSensors",
-                                "PCE vs number of sensors", 900, 700);
+                                "PCE vs chip area", 900, 700);
   TMultiGraph* multigraph = new TMultiGraph(
       "mg_pce_vs_numSensors",
-      "Phonon Collection Efficiency vs Number of Sensors;Number of sensors;PCE [%]");
+      "Phonon Collection Efficiency vs Chip Area;Chip area [cm^{2}];PCE [%]");
   TLegend* legend = new TLegend(0.72, 0.80, 0.88, 0.88);
   legend->SetBorderSize(1);
   legend->SetFillStyle(0);
@@ -2042,6 +2042,8 @@ void NumSensors_PCEStudy()
 
   for (const Config& config : configs) {
     std::vector<double> sensorValues;
+    // Chip area [cm^2] = 1/numsensors, per RISQTutorialDetectorConstruction (geHalf = 0.5cm/sqrt(numsensors))
+    std::vector<double> areaValues_cm2;
     std::vector<double> pceValues;
 
     for (int ns : numSensors) {
@@ -2083,6 +2085,7 @@ void NumSensors_PCEStudy()
 
       const double pcePercent = 100.0 * totalHitEnergy_eV / totalPrimaryEnergy_eV;
       sensorValues.push_back(ns);
+      areaValues_cm2.push_back(1.0 / ns);
       pceValues.push_back(pcePercent);
       std::cout << config.label << "  ns=" << ns
                 << "  PCE=" << pcePercent << " %" << std::endl;
@@ -2112,7 +2115,7 @@ void NumSensors_PCEStudy()
 
       TMultiGraph* mg_resDeposited = new TMultiGraph(
           TString::Format("mg_resDeposited_%s", config.directory.c_str()),
-          TString::Format("Resolution on Deposited Energy (%s);Number of sensors N;Resolution on deposited energy [eV]",
+          TString::Format("Resolution on Deposited Energy (%s);Chip area [cm^{2}];Resolution on deposited energy [eV]",
                           config.label.c_str()));
 
       TCanvas* c_res = new TCanvas(TString::Format("c_resDeposited_%s", config.directory.c_str()),
@@ -2136,7 +2139,7 @@ void NumSensors_PCEStudy()
 
         TString gName = TString::Format("g_resDeposited_%s_res%dmeV",
                                         config.directory.c_str(), (int)(resAbsorbed_eV_val * 1000.0));
-        TGraph* g = new TGraph((int)sensorValues.size(), sensorValues.data(), yResDeposited.data());
+        TGraph* g = new TGraph((int)areaValues_cm2.size(), areaValues_cm2.data(), yResDeposited.data());
         g->SetName(gName);
         g->SetLineWidth(2);
         g->SetMarkerStyle(20);
@@ -2157,7 +2160,7 @@ void NumSensors_PCEStudy()
         for (int iN = 1; iN < (int)yResDeposited.size(); ++iN) {
           if (yResDeposited[iN] < yResDeposited[minIdx]) minIdx = iN;
         }
-        TGraph* gMin = new TGraph(1, &sensorValues[minIdx], &yResDeposited[minIdx]);
+        TGraph* gMin = new TGraph(1, &areaValues_cm2[minIdx], &yResDeposited[minIdx]);
         gMin->SetName(TString::Format("%s_min", gName.Data()));
         gMin->SetMarkerStyle(29);
         gMin->SetMarkerSize(2.2);
@@ -2182,7 +2185,7 @@ void NumSensors_PCEStudy()
     }
 
     TString graphName = TString::Format("g_pce_vs_numSensors_%s", config.directory.c_str());
-    TGraph* graph = new TGraph((int)sensorValues.size(), sensorValues.data(), pceValues.data());
+    TGraph* graph = new TGraph((int)areaValues_cm2.size(), areaValues_cm2.data(), pceValues.data());
     graph->SetName(graphName);
     graph->SetLineColor(config.color);
     graph->SetMarkerColor(config.color);
