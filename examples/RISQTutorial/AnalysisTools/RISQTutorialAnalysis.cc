@@ -1893,11 +1893,11 @@ static void DrawDetectorOverlayXY(double chipHalf_mm,
 // Expected file naming (from mems.sh / run_mems.sh):
 //   ../G4Macros/260519_run/<config>/Hits_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
 //   ../G4Macros/260519_run/<config>/Primary_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
-void Mems_PCEStudy(int grid_size = 11, bool drawOverlay = false, std::string stlDir = "../../single_squat")
+void Mems_PCEStudy(int grid_size = 20, bool drawOverlay = false, std::string stlDir = "../../single_squat")
 {
-  const int al = 600;
+  const int al = 100;
   const int nb = 20;
-  const std::string baseRunDir = "../G4Macros/260519_run";
+  const std::string baseRunDir = "../G4Macros/260908_run";
 
   // The four run configurations produced by run_mems.sh
   struct Config {
@@ -1905,8 +1905,8 @@ void Mems_PCEStudy(int grid_size = 11, bool drawOverlay = false, std::string stl
     std::string label;
   };
   const std::vector<Config> configs = {
-    {"MEMS_Al_SW",    "Al only, SW loss"},
-    {"MEMS_Al_PF",    "Al only, PF loss"},
+    //{"MEMS_Al_SW",    "Al only, SW loss"},
+    //{"MEMS_Al_PF",    "Al only, PF loss"},
     {"MEMS_Al_Nb_SW", "Al+Nb, SW loss"},
     {"MEMS_Al_Nb_PF", "Al+Nb, PF loss"},
   };
