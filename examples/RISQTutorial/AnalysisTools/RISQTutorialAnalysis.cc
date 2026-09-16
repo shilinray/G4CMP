@@ -1893,11 +1893,11 @@ static void DrawDetectorOverlayXY(double chipHalf_mm,
 // Expected file naming (from mems.sh / run_mems.sh):
 //   ../G4Macros/260519_run/<config>/Hits_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
 //   ../G4Macros/260519_run/<config>/Primary_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
-void Mems_PCEStudy(int grid_size = 20, bool drawOverlay = false, std::string stlDir = "../../single_squat")
+void Mems_PCEStudy(int grid_size = 25, bool drawOverlay = false, std::string stlDir = "../../single_squat")
 {
-  const int al = 100;
-  const int nb = 20;
-  const std::string baseRunDir = "../G4Macros/260908_run";
+  const int al = 30;
+  const int nb = 30;
+  const std::string baseRunDir = "../../../../260915_run_mems";
 
   // The four run configurations produced by run_mems.sh
   struct Config {
@@ -2008,7 +2008,7 @@ void NumSensors_PCEStudy()
   const int al = 100;
   const std::vector<int> numSensors = {1, 2, 5, 10, 20, 30, 40, 50,
                                        60, 70, 80, 90, 100, 125, 150, 175, 200};
-  const std::string baseRunDir = "../G4Macros/260906_run";
+  const std::string baseRunDir = "../../../../260915_run_numsensors";
 
   struct Config {
     std::string directory;

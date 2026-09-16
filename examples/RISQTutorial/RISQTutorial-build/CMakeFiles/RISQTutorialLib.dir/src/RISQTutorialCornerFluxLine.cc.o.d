@@ -1,9 +1,7 @@
-CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/src/RISQTutorialDetectorConstruction.cc \
- /usr/include/stdc-predef.h \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialDetectorConstruction.hh \
- /usr/local/include/Geant4/G4VUserDetectorConstruction.hh \
- /usr/local/include/Geant4/globals.hh /usr/local/include/Geant4/G4ios.hh \
+CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialCornerFluxLine.cc.o: \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/src/RISQTutorialCornerFluxLine.cc \
+ /usr/include/stdc-predef.h /usr/local/include/Geant4/G4RunManager.hh \
+ /usr/local/include/Geant4/rundefs.hh \
  /usr/local/include/Geant4/G4Types.hh \
  /usr/local/include/Geant4/G4GlobalConfig.hh /usr/include/c++/11/complex \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
@@ -167,6 +165,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/include/c++/11/bits/ostream.tcc \
  /usr/include/c++/11/bits/istream.tcc \
  /usr/include/c++/11/bits/sstream.tcc /usr/local/include/Geant4/tls.hh \
+ /usr/local/include/Geant4/G4Event.hh \
+ /usr/local/include/Geant4/globals.hh /usr/local/include/Geant4/G4ios.hh \
  /usr/include/c++/11/iostream /usr/include/c++/11/algorithm \
  /usr/include/c++/11/utility /usr/include/c++/11/bits/stl_relops.h \
  /usr/include/c++/11/bits/stl_algo.h \
@@ -211,19 +211,70 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/include/c++/11/chrono /usr/include/c++/11/ratio \
  /usr/include/c++/11/bits/parse_numbers.h \
  /usr/include/c++/11/bits/std_mutex.h \
- /usr/include/c++/11/bits/unique_lock.h /usr/include/c++/11/vector \
- /usr/include/c++/11/bits/stl_uninitialized.h \
- /usr/include/c++/11/bits/stl_vector.h \
- /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc /usr/local/include/Geant4/globals.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialSensitivity.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPElectrodeSensitivity.hh \
- /usr/local/include/Geant4/G4VSensitiveDetector.hh \
- /usr/local/include/Geant4/G4VHit.hh /usr/local/include/Geant4/G4Step.hh \
- /usr/include/c++/11/stdlib.h /usr/local/include/Geant4/G4ThreeVector.hh \
+ /usr/include/c++/11/bits/unique_lock.h \
+ /usr/local/include/Geant4/evtdefs.hh \
+ /usr/local/include/Geant4/G4Allocator.hh /usr/include/c++/11/cstddef \
+ /usr/local/include/Geant4/G4AllocatorPool.hh \
+ /usr/local/include/Geant4/G4PrimaryVertex.hh \
+ /usr/local/include/Geant4/pwdefs.hh \
+ /usr/local/include/Geant4/G4ThreeVector.hh \
  /usr/local/include/Geant4/CLHEP/Vector/ThreeVector.h \
  /usr/local/include/Geant4/CLHEP/Utility/defs.h \
  /usr/local/include/Geant4/CLHEP/Vector/ThreeVector.icc \
+ /usr/local/include/Geant4/G4PrimaryParticle.hh \
+ /usr/local/include/Geant4/G4HCofThisEvent.hh \
+ /usr/local/include/Geant4/G4VHitsCollection.hh \
+ /usr/include/c++/11/vector /usr/include/c++/11/bits/stl_uninitialized.h \
+ /usr/include/c++/11/bits/stl_vector.h \
+ /usr/include/c++/11/bits/stl_bvector.h \
+ /usr/include/c++/11/bits/vector.tcc \
+ /usr/local/include/Geant4/G4DCofThisEvent.hh \
+ /usr/local/include/Geant4/G4VDigiCollection.hh \
+ /usr/local/include/Geant4/G4TrajectoryContainer.hh \
+ /usr/local/include/Geant4/G4VTrajectory.hh \
+ /usr/local/include/Geant4/G4VUserEventInformation.hh \
+ /usr/local/include/Geant4/G4Profiler.hh \
+ /usr/local/include/Geant4/G4Profiler.icc /usr/include/c++/11/functional \
+ /usr/include/c++/11/bits/refwrap.h \
+ /usr/include/c++/11/bits/std_function.h \
+ /usr/local/include/Geant4/PTL/Globals.hh \
+ /usr/local/include/Geant4/PTL/Types.hh /usr/include/c++/11/atomic \
+ /usr/include/c++/11/bits/atomic_base.h \
+ /usr/include/c++/11/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/11/memory \
+ /usr/include/c++/11/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/11/bits/align.h /usr/include/c++/11/bit \
+ /usr/include/c++/11/bits/shared_ptr.h \
+ /usr/include/c++/11/bits/shared_ptr_base.h \
+ /usr/include/c++/11/bits/allocated_ptr.h \
+ /usr/include/c++/11/ext/concurrence.h \
+ /usr/include/c++/11/bits/shared_ptr_atomic.h \
+ /usr/include/c++/11/backward/auto_ptr.h \
+ /usr/local/include/Geant4/PTL/Utility.hh /usr/include/c++/11/set \
+ /usr/include/c++/11/bits/stl_set.h \
+ /usr/include/c++/11/bits/stl_multiset.h \
+ /usr/local/include/Geant4/G4EventManager.hh \
+ /usr/local/include/Geant4/G4StackManager.hh \
+ /usr/local/include/Geant4/G4UserStackingAction.hh \
+ /usr/local/include/Geant4/G4ClassificationOfNewTrack.hh \
+ /usr/local/include/Geant4/G4StackedTrack.hh \
+ /usr/local/include/Geant4/G4TrackStack.hh \
+ /usr/local/include/Geant4/G4SmartTrackStack.hh \
+ /usr/local/include/Geant4/G4Track.hh \
+ /usr/local/include/Geant4/CLHEP/Units/PhysicalConstants.h \
+ /usr/local/include/Geant4/CLHEP/Units/SystemOfUnits.h \
+ /usr/local/include/Geant4/trkdefs.hh \
+ /usr/local/include/Geant4/G4LogicalVolume.hh \
+ /usr/local/include/Geant4/G4Region.hh \
+ /usr/local/include/Geant4/G4GeomSplitter.hh \
+ /usr/local/include/Geant4/geomwdefs.hh \
+ /usr/local/include/Geant4/G4AutoLock.hh \
+ /usr/local/include/Geant4/G4Threading.hh \
+ /usr/include/c++/11/condition_variable /usr/include/c++/11/future \
+ /usr/include/c++/11/bits/atomic_futex.h \
+ /usr/include/c++/11/bits/std_thread.h /usr/include/c++/11/thread \
+ /usr/include/c++/11/bits/this_thread_sleep.h \
+ /usr/local/include/Geant4/G4Region.icc \
  /usr/local/include/Geant4/G4VPhysicalVolume.hh \
  /usr/local/include/Geant4/geomdefs.hh \
  /usr/local/include/Geant4/G4RotationMatrix.hh \
@@ -236,39 +287,29 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/CLHEP/Vector/RotationInterfaces.icc \
  /usr/local/include/Geant4/CLHEP/Vector/RotationX.h \
  /usr/local/include/Geant4/CLHEP/Vector/RotationX.icc \
- /usr/local/include/Geant4/CLHEP/Units/PhysicalConstants.h \
- /usr/local/include/Geant4/CLHEP/Units/SystemOfUnits.h \
  /usr/local/include/Geant4/CLHEP/Vector/RotationY.h \
  /usr/local/include/Geant4/CLHEP/Vector/RotationY.icc \
  /usr/local/include/Geant4/CLHEP/Vector/RotationZ.h \
  /usr/local/include/Geant4/CLHEP/Vector/RotationZ.icc \
  /usr/local/include/Geant4/CLHEP/Vector/Rotation.icc \
- /usr/local/include/Geant4/G4GeomSplitter.hh \
- /usr/local/include/Geant4/geomwdefs.hh \
- /usr/local/include/Geant4/G4AutoLock.hh \
- /usr/local/include/Geant4/G4Threading.hh \
- /usr/include/c++/11/condition_variable \
- /usr/include/c++/11/bits/shared_ptr.h \
- /usr/include/c++/11/bits/shared_ptr_base.h \
- /usr/include/c++/11/bits/allocated_ptr.h \
- /usr/include/c++/11/bits/refwrap.h /usr/include/c++/11/ext/concurrence.h \
- /usr/include/c++/11/future /usr/include/c++/11/atomic \
- /usr/include/c++/11/bits/atomic_base.h \
- /usr/include/c++/11/bits/atomic_lockfree_defines.h \
- /usr/include/c++/11/bits/atomic_futex.h \
- /usr/include/c++/11/bits/std_function.h \
- /usr/include/c++/11/bits/std_thread.h /usr/include/c++/11/thread \
- /usr/include/c++/11/bits/this_thread_sleep.h \
  /usr/local/include/Geant4/G4VPhysicalVolume.icc \
- /usr/local/include/Geant4/G4StepPoint.hh \
- /usr/local/include/Geant4/G4Allocator.hh /usr/include/c++/11/cstddef \
- /usr/local/include/Geant4/G4AllocatorPool.hh \
- /usr/local/include/Geant4/G4SteppingControl.hh \
- /usr/local/include/Geant4/G4StepStatus.hh \
+ /usr/local/include/Geant4/G4LogicalVolume.icc \
+ /usr/local/include/Geant4/G4DynamicParticle.hh \
+ /usr/local/include/Geant4/G4ParticleDefinition.hh \
+ /usr/local/include/Geant4/G4PDefManager.hh /usr/include/c++/11/stdlib.h \
+ /usr/local/include/Geant4/G4ParticleDefinition.icc \
+ /usr/local/include/Geant4/G4LorentzVector.hh \
+ /usr/local/include/Geant4/G4Log.hh \
+ /usr/local/include/Geant4/G4ParticleMomentum.hh \
+ /usr/local/include/Geant4/G4ElectronOccupancy.hh \
+ /usr/local/include/Geant4/G4DynamicParticle.icc \
+ /usr/local/include/Geant4/G4TrackStatus.hh \
  /usr/local/include/Geant4/G4TouchableHandle.hh \
  /usr/local/include/Geant4/G4VTouchable.hh \
  /usr/local/include/Geant4/G4VTouchable.icc \
  /usr/local/include/Geant4/G4ReferenceCountedHandle.hh \
+ /usr/local/include/Geant4/G4VUserTrackInformation.hh \
+ /usr/local/include/Geant4/G4PhysicsModelCatalog.hh \
  /usr/local/include/Geant4/G4Material.hh \
  /usr/local/include/Geant4/G4Element.hh \
  /usr/local/include/Geant4/G4Isotope.hh \
@@ -282,7 +323,7 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/G4PhysicsVector.hh /usr/include/c++/11/fstream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
- /usr/include/c++/11/bits/fstream.tcc /usr/local/include/Geant4/G4Log.hh \
+ /usr/include/c++/11/bits/fstream.tcc \
  /usr/local/include/Geant4/G4PhysicsVectorType.hh \
  /usr/local/include/Geant4/G4PhysicsVector.icc \
  /usr/local/include/Geant4/G4MaterialPropertiesTable.icc \
@@ -294,149 +335,14 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/G4DataVector.icc /usr/include/assert.h \
  /usr/local/include/Geant4/G4ElementVector.hh \
  /usr/local/include/Geant4/G4MaterialTable.hh \
- /usr/local/include/Geant4/G4LogicalVolume.hh \
- /usr/local/include/Geant4/G4Region.hh \
- /usr/local/include/Geant4/G4Region.icc \
- /usr/local/include/Geant4/G4LogicalVolume.icc \
+ /usr/local/include/Geant4/G4Track.icc \
+ /usr/local/include/Geant4/G4Step.hh \
+ /usr/local/include/Geant4/G4StepPoint.hh \
+ /usr/local/include/Geant4/G4SteppingControl.hh \
+ /usr/local/include/Geant4/G4StepStatus.hh \
  /usr/local/include/Geant4/G4StepPoint.icc \
  /usr/local/include/Geant4/G4TrackVector.hh \
- /usr/local/include/Geant4/G4Profiler.hh \
- /usr/local/include/Geant4/G4Profiler.icc /usr/include/c++/11/functional \
- /usr/local/include/Geant4/PTL/Globals.hh \
- /usr/local/include/Geant4/PTL/Types.hh /usr/include/c++/11/memory \
- /usr/include/c++/11/bits/stl_raw_storage_iter.h \
- /usr/include/c++/11/bits/align.h /usr/include/c++/11/bit \
- /usr/include/c++/11/bits/shared_ptr_atomic.h \
- /usr/include/c++/11/backward/auto_ptr.h \
- /usr/local/include/Geant4/PTL/Utility.hh /usr/include/c++/11/set \
- /usr/include/c++/11/bits/stl_set.h \
- /usr/include/c++/11/bits/stl_multiset.h \
  /usr/local/include/Geant4/G4Step.icc \
- /usr/local/include/Geant4/G4Track.hh \
- /usr/local/include/Geant4/trkdefs.hh \
- /usr/local/include/Geant4/G4DynamicParticle.hh \
- /usr/local/include/Geant4/G4ParticleDefinition.hh \
- /usr/local/include/Geant4/G4PDefManager.hh \
- /usr/local/include/Geant4/pwdefs.hh \
- /usr/local/include/Geant4/G4ParticleDefinition.icc \
- /usr/local/include/Geant4/G4LorentzVector.hh \
- /usr/local/include/Geant4/G4ParticleMomentum.hh \
- /usr/local/include/Geant4/G4ElectronOccupancy.hh \
- /usr/local/include/Geant4/G4DynamicParticle.icc \
- /usr/local/include/Geant4/G4TrackStatus.hh \
- /usr/local/include/Geant4/G4VUserTrackInformation.hh \
- /usr/local/include/Geant4/G4PhysicsModelCatalog.hh \
- /usr/local/include/Geant4/G4Track.icc \
- /usr/local/include/Geant4/G4HCofThisEvent.hh \
- /usr/local/include/Geant4/G4VHitsCollection.hh \
- /usr/local/include/Geant4/G4VReadOutGeometry.hh \
- /usr/local/include/Geant4/G4SensitiveVolumeList.hh \
- /usr/local/include/Geant4/G4TouchableHistory.hh \
- /usr/local/include/Geant4/G4NavigationHistory.hh \
- /usr/local/include/Geant4/G4AffineTransform.hh \
- /usr/local/include/Geant4/G4Transform3D.hh \
- /usr/local/include/Geant4/CLHEP/Geometry/Transform3D.h \
- /usr/local/include/Geant4/CLHEP/Geometry/Transform3D.icc \
- /usr/local/include/Geant4/CLHEP/Geometry/Point3D.h \
- /usr/local/include/Geant4/CLHEP/Geometry/BasicVector3D.h \
- /usr/local/include/Geant4/CLHEP/Geometry/Vector3D.h \
- /usr/local/include/Geant4/CLHEP/Geometry/Normal3D.h \
- /usr/local/include/Geant4/G4AffineTransform.icc \
- /usr/local/include/Geant4/G4NavigationLevel.hh \
- /usr/local/include/Geant4/G4NavigationLevelRep.hh \
- /usr/local/include/Geant4/G4NavigationLevelRep.icc \
- /usr/local/include/Geant4/G4NavigationLevel.icc \
- /usr/local/include/Geant4/G4NavigationHistoryPool.hh \
- /usr/local/include/Geant4/G4NavigationHistory.icc \
- /usr/local/include/Geant4/G4TouchableHistory.icc \
- /usr/local/include/Geant4/G4CollectionNameVector.hh \
- /usr/local/include/Geant4/G4VSDFilter.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPElectrodeHit.hh \
- /usr/local/include/Geant4/G4VHit.hh \
- /usr/local/include/Geant4/G4THitsCollection.hh \
- /usr/local/include/Geant4/G4Allocator.hh \
- /usr/local/include/Geant4/G4ThreeVector.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialQubitHousing.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialDetectorParameters.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialPad.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialTransmissionLine.hh \
- /usr/local/include/Geant4/G4UnionSolid.hh \
- /usr/local/include/Geant4/G4BooleanSolid.hh \
- /usr/local/include/Geant4/G4DisplacedSolid.hh \
- /usr/local/include/Geant4/G4VSolid.hh \
- /usr/local/include/Geant4/G4VSolid.icc \
- /usr/local/include/Geant4/G4BooleanSolid.icc \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialPad.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialStraightFluxLine.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialCornerFluxLine.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialResonatorAssembly.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialConfigManager.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPPhononElectrode.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPVElectrodePattern.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPProcessUtils.hh \
- /usr/local/include/Geant4/G4AffineTransform.hh \
- /usr/local/include/Geant4/G4RotationMatrix.hh \
- /usr/local/include/Geant4/G4Track.hh \
- /usr/local/include/Geant4/G4MaterialPropertiesTable.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPLogicalBorderSurface.hh \
- /usr/local/include/Geant4/G4LogicalSurface.hh \
- /usr/local/include/Geant4/G4LogicalSurface.icc \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPSurfaceProperty.hh \
- /usr/local/include/Geant4/G4SurfaceProperty.hh \
- /usr/local/include/Geant4/G4Box.hh \
- /usr/local/include/Geant4/G4GeomTypes.hh \
- /usr/local/include/Geant4/G4GeomConfig.hh \
- /usr/local/include/Geant4/G4CSGSolid.hh \
- /usr/local/include/Geant4/G4Polyhedron.hh \
- /usr/local/include/Geant4/HepPolyhedron.h \
- /usr/local/include/Geant4/G4Point3D.hh \
- /usr/local/include/Geant4/G4Normal3D.hh \
- /usr/local/include/Geant4/G4Visible.hh \
- /usr/local/include/Geant4/G4Visible.icc \
- /usr/local/include/Geant4/G4Box.icc \
- /usr/local/include/Geant4/G4Colour.hh \
- /usr/local/include/Geant4/G4FieldManager.hh \
- /usr/local/include/Geant4/G4FieldManager.icc \
- /usr/local/include/Geant4/G4GeometryManager.hh \
- /usr/local/include/Geant4/G4SmartVoxelStat.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4LatticeLogical.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPCrystalGroup.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4PhononPolarization.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4LatticeManager.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4LatticePhysical.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4LatticeLogical.hh \
- /usr/local/include/Geant4/G4LogicalVolume.hh \
- /usr/local/include/Geant4/G4LogicalVolumeStore.hh \
- /usr/local/include/Geant4/G4VStoreNotifier.hh \
- /usr/local/include/Geant4/G4VNotifier.hh \
- /usr/local/include/Geant4/G4Material.hh \
- /usr/local/include/Geant4/G4NistManager.hh \
- /usr/local/include/Geant4/G4NistElementBuilder.hh \
- /usr/local/include/Geant4/G4NistMaterialBuilder.hh \
- /usr/local/include/Geant4/G4ICRU90StoppingData.hh \
- /usr/local/include/Geant4/G4LPhysicsFreeVector.hh \
- /usr/local/include/Geant4/G4PhysicsFreeVector.hh \
- /usr/local/include/Geant4/G4Pow.hh \
- /usr/local/include/Geant4/G4PVPlacement.hh \
- /usr/local/include/Geant4/G4PhysicalVolumeStore.hh \
- /usr/local/include/Geant4/G4RunManager.hh \
- /usr/local/include/Geant4/rundefs.hh \
- /usr/local/include/Geant4/G4Event.hh \
- /usr/local/include/Geant4/evtdefs.hh \
- /usr/local/include/Geant4/G4PrimaryVertex.hh \
- /usr/local/include/Geant4/G4PrimaryParticle.hh \
- /usr/local/include/Geant4/G4DCofThisEvent.hh \
- /usr/local/include/Geant4/G4VDigiCollection.hh \
- /usr/local/include/Geant4/G4TrajectoryContainer.hh \
- /usr/local/include/Geant4/G4VTrajectory.hh \
- /usr/local/include/Geant4/G4VUserEventInformation.hh \
- /usr/local/include/Geant4/G4EventManager.hh \
- /usr/local/include/Geant4/G4StackManager.hh \
- /usr/local/include/Geant4/G4UserStackingAction.hh \
- /usr/local/include/Geant4/G4ClassificationOfNewTrack.hh \
- /usr/local/include/Geant4/G4StackedTrack.hh \
- /usr/local/include/Geant4/G4TrackStack.hh \
- /usr/local/include/Geant4/G4SmartTrackStack.hh \
  /usr/local/include/Geant4/G4PrimaryTransformer.hh \
  /usr/local/include/Geant4/G4ParticleTable.hh \
  /usr/local/include/Geant4/G4ParticleTableIterator.hh \
@@ -490,12 +396,32 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/CLHEP/Random/RandStudentT.h \
  /usr/local/include/Geant4/CLHEP/Random/RandStudentT.icc \
  /usr/local/include/Geant4/G4Navigator.hh \
+ /usr/local/include/Geant4/G4AffineTransform.hh \
+ /usr/local/include/Geant4/G4Transform3D.hh \
+ /usr/local/include/Geant4/CLHEP/Geometry/Transform3D.h \
+ /usr/local/include/Geant4/CLHEP/Geometry/Transform3D.icc \
+ /usr/local/include/Geant4/CLHEP/Geometry/Point3D.h \
+ /usr/local/include/Geant4/CLHEP/Geometry/BasicVector3D.h \
+ /usr/local/include/Geant4/CLHEP/Geometry/Vector3D.h \
+ /usr/local/include/Geant4/CLHEP/Geometry/Normal3D.h \
+ /usr/local/include/Geant4/G4AffineTransform.icc \
  /usr/local/include/Geant4/G4GRSVolume.hh \
  /usr/local/include/Geant4/G4GRSVolume.icc \
  /usr/local/include/Geant4/G4GRSSolid.hh \
  /usr/local/include/Geant4/G4GRSSolid.icc \
  /usr/local/include/Geant4/G4TouchableHistoryHandle.hh \
+ /usr/local/include/Geant4/G4TouchableHistory.hh \
+ /usr/local/include/Geant4/G4NavigationHistory.hh \
+ /usr/local/include/Geant4/G4NavigationLevel.hh \
+ /usr/local/include/Geant4/G4NavigationLevelRep.hh \
+ /usr/local/include/Geant4/G4NavigationLevelRep.icc \
+ /usr/local/include/Geant4/G4NavigationLevel.icc \
+ /usr/local/include/Geant4/G4NavigationHistoryPool.hh \
+ /usr/local/include/Geant4/G4NavigationHistory.icc \
+ /usr/local/include/Geant4/G4TouchableHistory.icc \
  /usr/local/include/Geant4/G4NormalNavigation.hh \
+ /usr/local/include/Geant4/G4VSolid.hh \
+ /usr/local/include/Geant4/G4VSolid.icc \
  /usr/local/include/Geant4/G4AuxiliaryNavServices.hh \
  /usr/local/include/Geant4/G4AuxiliaryNavServices.icc \
  /usr/local/include/Geant4/G4NormalNavigation.icc \
@@ -547,42 +473,46 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/G4UserTrackingAction.hh \
  /usr/local/include/Geant4/G4RunManagerKernel.hh /usr/include/c++/11/list \
  /usr/include/c++/11/bits/stl_list.h /usr/include/c++/11/bits/list.tcc \
- /usr/local/include/Geant4/G4SDManager.hh \
- /usr/local/include/Geant4/G4SDStructure.hh \
- /usr/local/include/Geant4/G4VSensitiveDetector.hh \
- /usr/local/include/Geant4/G4HCtable.hh \
- /usr/local/include/Geant4/G4SolidStore.hh \
+ /usr/local/include/Geant4/G4NistManager.hh \
+ /usr/local/include/Geant4/G4NistElementBuilder.hh \
+ /usr/local/include/Geant4/G4NistMaterialBuilder.hh \
+ /usr/local/include/Geant4/G4ICRU90StoppingData.hh \
+ /usr/local/include/Geant4/G4LPhysicsFreeVector.hh \
+ /usr/local/include/Geant4/G4PhysicsFreeVector.hh \
+ /usr/local/include/Geant4/G4Pow.hh /usr/local/include/Geant4/G4Box.hh \
+ /usr/local/include/Geant4/G4GeomTypes.hh \
+ /usr/local/include/Geant4/G4GeomConfig.hh \
+ /usr/local/include/Geant4/G4CSGSolid.hh \
+ /usr/local/include/Geant4/G4Polyhedron.hh \
+ /usr/local/include/Geant4/HepPolyhedron.h \
+ /usr/local/include/Geant4/G4Point3D.hh \
+ /usr/local/include/Geant4/G4Normal3D.hh \
+ /usr/local/include/Geant4/G4Visible.hh \
+ /usr/local/include/Geant4/G4Visible.icc \
+ /usr/local/include/Geant4/G4Box.icc /usr/local/include/Geant4/G4Cons.hh \
+ /usr/local/include/Geant4/G4Cons.icc /usr/local/include/Geant4/G4Orb.hh \
+ /usr/local/include/Geant4/G4Orb.icc \
  /usr/local/include/Geant4/G4Sphere.hh \
  /usr/local/include/Geant4/G4Sphere.icc \
- /usr/local/include/Geant4/G4SystemOfUnits.hh \
- /usr/local/include/Geant4/G4TransportationManager.hh \
- /usr/local/include/Geant4/G4SafetyHelper.hh \
- /usr/local/include/Geant4/G4TransportationManager.icc \
+ /usr/local/include/Geant4/G4Trd.hh /usr/local/include/Geant4/G4Trd.icc \
  /usr/local/include/Geant4/G4Tubs.hh /usr/local/include/Geant4/G4Tubs.icc \
- /usr/local/include/Geant4/G4UniformMagField.hh \
- /usr/local/include/Geant4/G4MagneticField.hh \
- /usr/local/include/Geant4/G4Field.hh \
- /usr/local/include/Geant4/G4UserLimits.hh \
- /usr/local/include/Geant4/G4UserLimits.icc \
+ /usr/local/include/Geant4/G4LogicalVolume.hh \
+ /usr/local/include/Geant4/G4PVPlacement.hh \
+ /usr/local/include/Geant4/G4SystemOfUnits.hh \
+ /usr/local/include/Geant4/G4SubtractionSolid.hh \
+ /usr/local/include/Geant4/G4BooleanSolid.hh \
+ /usr/local/include/Geant4/G4DisplacedSolid.hh \
+ /usr/local/include/Geant4/G4BooleanSolid.icc \
+ /usr/local/include/Geant4/G4UnionSolid.hh \
+ /usr/local/include/Geant4/G4Colour.hh \
  /usr/local/include/Geant4/G4VisAttributes.hh \
  /usr/local/include/Geant4/graphics_reps_defs.hh \
  /usr/local/include/Geant4/G4Colour.hh \
  /usr/local/include/Geant4/G4Color.hh \
  /usr/local/include/Geant4/G4VisAttributes.icc \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/CADMesh.hh \
- /usr/local/include/Geant4/G4String.hh \
- /usr/local/include/Geant4/G4TriangularFacet.hh \
- /usr/local/include/Geant4/G4VFacet.hh \
- /usr/local/include/Geant4/windefs.hh \
- /usr/local/include/Geant4/G4AssemblyVolume.hh \
- /usr/local/include/Geant4/G4AssemblyTriplet.hh \
- /usr/local/include/Geant4/G4AssemblyTriplet.icc \
- /usr/local/include/Geant4/G4AssemblyVolume.icc \
- /usr/local/include/Geant4/G4TessellatedSolid.hh \
- /usr/local/include/Geant4/G4Voxelizer.hh \
- /usr/local/include/Geant4/G4SurfBits.hh \
- /usr/local/include/Geant4/G4Box.hh \
- /usr/local/include/Geant4/G4Voxelizer.icc \
- /usr/local/include/Geant4/G4Tet.hh \
- /usr/local/include/Geant4/G4UIcommand.hh \
- /usr/local/include/Geant4/Randomize.hh
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialCornerFluxLine.hh \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialDetectorParameters.hh \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialPad.hh \
+ /usr/local/include/Geant4/globals.hh \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialPad.hh \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialDetectorParameters.hh

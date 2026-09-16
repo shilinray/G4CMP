@@ -1,10 +1,11 @@
-CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/src/RISQTutorialDetectorConstruction.cc \
+CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialSensitivity.cc.o: \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/src/RISQTutorialSensitivity.cc \
  /usr/include/stdc-predef.h \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialDetectorConstruction.hh \
- /usr/local/include/Geant4/G4VUserDetectorConstruction.hh \
- /usr/local/include/Geant4/globals.hh /usr/local/include/Geant4/G4ios.hh \
- /usr/local/include/Geant4/G4Types.hh \
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialSensitivity.hh \
+ /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPElectrodeSensitivity.hh \
+ /usr/local/include/Geant4/G4VSensitiveDetector.hh \
+ /usr/local/include/Geant4/G4VHit.hh /usr/local/include/Geant4/globals.hh \
+ /usr/local/include/Geant4/G4ios.hh /usr/local/include/Geant4/G4Types.hh \
  /usr/local/include/Geant4/G4GlobalConfig.hh /usr/include/c++/11/complex \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -215,11 +216,7 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/include/c++/11/bits/stl_uninitialized.h \
  /usr/include/c++/11/bits/stl_vector.h \
  /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc /usr/local/include/Geant4/globals.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialSensitivity.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPElectrodeSensitivity.hh \
- /usr/local/include/Geant4/G4VSensitiveDetector.hh \
- /usr/local/include/Geant4/G4VHit.hh /usr/local/include/Geant4/G4Step.hh \
+ /usr/include/c++/11/bits/vector.tcc /usr/local/include/Geant4/G4Step.hh \
  /usr/include/c++/11/stdlib.h /usr/local/include/Geant4/G4ThreeVector.hh \
  /usr/local/include/Geant4/CLHEP/Vector/ThreeVector.h \
  /usr/local/include/Geant4/CLHEP/Utility/defs.h \
@@ -356,71 +353,7 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/G4THitsCollection.hh \
  /usr/local/include/Geant4/G4Allocator.hh \
  /usr/local/include/Geant4/G4ThreeVector.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialQubitHousing.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialDetectorParameters.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialPad.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialTransmissionLine.hh \
- /usr/local/include/Geant4/G4UnionSolid.hh \
- /usr/local/include/Geant4/G4BooleanSolid.hh \
- /usr/local/include/Geant4/G4DisplacedSolid.hh \
- /usr/local/include/Geant4/G4VSolid.hh \
- /usr/local/include/Geant4/G4VSolid.icc \
- /usr/local/include/Geant4/G4BooleanSolid.icc \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialPad.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialStraightFluxLine.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialCornerFluxLine.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialResonatorAssembly.hh \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialConfigManager.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPPhononElectrode.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPVElectrodePattern.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPProcessUtils.hh \
- /usr/local/include/Geant4/G4AffineTransform.hh \
- /usr/local/include/Geant4/G4RotationMatrix.hh \
- /usr/local/include/Geant4/G4Track.hh \
- /usr/local/include/Geant4/G4MaterialPropertiesTable.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPLogicalBorderSurface.hh \
- /usr/local/include/Geant4/G4LogicalSurface.hh \
- /usr/local/include/Geant4/G4LogicalSurface.icc \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPSurfaceProperty.hh \
- /usr/local/include/Geant4/G4SurfaceProperty.hh \
- /usr/local/include/Geant4/G4Box.hh \
- /usr/local/include/Geant4/G4GeomTypes.hh \
- /usr/local/include/Geant4/G4GeomConfig.hh \
- /usr/local/include/Geant4/G4CSGSolid.hh \
- /usr/local/include/Geant4/G4Polyhedron.hh \
- /usr/local/include/Geant4/HepPolyhedron.h \
- /usr/local/include/Geant4/G4Point3D.hh \
- /usr/local/include/Geant4/G4Normal3D.hh \
- /usr/local/include/Geant4/G4Visible.hh \
- /usr/local/include/Geant4/G4Visible.icc \
- /usr/local/include/Geant4/G4Box.icc \
- /usr/local/include/Geant4/G4Colour.hh \
- /usr/local/include/Geant4/G4FieldManager.hh \
- /usr/local/include/Geant4/G4FieldManager.icc \
- /usr/local/include/Geant4/G4GeometryManager.hh \
- /usr/local/include/Geant4/G4SmartVoxelStat.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4LatticeLogical.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPCrystalGroup.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4PhononPolarization.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4LatticeManager.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4LatticePhysical.hh \
- /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4LatticeLogical.hh \
- /usr/local/include/Geant4/G4LogicalVolume.hh \
- /usr/local/include/Geant4/G4LogicalVolumeStore.hh \
- /usr/local/include/Geant4/G4VStoreNotifier.hh \
- /usr/local/include/Geant4/G4VNotifier.hh \
- /usr/local/include/Geant4/G4Material.hh \
- /usr/local/include/Geant4/G4NistManager.hh \
- /usr/local/include/Geant4/G4NistElementBuilder.hh \
- /usr/local/include/Geant4/G4NistMaterialBuilder.hh \
- /usr/local/include/Geant4/G4ICRU90StoppingData.hh \
- /usr/local/include/Geant4/G4LPhysicsFreeVector.hh \
- /usr/local/include/Geant4/G4PhysicsFreeVector.hh \
- /usr/local/include/Geant4/G4Pow.hh \
- /usr/local/include/Geant4/G4PVPlacement.hh \
- /usr/local/include/Geant4/G4PhysicalVolumeStore.hh \
- /usr/local/include/Geant4/G4RunManager.hh \
- /usr/local/include/Geant4/rundefs.hh \
+ /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4CMPElectrodeHit.hh \
  /usr/local/include/Geant4/G4Event.hh \
  /usr/local/include/Geant4/evtdefs.hh \
  /usr/local/include/Geant4/G4PrimaryVertex.hh \
@@ -430,6 +363,15 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/G4TrajectoryContainer.hh \
  /usr/local/include/Geant4/G4VTrajectory.hh \
  /usr/local/include/Geant4/G4VUserEventInformation.hh \
+ /usr/local/include/Geant4/G4HCofThisEvent.hh \
+ /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4PhononLong.hh \
+ /usr/local/include/Geant4/G4ParticleDefinition.hh \
+ /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4PhononTransFast.hh \
+ /sdf/home/s/shilin/mycode/G4CMP-V09-00-00_V05-02_install/cmake/../include/G4CMP/G4PhononTransSlow.hh \
+ /usr/local/include/Geant4/G4Run.hh \
+ /usr/local/include/Geant4/G4RunManager.hh \
+ /usr/local/include/Geant4/rundefs.hh \
+ /usr/local/include/Geant4/G4Event.hh \
  /usr/local/include/Geant4/G4EventManager.hh \
  /usr/local/include/Geant4/G4StackManager.hh \
  /usr/local/include/Geant4/G4UserStackingAction.hh \
@@ -496,6 +438,8 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/G4GRSSolid.icc \
  /usr/local/include/Geant4/G4TouchableHistoryHandle.hh \
  /usr/local/include/Geant4/G4NormalNavigation.hh \
+ /usr/local/include/Geant4/G4VSolid.hh \
+ /usr/local/include/Geant4/G4VSolid.icc \
  /usr/local/include/Geant4/G4AuxiliaryNavServices.hh \
  /usr/local/include/Geant4/G4AuxiliaryNavServices.icc \
  /usr/local/include/Geant4/G4NormalNavigation.icc \
@@ -551,38 +495,6 @@ CMakeFiles/RISQTutorialLib.dir/src/RISQTutorialDetectorConstruction.cc.o: \
  /usr/local/include/Geant4/G4SDStructure.hh \
  /usr/local/include/Geant4/G4VSensitiveDetector.hh \
  /usr/local/include/Geant4/G4HCtable.hh \
- /usr/local/include/Geant4/G4SolidStore.hh \
- /usr/local/include/Geant4/G4Sphere.hh \
- /usr/local/include/Geant4/G4Sphere.icc \
  /usr/local/include/Geant4/G4SystemOfUnits.hh \
- /usr/local/include/Geant4/G4TransportationManager.hh \
- /usr/local/include/Geant4/G4SafetyHelper.hh \
- /usr/local/include/Geant4/G4TransportationManager.icc \
- /usr/local/include/Geant4/G4Tubs.hh /usr/local/include/Geant4/G4Tubs.icc \
- /usr/local/include/Geant4/G4UniformMagField.hh \
- /usr/local/include/Geant4/G4MagneticField.hh \
- /usr/local/include/Geant4/G4Field.hh \
- /usr/local/include/Geant4/G4UserLimits.hh \
- /usr/local/include/Geant4/G4UserLimits.icc \
- /usr/local/include/Geant4/G4VisAttributes.hh \
- /usr/local/include/Geant4/graphics_reps_defs.hh \
- /usr/local/include/Geant4/G4Colour.hh \
- /usr/local/include/Geant4/G4Color.hh \
- /usr/local/include/Geant4/G4VisAttributes.icc \
- /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/CADMesh.hh \
- /usr/local/include/Geant4/G4String.hh \
- /usr/local/include/Geant4/G4TriangularFacet.hh \
- /usr/local/include/Geant4/G4VFacet.hh \
- /usr/local/include/Geant4/windefs.hh \
- /usr/local/include/Geant4/G4AssemblyVolume.hh \
- /usr/local/include/Geant4/G4AssemblyTriplet.hh \
- /usr/local/include/Geant4/G4AssemblyTriplet.icc \
- /usr/local/include/Geant4/G4AssemblyVolume.icc \
- /usr/local/include/Geant4/G4TessellatedSolid.hh \
- /usr/local/include/Geant4/G4Voxelizer.hh \
- /usr/local/include/Geant4/G4SurfBits.hh \
- /usr/local/include/Geant4/G4Box.hh \
- /usr/local/include/Geant4/G4Voxelizer.icc \
- /usr/local/include/Geant4/G4Tet.hh \
- /usr/local/include/Geant4/G4UIcommand.hh \
- /usr/local/include/Geant4/Randomize.hh
+ /sdf/home/s/shilin/mycode/G4CMP/examples/RISQTutorial/include/RISQTutorialConfigManager.hh \
+ /usr/local/include/Geant4/globals.hh
