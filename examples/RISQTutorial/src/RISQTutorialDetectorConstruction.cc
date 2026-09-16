@@ -154,7 +154,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4VSolid* sensor_solid = sensor->GetSolid();
 
   auto kidFeedline = CADMesh::TessellatedMesh::FromSTL("../../OW200127/OW200127_2.STL");
-  kidFeedline->SetScale(1e-3);
+  kidFeedline->SetScale(1e-3 / 25.4); // corrects accidental um-to-inches (not mm) export
   G4VSolid* kidFeedline_solid = kidFeedline->GetSolid();
 
   auto otherKIDs = CADMesh::TessellatedMesh::FromSTL("../../OW200127/OW200127_3.STL");
