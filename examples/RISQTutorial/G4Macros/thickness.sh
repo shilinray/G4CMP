@@ -7,6 +7,7 @@
 #SBATCH --mem-per-cpu=4096
 #SBATCH --time=0-02:00:00
 #SBATCH --gpus 0
+#SBATCH --output=/sdf/home/s/shilin/mycode/slurm_output/slurm-%j.out
 
 # load SCDMS singularity image module
 

@@ -45,7 +45,7 @@ using namespace RISQTutorialDetectorParameters;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 RISQTutorialDetectorConstruction::RISQTutorialDetectorConstruction()
-  : fAir(0), fVacuum(0), fGermanium(0), fAluminum(0), fTungsten(0),
+  : fAir(0), fVacuum(0), fSilicon(0), fAluminum(0), fTungsten(0),
     fWorldPhys(0), AlSurfProp(0), polishedwallSurfProp(0), sidewallSurfProp(0), 
     fSuperconductorSensitivity(0), fConstructed(false) {;}
 
@@ -97,7 +97,7 @@ void RISQTutorialDetectorConstruction::DefineMaterials()
 		kStateGas,
 		0.01*CLHEP::kelvin,
 	    3.0e-18*pascal);
-  fGermanium = nistManager->FindOrBuildMaterial("G4_Ge");
+  fSilicon = nistManager->FindOrBuildMaterial("G4_Si");
   fAluminum = nistManager->FindOrBuildMaterial("G4_Al");
   fTungsten = nistManager->FindOrBuildMaterial("G4_W");
 }
@@ -117,57 +117,57 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
                                  false,0); // physical placement
   
   //                               
-  // Germanium box - this is the volume in which we will propagate phonons
+  // Silicon box - this is the volume in which we will propagate phonons
   //
   G4double numsensors = 0;
   if (RISQTutorialConfigManager::Getnumsensors() != -1.0) numsensors = RISQTutorialConfigManager::Getnumsensors();
     
-  const G4double geHalfX = 0.5*cm / std::sqrt(numsensors);
-  const G4double geHalfY = 0.5*cm / std::sqrt(numsensors);
-  const G4double geHalfZ = 0.05*mm;
-  G4VSolid* fGermaniumSolid = new G4Box("fGermaniumSolid", geHalfX, geHalfY, geHalfZ);
-  G4LogicalVolume* fGermaniumLogical = new G4LogicalVolume(fGermaniumSolid,fGermanium,"fGermaniumLogical");
-  G4VPhysicalVolume* GePhys = new G4PVPlacement(0,G4ThreeVector(),fGermaniumLogical,"fGermaniumPhysical", worldLogical,false,0); 
+  const G4double siHalfX = 0.5*cm / std::sqrt(numsensors);
+  const G4double siHalfY = 0.5*cm / std::sqrt(numsensors);
+  const G4double siHalfZ = 0.05*mm;
+  G4VSolid* fSiliconSolid = new G4Box("fSiliconSolid", siHalfX, siHalfY, siHalfZ);
+  G4LogicalVolume* fSiliconLogical = new G4LogicalVolume(fSiliconSolid,fSilicon,"fSiliconLogical");
+  G4VPhysicalVolume* SiPhys = new G4PVPlacement(0,G4ThreeVector(),fSiliconLogical,"fSiliconPhysical", worldLogical,false,0); 
   // placing physical volume at center of world logical
 
   //
-  //Germanium lattice information
+  //Silicon lattice information
   //
 
   // G4LatticeManager gives physics processes access to lattices by volume
   G4LatticeManager* LM = G4LatticeManager::GetLatticeManager();
-  G4LatticeLogical* GeLogical = LM->LoadLattice(fGermanium, "Ge");
+  G4LatticeLogical* SiLogical = LM->LoadLattice(fSilicon, "Si");
 
   // G4LatticePhysical assigns G4LatticeLogical a physical orientation
-  G4LatticePhysical* GePhysical = new G4LatticePhysical(GeLogical);
-  GePhysical->SetMillerOrientation(1,0,0); // how crystal is oriented, also 4 coord orient. (online calculator)
-  LM->RegisterLattice(GePhys, GePhysical); // connects physical lattice to volume
+  G4LatticePhysical* SiPhysical = new G4LatticePhysical(SiLogical);
+  SiPhysical->SetMillerOrientation(1,0,0); // how crystal is oriented, also 4 coord orient. (online calculator)
+  LM->RegisterLattice(SiPhys, SiPhysical); // connects physical lattice to volume
 
   // NOTE:  Above registration can also be done in single step:
-  // G4LatticlePhysical* GePhysical = LM->LoadLattice(GePhys, "Ge");
+  // G4LatticlePhysical* SiPhysical = LM->LoadLattice(SiPhys, "Si");
 
   //
-  // Air boxes touching the 4 side faces of the Ge crystal (+X, -X, +Y, -Y)
+  // Air boxes touching the 4 side faces of the Si crystal (+X, -X, +Y, -Y)
   //
   const G4double airSideThickness = 0.5*cm; // Distance the air extends away from the chip
   
-  // X boxes cover the +X and -X faces of the Ge crystal
-  G4VSolid* airSideSolidX = new G4Box("airSideSolidX", airSideThickness/2, geHalfY, geHalfZ);
+  // X boxes cover the +X and -X faces of the Si crystal
+  G4VSolid* airSideSolidX = new G4Box("airSideSolidX", airSideThickness/2, siHalfY, siHalfZ);
   G4LogicalVolume* airSideLogicalX = new G4LogicalVolume(airSideSolidX, fAir, "airSideLogicalX");
-  G4VPhysicalVolume* airSideRightXPhys = new G4PVPlacement(0, G4ThreeVector(geHalfX + airSideThickness/2, 0, 0), airSideLogicalX, "airSideRightX", worldLogical, false, 0);
-  G4VPhysicalVolume* airSideLeftXPhys = new G4PVPlacement(0, G4ThreeVector(-geHalfX - airSideThickness/2, 0, 0), airSideLogicalX, "airSideLeftX", worldLogical, false, 0);
+  G4VPhysicalVolume* airSideRightXPhys = new G4PVPlacement(0, G4ThreeVector(siHalfX + airSideThickness/2, 0, 0), airSideLogicalX, "airSideRightX", worldLogical, false, 0);
+  G4VPhysicalVolume* airSideLeftXPhys = new G4PVPlacement(0, G4ThreeVector(-siHalfX - airSideThickness/2, 0, 0), airSideLogicalX, "airSideLeftX", worldLogical, false, 0);
 
-  // Y boxes cover the +Y and -Y faces of the Ge crystal
-  G4VSolid* airSideSolidY = new G4Box("airSideSolidY", geHalfX, airSideThickness/2, geHalfZ);
+  // Y boxes cover the +Y and -Y faces of the Si crystal
+  G4VSolid* airSideSolidY = new G4Box("airSideSolidY", siHalfX, airSideThickness/2, siHalfZ);
   G4LogicalVolume* airSideLogicalY = new G4LogicalVolume(airSideSolidY, fAir, "airSideLogicalY");
-  G4VPhysicalVolume* airSideRightYPhys = new G4PVPlacement(0, G4ThreeVector(0, geHalfY + airSideThickness/2, 0), airSideLogicalY, "airSideRightY", worldLogical, false, 0);
-  G4VPhysicalVolume* airSideLeftYPhys = new G4PVPlacement(0, G4ThreeVector(0, -geHalfY - airSideThickness/2, 0), airSideLogicalY, "airSideLeftY", worldLogical, false, 0);
+  G4VPhysicalVolume* airSideRightYPhys = new G4PVPlacement(0, G4ThreeVector(0, siHalfY + airSideThickness/2, 0), airSideLogicalY, "airSideRightY", worldLogical, false, 0);
+  G4VPhysicalVolume* airSideLeftYPhys = new G4PVPlacement(0, G4ThreeVector(0, -siHalfY - airSideThickness/2, 0), airSideLogicalY, "airSideLeftY", worldLogical, false, 0);
 
   //
   // Aluminum. This is where phonon hits are registered
 
   // Aluminum feedline
-  const G4double alFeedlineHalfX = geHalfX;
+  const G4double alFeedlineHalfX = siHalfX;
   const G4double alFeedlineHalfY = 1.5*um;
   const G4double thickness = 0.1*um;
 
@@ -185,17 +185,17 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4LogicalVolume* alLGPlogical = new G4LogicalVolume(lowergroundplane,fAluminum,"alLGPlogical"); // logical feedline
 
   G4VPhysicalVolume* alFLphysical = new G4PVPlacement(
-    0, G4ThreeVector(0.,0., geHalfZ + thickness), alFLlogical, "alFLphysical",
+    0, G4ThreeVector(0.,0., siHalfZ + thickness), alFLlogical, "alFLphysical",
     worldLogical, false, 0); // physical feedline
   
   G4double yUGPoffset = alFeedlineHalfY + feedlineGap + alUPGhalfy;
   G4double yLGPoffset = alFeedlineHalfY + feedlineGap + alLPGhalfy;
 
   G4VPhysicalVolume* alUGPphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., yUGPoffset, geHalfZ + thickness), alUGPlogical, "alUGPphysical",
+    0, G4ThreeVector(0., yUGPoffset, siHalfZ + thickness), alUGPlogical, "alUGPphysical",
     worldLogical, false, 0); // physical UPG
   G4VPhysicalVolume* alLGPphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., -yLGPoffset, geHalfZ + thickness), alLGPlogical, "alLGPphysical",
+    0, G4ThreeVector(0., -yLGPoffset, siHalfZ + thickness), alLGPlogical, "alLGPphysical",
     worldLogical, false, 0); // physical LGP
 
 
@@ -212,7 +212,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double ycouplcapoffset = yLGPoffset + alLPGhalfy + couplCapgap+ couplCapy;
 
   G4VPhysicalVolume* couplCapphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., -ycouplcapoffset, geHalfZ + thickness), couplCaplogical, "couplCapphysical",
+    0, G4ThreeVector(0., -ycouplcapoffset, siHalfZ + thickness), couplCaplogical, "couplCapphysical",
     worldLogical, false, 0);
 
   // Placeholder removed for Side Ground Planes
@@ -227,7 +227,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yconnectoroffset = ycouplcapoffset + couplCapy + connectory;
 
   G4VPhysicalVolume* connectorphysical = new G4PVPlacement(
-    0, G4ThreeVector(0., -yconnectoroffset, geHalfZ + thickness), connectorlogical, "connectorphysical",
+    0, G4ThreeVector(0., -yconnectoroffset, siHalfZ + thickness), connectorlogical, "connectorphysical",
     worldLogical, false, 0);
 
   // cap ind connector
@@ -241,7 +241,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double xcapindconnectoroffset = -32.5*um;
 
   G4VPhysicalVolume* capindconnectorphysical = new G4PVPlacement(
-    0, G4ThreeVector(xcapindconnectoroffset, -ycapindconnectoroffset, geHalfZ + thickness), capindconnectorlogical, "capindconnectorphysical",
+    0, G4ThreeVector(xcapindconnectoroffset, -ycapindconnectoroffset, siHalfZ + thickness), capindconnectorlogical, "capindconnectorphysical",
     worldLogical, false, 0); 
     
   // indvert1 
@@ -260,7 +260,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yindvert1offset = ycapindconnectoroffset + capindconnectory + indverty;
 
   G4VPhysicalVolume* indvert1physical = new G4PVPlacement(
-    0, G4ThreeVector(xindvert1offset, -yindvert1offset, geHalfZ + thickness), indvert1logical, "indvert1physical",
+    0, G4ThreeVector(xindvert1offset, -yindvert1offset, siHalfZ + thickness), indvert1logical, "indvert1physical",
     worldLogical, false, 0);
 
   // Generate meandering inductor pattern from indhorz1 to indhorz40
@@ -286,7 +286,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     if (i == 40) yIndHorzLastPos = yHorzOffset;
     
     G4VPhysicalVolume* physH = new G4PVPlacement(
-      0, G4ThreeVector(indcenter, -yHorzOffset, geHalfZ + thickness), 
+      0, G4ThreeVector(indcenter, -yHorzOffset, siHalfZ + thickness), 
       logicH, hName + "physical", worldLogical, false, 0);
     inductorPhys.push_back(physH);
 
@@ -306,7 +306,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
       currentYVertOffset = yVertOffset; 
 
       G4VPhysicalVolume* physV = new G4PVPlacement(
-        0, G4ThreeVector(xVertOffset, -yVertOffset, geHalfZ + thickness), 
+        0, G4ThreeVector(xVertOffset, -yVertOffset, siHalfZ + thickness), 
         logicV, vName + "physical", worldLogical, false, 0);
       inductorPhys.push_back(physV);
     }
@@ -323,7 +323,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yleftcapwalloffset = ycapindconnectoroffset + 305*um;
 
   G4VPhysicalVolume* leftcapwallphysical = new G4PVPlacement(
-    0, G4ThreeVector(xleftcapwalloffset, -yleftcapwalloffset, geHalfZ + thickness), leftcapwalllogical, "leftcapwallphysical",
+    0, G4ThreeVector(xleftcapwalloffset, -yleftcapwalloffset, siHalfZ + thickness), leftcapwalllogical, "leftcapwallphysical",
     worldLogical, false, 0);
 
   // rightcapwall
@@ -337,7 +337,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yrightcapwalloffset = ycapindconnectoroffset + 294*um;
 
   G4VPhysicalVolume* rightcapwallphysical = new G4PVPlacement(
-    0, G4ThreeVector(xrightcapwalloffset, -yrightcapwalloffset, geHalfZ + thickness), rightcapwalllogical, "rightcapwallphysical",
+    0, G4ThreeVector(xrightcapwalloffset, -yrightcapwalloffset, siHalfZ + thickness), rightcapwalllogical, "rightcapwallphysical",
     worldLogical, false, 0);
 
   // Interdigitated Capacitor (IDC) Fingers: caphorz1 to caphorz24
@@ -363,7 +363,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     G4double ypos = ycapstart + (i - 1) * captocapgap;
 
     G4VPhysicalVolume* phys = new G4PVPlacement(
-      0, G4ThreeVector(xpos, -ypos, geHalfZ + thickness), 
+      0, G4ThreeVector(xpos, -ypos, siHalfZ + thickness), 
       logic, name + "physical", worldLogical, false, 0);
     idcPhys.push_back(phys);
   }
@@ -379,7 +379,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double ybotcapindconnector1offset = yIndHorzLastPos + 7*um;
 
   G4VPhysicalVolume* botcapindconnector1physical = new G4PVPlacement(
-    0, G4ThreeVector(xbotcapindconnector1offset, -ybotcapindconnector1offset, geHalfZ + thickness), 
+    0, G4ThreeVector(xbotcapindconnector1offset, -ybotcapindconnector1offset, siHalfZ + thickness), 
     botcapindconnector1logical, "botcapindconnector1physical",
     worldLogical, false, 0);
 
@@ -396,7 +396,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double ybotcapindconnector2offset = (ybotcapindconnector1offset + botcapindconnector1y) - botcapindconnector2y;
 
   G4VPhysicalVolume* botcapindconnector2physical = new G4PVPlacement(
-    0, G4ThreeVector(xbotcapindconnector2offset, -ybotcapindconnector2offset, geHalfZ + thickness),
+    0, G4ThreeVector(xbotcapindconnector2offset, -ybotcapindconnector2offset, siHalfZ + thickness),
     botcapindconnector2logical, "botcapindconnector2physical",
     worldLogical, false, 0);
 
@@ -413,7 +413,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double ycapjunctconnectoffset = (yrightcapwalloffset + rightcapwally) + capjunctconnecty;
 
   G4VPhysicalVolume* capjunctconnectphysical = new G4PVPlacement(
-    0, G4ThreeVector(xcapjunctconnectoffset, -ycapjunctconnectoffset, geHalfZ + thickness),
+    0, G4ThreeVector(xcapjunctconnectoffset, -ycapjunctconnectoffset, siHalfZ + thickness),
     capjunctconnectlogical, "capjunctconnectphysical",
     worldLogical, false, 0);
 
@@ -431,7 +431,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yjunct1offset = ycapjunctconnectoffset + capjunctconnecty + capjunctconnectjunct1gap + junct1y;
 
   G4VPhysicalVolume* junct1physical = new G4PVPlacement(
-    0, G4ThreeVector(xjunct1offset, -yjunct1offset, geHalfZ + thickness),
+    0, G4ThreeVector(xjunct1offset, -yjunct1offset, siHalfZ + thickness),
     junct1logical, "junct1physicalshunt",
     worldLogical, false, 0);
 
@@ -447,7 +447,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yjunct2offset = yjunct1offset + junct2y;
 
   G4VPhysicalVolume* junct2physical = new G4PVPlacement(
-    0, G4ThreeVector(xjunct2offset, -yjunct2offset, geHalfZ + thickness),
+    0, G4ThreeVector(xjunct2offset, -yjunct2offset, siHalfZ + thickness),
     junct2logical, "junct2physicalshunt",
     worldLogical, false, 0);
 
@@ -466,7 +466,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yjunct3offset = yjunct2offset + junct2y - 0.2*um;
 
   G4VPhysicalVolume* junct3physical = new G4PVPlacement(
-    0, G4ThreeVector(xjunct3offset, -yjunct3offset, geHalfZ + thickness),
+    0, G4ThreeVector(xjunct3offset, -yjunct3offset, siHalfZ + thickness),
     junct3logical, "junct3physicalshunt",
     worldLogical, false, 0);
 
@@ -483,7 +483,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yjunct4offset = yjunct3offset + junct3y + junct4y;
 
   G4VPhysicalVolume* junct4physical = new G4PVPlacement(
-    0, G4ThreeVector(xjunct4offset, -yjunct4offset, geHalfZ + thickness),
+    0, G4ThreeVector(xjunct4offset, -yjunct4offset, siHalfZ + thickness),
     junct4logical, "junct4physicalshunt",
     worldLogical, false, 0);
 
@@ -500,7 +500,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yjunct5offset = yjunct4offset + junct4y + junct5y;
 
   G4VPhysicalVolume* junct5physical = new G4PVPlacement(
-    0, G4ThreeVector(xjunct5offset, -yjunct5offset, geHalfZ + thickness),
+    0, G4ThreeVector(xjunct5offset, -yjunct5offset, siHalfZ + thickness),
     junct5logical, "junct5physicalshunt",
     worldLogical, false, 0);
 
@@ -515,7 +515,7 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double yabsorberoffset = yjunct5offset + junct5y;
 
   G4VPhysicalVolume* absorberphysical = new G4PVPlacement(
-    0, G4ThreeVector(xabsorberoffset, -yabsorberoffset, geHalfZ + thickness),
+    0, G4ThreeVector(xabsorberoffset, -yabsorberoffset, siHalfZ + thickness),
     absorberlogical, "absorberphysicalshunt",
     worldLogical, false, 0);
 
@@ -543,12 +543,12 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double xRightGround = xabsorberoffset + absorberRadius + sideGroundx;
 
   G4VPhysicalVolume* leftSideGroundPhysical = new G4PVPlacement(
-    0, G4ThreeVector(xLeftGround, -ySideGroundCenter, geHalfZ + thickness), 
+    0, G4ThreeVector(xLeftGround, -ySideGroundCenter, siHalfZ + thickness), 
     sideGroundlogical, "leftSideGroundPhysical",
     worldLogical, false, 0);
 
   G4VPhysicalVolume* rightSideGroundPhysical = new G4PVPlacement(
-    0, G4ThreeVector(xRightGround, -ySideGroundCenter, geHalfZ + thickness), 
+    0, G4ThreeVector(xRightGround, -ySideGroundCenter, siHalfZ + thickness), 
     sideGroundlogical, "rightSideGroundPhysical",
     worldLogical, false, 0);
 
@@ -565,23 +565,23 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
     new G4LogicalVolume(sideGroundBridge, fAluminum, "sideGroundBridgeLogical");
 
   G4VPhysicalVolume* sideGroundBridgePhysical = new G4PVPlacement(
-    0, G4ThreeVector(xabsorberoffset, -yabsorberoffset, geHalfZ + thickness),
+    0, G4ThreeVector(xabsorberoffset, -yabsorberoffset, siHalfZ + thickness),
     sideGroundBridgeLogical, "sideGroundBridgePhysical",
     worldLogical, false, 0);
 
   // ---- End of Geometry definition ----
 
   // 
-  // detector -- Note : "sensitive detector" is attached to Germanium crystal
-  // want a phonon sensitive detector, attached to Ge crystal
+  // detector -- Note : "sensitive detector" is attached to Silicon crystal
+  // want a phonon sensitive detector, attached to Si crystal
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   if (!fSuperconductorSensitivity)
     fSuperconductorSensitivity = new RISQTutorialSensitivity("PhononElectrode");
   SDman->AddNewDetector(fSuperconductorSensitivity);
-  fGermaniumLogical->SetSensitiveDetector(fSuperconductorSensitivity);
+  fSiliconLogical->SetSensitiveDetector(fSuperconductorSensitivity);
 
   //
-  // surface between Al and Ge determines phonon reflection/absorption
+  // surface between Al and Si determines phonon reflection/absorption
   //
   if (!fConstructed) {
     const G4double GHz = 1e9 * hertz; 
@@ -629,69 +629,69 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
 
   if (RISQTutorialConfigManager::GetAl()) {
-    new G4CMPLogicalBorderSurface("Al", GePhys, alFLphysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, alUGPphysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, alLGPphysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, capindconnectorphysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, connectorphysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, couplCapphysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, leftSideGroundPhysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, rightSideGroundPhysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, sideGroundBridgePhysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, indvert1physical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, alFLphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, alUGPphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, alLGPphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, capindconnectorphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, connectorphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, couplCapphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, leftSideGroundPhysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, rightSideGroundPhysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, sideGroundBridgePhysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, indvert1physical, AlSurfProp);
     for (auto phys : inductorPhys) {
-      new G4CMPLogicalBorderSurface("Al", GePhys, phys, AlSurfProp);
+      new G4CMPLogicalBorderSurface("Al", SiPhys, phys, AlSurfProp);
     }
     
-    new G4CMPLogicalBorderSurface("Al", GePhys, leftcapwallphysical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, rightcapwallphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, leftcapwallphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, rightcapwallphysical, AlSurfProp);
     for (auto phys : idcPhys) {
-      new G4CMPLogicalBorderSurface("Al", GePhys, phys, AlSurfProp);
+      new G4CMPLogicalBorderSurface("Al", SiPhys, phys, AlSurfProp);
     }
-    new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector1physical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, botcapindconnector2physical, AlSurfProp);
-    new G4CMPLogicalBorderSurface("Al", GePhys, capjunctconnectphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, botcapindconnector1physical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, botcapindconnector2physical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("Al", SiPhys, capjunctconnectphysical, AlSurfProp);
   }
 
   if (!RISQTutorialConfigManager::GetAl()) {
-    new G4CMPLogicalBorderSurface("Nb", GePhys, alFLphysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, alUGPphysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, alLGPphysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, capindconnectorphysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, connectorphysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, couplCapphysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, leftSideGroundPhysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, rightSideGroundPhysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, sideGroundBridgePhysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, indvert1physical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, alFLphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, alUGPphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, alLGPphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, capindconnectorphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, connectorphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, couplCapphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, leftSideGroundPhysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, rightSideGroundPhysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, sideGroundBridgePhysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, indvert1physical, NbSurfProp);
     for (auto phys : inductorPhys) {
-      new G4CMPLogicalBorderSurface("Nb", GePhys, phys, NbSurfProp);
+      new G4CMPLogicalBorderSurface("Nb", SiPhys, phys, NbSurfProp);
     }
     
-    new G4CMPLogicalBorderSurface("Nb", GePhys, leftcapwallphysical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, rightcapwallphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, leftcapwallphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, rightcapwallphysical, NbSurfProp);
     for (auto phys : idcPhys) {
-      new G4CMPLogicalBorderSurface("Nb", GePhys, phys, NbSurfProp);
+      new G4CMPLogicalBorderSurface("Nb", SiPhys, phys, NbSurfProp);
     }
-    new G4CMPLogicalBorderSurface("Nb", GePhys, botcapindconnector1physical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, botcapindconnector2physical, NbSurfProp);
-    new G4CMPLogicalBorderSurface("Nb", GePhys, capjunctconnectphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, botcapindconnector1physical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, botcapindconnector2physical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("Nb", SiPhys, capjunctconnectphysical, NbSurfProp);
   }
 
   // walls
-  new G4CMPLogicalBorderSurface("GeToWorld", GePhys, fWorldPhys, polishedwallSurfProp);
-  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideRightXPhys, sidewallSurfProp);
-  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideLeftXPhys, sidewallSurfProp);
-  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideRightYPhys, sidewallSurfProp);
-  new G4CMPLogicalBorderSurface("GeToSideWall", GePhys, airSideLeftYPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("SiToWorld", SiPhys, fWorldPhys, polishedwallSurfProp);
+  new G4CMPLogicalBorderSurface("SiToSideWall", SiPhys, airSideRightXPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("SiToSideWall", SiPhys, airSideLeftXPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("SiToSideWall", SiPhys, airSideRightYPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("SiToSideWall", SiPhys, airSideLeftYPhys, sidewallSurfProp);
   
   // sensor
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct1physical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct2physical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct3physical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct4physical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, junct5physical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("Al", GePhys, absorberphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", SiPhys, junct1physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", SiPhys, junct2physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", SiPhys, junct3physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", SiPhys, junct4physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", SiPhys, junct5physical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("Al", SiPhys, absorberphysical, AlSurfProp);
 
 
   //                                        
@@ -702,10 +702,10 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   wrldVis->SetVisibility(false);
   worldLogical->SetVisAttributes(wrldVis);
 
-  // Germanium crystal: light gray, solid
-  G4VisAttributes* geVis = new G4VisAttributes(G4Colour(0.85, 0.85, 0.85, 0.4));
-  geVis->SetVisibility(true);
-  fGermaniumLogical->SetVisAttributes(geVis);
+  // Silicon crystal: light gray, solid
+  G4VisAttributes* siVis = new G4VisAttributes(G4Colour(0.85, 0.85, 0.85, 0.4));
+  siVis->SetVisibility(true);
+  fSiliconLogical->SetVisAttributes(siVis);
   
   // Air boxes: light blue, semi-transparent
   G4VisAttributes* airVis = new G4VisAttributes(G4Colour(0.0, 0.5, 1.0, 0.1));

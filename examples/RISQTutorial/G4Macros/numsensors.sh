@@ -7,6 +7,7 @@
 #SBATCH --mem-per-cpu=4096
 #SBATCH --time=0-02:00:00
 #SBATCH --gpus 0
+#SBATCH --output=/sdf/home/s/shilin/mycode/slurm_output/slurm-%j.out
 
 # load SCDMS singularity image module
 
@@ -35,22 +36,22 @@ if [ "$Al_bool" = "true" ]
 then
     if [ "$pAbsProbPolishedWallSi" = "0.0" ]
     then
-        run_dir="./260906_run/SQUAT_Al_SW"
+        run_dir="/sdf/home/s/shilin/mycode/260906_run/SQUAT_Al_SW"
     elif [ "$pAbsProbSideWallSi" = "0.0" ]
     then
-        run_dir="./260906_run/SQUAT_Al_PF"
+        run_dir="/sdf/home/s/shilin/mycode/260906_run/SQUAT_Al_PF"
     else
-        run_dir="./260906_run/SQUAT_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+        run_dir="/sdf/home/s/shilin/mycode/260906_run/SQUAT_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
     fi
 else
     if [ "$pAbsProbPolishedWallSi" = "0.0" ]
     then
-        run_dir="./260906_run/SQUAT_Al_Nb_SW"
+        run_dir="/sdf/home/s/shilin/mycode/260906_run/SQUAT_Al_Nb_SW"
     elif [ "$pAbsProbSideWallSi" = "0.0" ]
     then
-        run_dir="./260906_run/SQUAT_Al_Nb_PF"
+        run_dir="/sdf/home/s/shilin/mycode/260906_run/SQUAT_Al_Nb_PF"
     else
-        run_dir="./260906_run/SQUAT_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
+        run_dir="/sdf/home/s/shilin/mycode/260906_run/SQUAT_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
     fi
 fi 
 

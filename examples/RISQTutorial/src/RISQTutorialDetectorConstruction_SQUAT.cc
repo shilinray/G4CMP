@@ -1,5 +1,20 @@
-// OW200127 11KID device
+// SQUAT
 
+#include "RISQTutorialDetectorConstruction.hh"
+#include "RISQTutorialSensitivity.hh"
+#include "RISQTutorialQubitHousing.hh"
+#include "RISQTutorialPad.hh"
+#include "RISQTutorialTransmissionLine.hh"
+#include "RISQTutorialStraightFluxLine.hh"
+#include "RISQTutorialCornerFluxLine.hh"
+#include "RISQTutorialResonatorAssembly.hh"
+#include "RISQTutorialConfigManager.hh" //added for batch
+#include "G4CMPPhononElectrode.hh"
+#include "G4CMPElectrodeSensitivity.hh"
+#include "G4CMPLogicalBorderSurface.hh"
+#include "G4CMPSurfaceProperty.hh"
+#include "G4Box.hh"
+#include "G4Colour.hh"
 #include "G4FieldManager.hh"
 #include "G4GeometryManager.hh"
 #include "G4LatticeLogical.hh"
@@ -106,8 +121,8 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4double numsensors = 0;
   if (RISQTutorialConfigManager::Getnumsensors() != -1.0) numsensors = RISQTutorialConfigManager::Getnumsensors();
     
-  const G4double siHalfX = 1.1*cm / std::sqrt(numsensors);
-  const G4double siHalfY = 1.1*cm / std::sqrt(numsensors);
+  const G4double siHalfX = 0.5*cm / std::sqrt(numsensors);
+  const G4double siHalfY = 0.5*cm / std::sqrt(numsensors);
   const G4double siHalfZ = 0.05*mm;
   G4VSolid* fSiliconSolid = new G4Box("fSiliconSolid", siHalfX, siHalfY, siHalfZ);
   G4LogicalVolume* fSiliconLogical = new G4LogicalVolume(fSiliconSolid,fSilicon,"fSiliconLogical");
@@ -147,25 +162,67 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   G4VPhysicalVolume* airSideRightYPhys = new G4PVPlacement(0, G4ThreeVector(0, siHalfY + airSideThickness/2, 0), airSideLogicalY, "airSideRightY", worldLogical, false, 0);
   G4VPhysicalVolume* airSideLeftYPhys = new G4PVPlacement(0, G4ThreeVector(0, -siHalfY - airSideThickness/2, 0), airSideLogicalY, "airSideLeftY", worldLogical, false, 0);
 
-  // OW200127 - Load all STL parts first
+  //
+  // Aluminum. This is where phonon hits are registered
 
-  auto sensor = CADMesh::TessellatedMesh::FromSTL("../../OW200127/OW200127_1.STL");
-  sensor->SetScale(1e-3);
-  G4VSolid* sensor_solid = sensor->GetSolid();
+  // Aluminum feedline
+  const G4double alFeedlineHalfX = siHalfX;
+  const G4double alFeedlineHalfY = 4.5*um;
+  const G4double fl_thickness = 0.2*um;
 
-  auto kidFeedline = CADMesh::TessellatedMesh::FromSTL("../../OW200127/OW200127_2.STL");
-  kidFeedline->SetScale(1e-3);
-  G4VSolid* kidFeedline_solid = kidFeedline->GetSolid();
+  const G4double alUPGhalfy = 50.0*um;
+  const G4double alLPGhalfy = 2.0*um;
+  const G4double feedlineGap = 2.0*um;
 
-  auto otherKIDs = CADMesh::TessellatedMesh::FromSTL("../../OW200127/OW200127_3.STL");
-  otherKIDs->SetScale(1e-3);
-  G4VSolid* otherKIDs_solid = otherKIDs->GetSolid();
+  G4Box* feedline = new G4Box("feedlineCenter", alFeedlineHalfX, alFeedlineHalfY, fl_thickness);
+  G4Box* uppergroundplane  = new G4Box("uppergroundplane",  alFeedlineHalfX, alUPGhalfy, fl_thickness);
+  G4Box* lowergroundplane  = new G4Box("lowergroundplane",  alFeedlineHalfX, alLPGhalfy, fl_thickness);
 
-  // Compute overall max and min of all OW200127 parts to find the center
-  std::vector<G4VSolid*> ow200127Solids = {sensor_solid, kidFeedline_solid, otherKIDs_solid};
+  G4LogicalVolume* alFLlogical = new G4LogicalVolume(feedline,fAluminum,"alFLlogical"); // logical feedline
+  G4LogicalVolume* alUGPlogical = new G4LogicalVolume(uppergroundplane,fAluminum,"alUGPlogical"); // logical feedline
+  G4LogicalVolume* alLGPlogical = new G4LogicalVolume(lowergroundplane,fAluminum,"alLGPlogical"); // logical feedline
+
+  G4VPhysicalVolume* alFLphysical = new G4PVPlacement(0, G4ThreeVector(0.,0., siHalfZ + fl_thickness), alFLlogical, "alFLphysical", worldLogical, false, 0); 
+
+  G4double yUGPoffset = alFeedlineHalfY + feedlineGap + alUPGhalfy;
+  G4double yLGPoffset = alFeedlineHalfY + feedlineGap + alLPGhalfy;
+
+  G4VPhysicalVolume* alUGPphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., yUGPoffset, siHalfZ + fl_thickness), alUGPlogical, "alUGPphysical",
+    worldLogical, false, 0); // physical UPG
+  G4VPhysicalVolume* alLGPphysical = new G4PVPlacement(
+    0, G4ThreeVector(0., -yLGPoffset, siHalfZ + fl_thickness), alLGPlogical, "alLGPphysical",
+    worldLogical, false, 0); // physical LGP
+  // physical feedline
+
+  // SQUAT - Load all STL parts first
+
+  auto leftabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE1.STL");
+  leftabs->SetScale(1e-3);
+  G4VSolid* leftabs_solid = leftabs->GetSolid();
+
+  auto righttrap = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE2.STL");
+  righttrap->SetScale(1e-3);
+  G4VSolid* righttrap_solid = righttrap->GetSolid();
+
+  auto lefttrap = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE3.STL");
+  lefttrap->SetScale(1e-3);
+  G4VSolid* lefttrap_solid = lefttrap->GetSolid();
+
+  auto junction = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE4.STL");
+  junction->SetScale(1e-3);
+  G4VSolid* junction_solid = junction->GetSolid();
+
+  auto rightabs = CADMesh::TessellatedMesh::FromSTL("../../single_squat/single_squat_BE5.STL");
+  rightabs->SetScale(1e-3);
+  G4VSolid* rightabs_solid = rightabs->GetSolid();
+
+  // Compute overall max and min of all SQUAT parts to find the center
+  std::vector<G4VSolid*> squatSolids = {leftabs_solid, righttrap_solid, lefttrap_solid, 
+                                         junction_solid, rightabs_solid};
   G4ThreeVector overallMin(DBL_MAX, DBL_MAX, DBL_MAX);
   G4ThreeVector overallMax(-DBL_MAX, -DBL_MAX, -DBL_MAX);
-  for (auto* solid : ow200127Solids) {
+  for (auto* solid : squatSolids) {
     G4ThreeVector pMin, pMax;
     solid->BoundingLimits(pMin, pMax);
     overallMin.setX(std::min(overallMin.x(), pMin.x()));
@@ -177,24 +234,30 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   }
   G4ThreeVector stlCenter = 0.5 * (overallMin + overallMax);
 
-  // Compute offset to place OW200127 center at desired position
-  // Target Z: bottom of OW200127 sits on top of Si surface (at z = siHalfZ)
-  const G4double targetCenterX = 0.0*um;    // Desired X position of OW200127 center
-  const G4double targetCenterY = 0.0*um; // Desired Y position: 200um below feedline
-  const G4double targetCenterZ = siHalfZ + (overallMax.z() - overallMin.z()) / 2.0; // Bottom of OW200127 at Si surface
+  // Compute offset to place SQUAT center at desired position
+  // Target Z: bottom of SQUAT sits on top of Si surface (at z = siHalfZ)
+  const G4double targetCenterX = 0.0*um;    // Desired X position of SQUAT center
+  const G4double targetCenterY = -200.0*um; // Desired Y position: 200um below feedline
+  const G4double targetCenterZ = siHalfZ + (overallMax.z() - overallMin.z()) / 2.0; // Bottom of SQUAT at Si surface
   
   G4ThreeVector targetCenter(targetCenterX, targetCenterY, targetCenterZ);
-  const G4ThreeVector ow200127Offset = targetCenter - stlCenter - G4ThreeVector(0, 0, 0.1 * nm); // Force 0.1 nm geometric overlap;
+  const G4ThreeVector squatOffset = targetCenter - stlCenter - G4ThreeVector(0, 0, 0.1 * nm); // Force 0.1 nm geometric overlap;
 
   // Create logical volumes and place physical volumes
-  G4LogicalVolume* sensorlogical = new G4LogicalVolume(sensor_solid,fAluminum,"sensorlogical"); 
-  G4VPhysicalVolume* sensorphysical = new G4PVPlacement(0, ow200127Offset, sensorlogical, "sensorphysicalshunt", worldLogical, false, 0);
+  G4LogicalVolume* leftabslogical = new G4LogicalVolume(leftabs_solid,fAluminum,"leftabslogical"); 
+  G4VPhysicalVolume* leftabsphysical = new G4PVPlacement(0, squatOffset, leftabslogical, "leftabsphysicalshunt", worldLogical, false, 0);
 
-  G4LogicalVolume* kidFeedlinelogical = new G4LogicalVolume(kidFeedline_solid,fNiobium,"kidFeedlinelogical"); 
-  G4VPhysicalVolume* kidFeedlinephysical = new G4PVPlacement(0, ow200127Offset, kidFeedlinelogical, "kidFeedlinephysical", worldLogical, false, 0);
+  G4LogicalVolume* righttraplogical = new G4LogicalVolume(righttrap_solid,fAluminum,"righttraplogical"); 
+  G4VPhysicalVolume* righttrapphysical = new G4PVPlacement(0, squatOffset, righttraplogical, "righttrapphysicalshunt", worldLogical, false, 0);
 
-  G4LogicalVolume* otherKIDslogical = new G4LogicalVolume(otherKIDs_solid,fNiobium,"otherKIDslogical"); 
-  G4VPhysicalVolume* otherKIDsphysical = new G4PVPlacement(0, ow200127Offset, otherKIDslogical, "otherKIDsphysical", worldLogical, false, 0);
+  G4LogicalVolume* lefttraplogical = new G4LogicalVolume(lefttrap_solid,fAluminum,"lefttraplogical"); 
+  G4VPhysicalVolume* lefttrapphysical = new G4PVPlacement(0, squatOffset, lefttraplogical, "lefttrapphysicalshunt", worldLogical, false, 0);
+
+  G4LogicalVolume* junctionlogical = new G4LogicalVolume(junction_solid,fAluminum,"junctionlogical"); 
+  G4VPhysicalVolume* junctionphysical = new G4PVPlacement(0, squatOffset, junctionlogical, "junctionphysicalshunt", worldLogical, false, 0);
+
+  G4LogicalVolume* rightabslogical = new G4LogicalVolume(rightabs_solid,fAluminum,"rightabslogical"); 
+  G4VPhysicalVolume* rightabsphysical = new G4PVPlacement(0, squatOffset, rightabslogical, "rightabsphysicalshunt", worldLogical, false, 0);
 
 
   // 
@@ -253,16 +316,29 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   // Connects the inner volume, outer volume, and physics that applies at the surface
   // Logical border surface applies the specified physics for ANYWHERE the two volumes touch
   //
-  // Si -> Al/Nb (phonons start in Si and enter the superconductor)
-  new G4CMPLogicalBorderSurface("SiToAl_Sensor", SiPhys, sensorphysical, AlSurfProp);
-  new G4CMPLogicalBorderSurface("SiToNb_Feedline", SiPhys, kidFeedlinephysical, NbSurfProp);
-  new G4CMPLogicalBorderSurface("SiToNb_OtherKIDs", SiPhys, otherKIDsphysical, NbSurfProp);
+  // Si -> Al (phonons start in Si and enter Al)
+  if (RISQTutorialConfigManager::GetAl()) {
+    new G4CMPLogicalBorderSurface("SiToAl_FL", SiPhys, alFLphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("SiToAl_UGP", SiPhys, alUGPphysical, AlSurfProp);
+    new G4CMPLogicalBorderSurface("SiToAl_LGP", SiPhys, alLGPphysical, AlSurfProp);
+  }
+  if (!RISQTutorialConfigManager::GetAl()) {
+    new G4CMPLogicalBorderSurface("SiToAl_FL", SiPhys, alFLphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("SiToAl_UGP", SiPhys, alUGPphysical, NbSurfProp);
+    new G4CMPLogicalBorderSurface("SiToAl_LGP", SiPhys, alLGPphysical, NbSurfProp);
+  }
+
+  new G4CMPLogicalBorderSurface("SiToAl_LA", SiPhys, leftabsphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("SiToAl_RT", SiPhys, righttrapphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("SiToAl_LT", SiPhys, lefttrapphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("SiToAl_JN", SiPhys, junctionphysical, AlSurfProp);
+  new G4CMPLogicalBorderSurface("SiToAl_RA", SiPhys, rightabsphysical, AlSurfProp);
   
 
 
   // Si -> World (bare Si where there is no Al coverage)
   new G4CMPLogicalBorderSurface("SiToWorld", SiPhys, fWorldPhys, polishedwallSurfProp);
-  new G4CMPLogicalBorderSurface("SiToSideWall", SiPhys, airSideRightXPhys, sidewallSurfProp);
+  new G4CMPLogicalBorderSurface("SiToRightSideWall", SiPhys, airSideRightXPhys, sidewallSurfProp);
   new G4CMPLogicalBorderSurface("SiToSideWall", SiPhys, airSideLeftXPhys, sidewallSurfProp);
   new G4CMPLogicalBorderSurface("SiToSideWall", SiPhys, airSideRightYPhys, sidewallSurfProp);
   new G4CMPLogicalBorderSurface("SiToSideWall", SiPhys, airSideLeftYPhys, sidewallSurfProp);
@@ -290,12 +366,17 @@ void RISQTutorialDetectorConstruction::SetupGeometry()
   airSideLogicalX->SetVisAttributes(airVis);
   airSideLogicalY->SetVisAttributes(airVis);
 
-  // Aluminum/Niobium patterned parts
+  // Aluminum patterned parts
   G4VisAttributes* alVis = new G4VisAttributes(G4Colour(1.0, 0.0, 0.0, 0.5));
   alVis->SetVisibility(true);
-  sensorlogical->SetVisAttributes(alVis);
-  kidFeedlinelogical->SetVisAttributes(alVis);
-  otherKIDslogical->SetVisAttributes(alVis);
+  alFLlogical->SetVisAttributes(alVis);
+  alUGPlogical->SetVisAttributes(alVis);
+  alLGPlogical->SetVisAttributes(alVis);
+  leftabslogical->SetVisAttributes(alVis);
+  righttraplogical->SetVisAttributes(alVis);
+  lefttraplogical->SetVisAttributes(alVis);
+  junctionlogical->SetVisAttributes(alVis);
+  rightabslogical->SetVisAttributes(alVis);
 
 }
 

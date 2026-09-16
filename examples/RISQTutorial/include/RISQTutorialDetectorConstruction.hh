@@ -37,7 +37,6 @@ private:
 private:
   G4Material* fAir;
   G4Material* fVacuum;
-  G4Material* fGermanium;
   G4Material* fAluminum;
   G4Material* fTungsten;
   G4Material* fSilicon;
