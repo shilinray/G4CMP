@@ -1918,7 +1918,33 @@ void Mems_PCEStudy(int grid_size = 25, bool drawOverlay = false, std::string stl
   }
   fOut->cd();
 
-  for (const Config& cfg : configs) {
+  // Line plots combining both loss configurations: PCE along the X axis at
+  // Y=0, and PCE along the Y axis at X=0.
+  const int configColors[] = {kBlue + 1, kRed + 1, kGreen + 2, kMagenta + 1};
+
+  TMultiGraph* mg_pceVsX_atYZero = new TMultiGraph(
+      "mg_pceVsX_atYZero", "PCE vs X Position (Y=0);X [mm];PCE");
+  TCanvas* c_pceVsX_atYZero = new TCanvas("c_pceVsX_atYZero", "PCE vs X (Y=0)", 900, 700);
+  TLegend* leg_pceVsX_atYZero = new TLegend(0.68, 0.75, 0.88, 0.88);
+  leg_pceVsX_atYZero->SetBorderSize(1);
+  leg_pceVsX_atYZero->SetFillStyle(0);
+
+  TMultiGraph* mg_pceVsY_atXZero = new TMultiGraph(
+      "mg_pceVsY_atXZero", "PCE vs Y Position (X=0);Y [mm];PCE");
+  TCanvas* c_pceVsY_atXZero = new TCanvas("c_pceVsY_atXZero", "PCE vs Y (X=0)", 900, 700);
+  TLegend* leg_pceVsY_atXZero = new TLegend(0.68, 0.75, 0.88, 0.88);
+  leg_pceVsY_atXZero->SetBorderSize(1);
+  leg_pceVsY_atXZero->SetFillStyle(0);
+
+  TMultiGraph* mg_pceVsDiag_xEqY = new TMultiGraph(
+      "mg_pceVsDiag_xEqY", "PCE along x=y Diagonal;Position along x=y diagonal [mm];PCE");
+  TCanvas* c_pceVsDiag_xEqY = new TCanvas("c_pceVsDiag_xEqY", "PCE vs diagonal (x=y)", 900, 700);
+  TLegend* leg_pceVsDiag_xEqY = new TLegend(0.68, 0.75, 0.88, 0.88);
+  leg_pceVsDiag_xEqY->SetBorderSize(1);
+  leg_pceVsDiag_xEqY->SetFillStyle(0);
+
+  for (size_t iCfg = 0; iCfg < configs.size(); ++iCfg) {
+    const Config& cfg = configs[iCfg];
     const std::string baseDir = baseRunDir + "/" + cfg.dirName;
     const TString tag = TString(cfg.dirName.c_str());
 
@@ -1993,7 +2019,104 @@ void Mems_PCEStudy(int grid_size = 25, bool drawOverlay = false, std::string stl
     c->Write();
     c->SaveAs(TString::Format("Mems_PCE_%s.png", tag.Data()));
     delete c;
+
+    const int color = configColors[iCfg < 4 ? iCfg : 3];
+
+    // Slice through the PCE map at the Y bin nearest Y=0
+    {
+      const int binY0 = h_pce->GetYaxis()->FindBin(0.0);
+      std::vector<double> xVals, pceVals;
+      for (int ix = 1; ix <= h_pce->GetNbinsX(); ++ix) {
+        xVals.push_back(h_pce->GetXaxis()->GetBinCenter(ix));
+        pceVals.push_back(h_pce->GetBinContent(ix, binY0));
+      }
+      TGraph* g = new TGraph((int)xVals.size(), xVals.data(), pceVals.data());
+      g->SetName(TString::Format("g_pceVsX_atYZero_%s", tag.Data()));
+      g->SetLineColor(color);
+      g->SetMarkerColor(color);
+      g->SetLineWidth(2);
+      g->SetMarkerStyle(20);
+      g->SetMarkerSize(0.8);
+      fOut->cd();
+      g->Write();
+      mg_pceVsX_atYZero->Add(g, "LP");
+      leg_pceVsX_atYZero->AddEntry(g, cfg.label.c_str(), "lp");
+    }
+
+    // Slice through the PCE map at the X bin nearest X=0
+    {
+      const int binX0 = h_pce->GetXaxis()->FindBin(0.0);
+      std::vector<double> yVals, pceVals;
+      for (int iy = 1; iy <= h_pce->GetNbinsY(); ++iy) {
+        yVals.push_back(h_pce->GetYaxis()->GetBinCenter(iy));
+        pceVals.push_back(h_pce->GetBinContent(binX0, iy));
+      }
+      TGraph* g = new TGraph((int)yVals.size(), yVals.data(), pceVals.data());
+      g->SetName(TString::Format("g_pceVsY_atXZero_%s", tag.Data()));
+      g->SetLineColor(color);
+      g->SetMarkerColor(color);
+      g->SetLineWidth(2);
+      g->SetMarkerStyle(20);
+      g->SetMarkerSize(0.8);
+      fOut->cd();
+      g->Write();
+      mg_pceVsY_atXZero->Add(g, "LP");
+      leg_pceVsY_atXZero->AddEntry(g, cfg.label.c_str(), "lp");
+    }
+
+    // Slice through the PCE map along the diagonal x=y
+    {
+      const int nBins = std::min(h_pce->GetNbinsX(), h_pce->GetNbinsY());
+      std::vector<double> diagVals, pceVals;
+      for (int i = 1; i <= nBins; ++i) {
+        const double x = h_pce->GetXaxis()->GetBinCenter(i);
+        // Signed distance from the origin along the x=y diagonal
+        diagVals.push_back(x * std::sqrt(2.0));
+        pceVals.push_back(h_pce->GetBinContent(i, i));
+      }
+      TGraph* g = new TGraph((int)diagVals.size(), diagVals.data(), pceVals.data());
+      g->SetName(TString::Format("g_pceVsDiag_xEqY_%s", tag.Data()));
+      g->SetLineColor(color);
+      g->SetMarkerColor(color);
+      g->SetLineWidth(2);
+      g->SetMarkerStyle(20);
+      g->SetMarkerSize(0.8);
+      fOut->cd();
+      g->Write();
+      mg_pceVsDiag_xEqY->Add(g, "LP");
+      leg_pceVsDiag_xEqY->AddEntry(g, cfg.label.c_str(), "lp");
+    }
   }
+
+  c_pceVsX_atYZero->SetGrid();
+  mg_pceVsX_atYZero->Draw("A");
+  leg_pceVsX_atYZero->Draw();
+  fOut->cd();
+  mg_pceVsX_atYZero->Write();
+  c_pceVsX_atYZero->Write();
+  c_pceVsX_atYZero->SaveAs("Mems_PCE_vs_X_atYZero.png");
+  delete leg_pceVsX_atYZero;
+  delete c_pceVsX_atYZero;
+
+  c_pceVsY_atXZero->SetGrid();
+  mg_pceVsY_atXZero->Draw("A");
+  leg_pceVsY_atXZero->Draw();
+  fOut->cd();
+  mg_pceVsY_atXZero->Write();
+  c_pceVsY_atXZero->Write();
+  c_pceVsY_atXZero->SaveAs("Mems_PCE_vs_Y_atXZero.png");
+  delete leg_pceVsY_atXZero;
+  delete c_pceVsY_atXZero;
+
+  c_pceVsDiag_xEqY->SetGrid();
+  mg_pceVsDiag_xEqY->Draw("A");
+  leg_pceVsDiag_xEqY->Draw();
+  fOut->cd();
+  mg_pceVsDiag_xEqY->Write();
+  c_pceVsDiag_xEqY->Write();
+  c_pceVsDiag_xEqY->SaveAs("Mems_PCE_vs_Diag_xEqY.png");
+  delete leg_pceVsDiag_xEqY;
+  delete c_pceVsDiag_xEqY;
 
   fOut->Write();
   fOut->Close();
@@ -2039,6 +2162,17 @@ void NumSensors_PCEStudy()
   legend->SetBorderSize(1);
   legend->SetFillStyle(0);
   legend->SetTextSize(0.025);
+
+  // Same plot, but with number of sensors on the x-axis instead of chip area
+  TCanvas* canvas_ns = new TCanvas("c_pce_vs_numSensors_bySensorCount",
+                                   "PCE vs number of sensors", 900, 700);
+  TMultiGraph* multigraph_ns = new TMultiGraph(
+      "mg_pce_vs_numSensors_bySensorCount",
+      "Phonon Collection Efficiency vs Number of Sensors;Number of sensors;PCE [%]");
+  TLegend* legend_ns = new TLegend(0.72, 0.80, 0.88, 0.88);
+  legend_ns->SetBorderSize(1);
+  legend_ns->SetFillStyle(0);
+  legend_ns->SetTextSize(0.025);
 
   for (const Config& config : configs) {
     std::vector<double> sensorValues;
@@ -2184,6 +2318,82 @@ void NumSensors_PCEStudy()
       delete c_res;
     }
 
+    // Same resolution plot, but with number of sensors on the x-axis instead of chip area
+    {
+      const int resColors[] = {kBlack, kRed, kBlue, kGreen + 2, kMagenta + 1,
+                               kOrange + 7, kCyan + 2, kViolet, kPink + 7, kAzure + 2};
+
+      TMultiGraph* mg_resDeposited_ns = new TMultiGraph(
+          TString::Format("mg_resDeposited_bySensorCount_%s", config.directory.c_str()),
+          TString::Format("Resolution on Deposited Energy (%s);Number of sensors;Resolution on deposited energy [eV]",
+                          config.label.c_str()));
+
+      TCanvas* c_res_ns = new TCanvas(TString::Format("c_resDeposited_bySensorCount_%s", config.directory.c_str()),
+          TString::Format("Resolution on Deposited Energy: %s", config.label.c_str()), 900, 700);
+      TLegend* leg_res_ns = new TLegend(0.76, 0.62, 0.88, 0.88);
+      leg_res_ns->SetBorderSize(1);
+      leg_res_ns->SetFillStyle(0);
+      leg_res_ns->SetTextSize(0.022);
+
+      for (int iR = 0; iR < (int)resAbsorbed_eV.size(); ++iR) {
+        const double resAbsorbed_eV_val = resAbsorbed_eV[iR];
+
+        std::vector<double> yResDeposited(sensorValues.size());
+        for (int iN = 0; iN < (int)sensorValues.size(); ++iN) {
+          const double N = sensorValues[iN];
+          const double pceFraction = pceValues[iN] / 100.0;
+          yResDeposited[iN] = (pceFraction > 0.0)
+                                ? (resAbsorbed_eV_val * std::sqrt(N) / pceFraction)
+                                : 0.0;
+        }
+
+        TString gName = TString::Format("g_resDeposited_bySensorCount_%s_res%dmeV",
+                                        config.directory.c_str(), (int)(resAbsorbed_eV_val * 1000.0));
+        TGraph* g = new TGraph((int)sensorValues.size(), sensorValues.data(), yResDeposited.data());
+        g->SetName(gName);
+        g->SetLineWidth(2);
+        g->SetMarkerStyle(20);
+        g->SetMarkerSize(0.8);
+
+        const int color = resColors[iR < 10 ? iR : 9];
+        g->SetLineColor(color);
+        g->SetMarkerColor(color);
+
+        fOut->cd();
+        g->Write();
+
+        mg_resDeposited_ns->Add(g, "LP");
+        leg_res_ns->AddEntry(g, TString::Format("%.0f meV", resAbsorbed_eV_val * 1000.0), "lp");
+
+        // Highlight the lowest (best) resolution point on this line
+        int minIdx = 0;
+        for (int iN = 1; iN < (int)yResDeposited.size(); ++iN) {
+          if (yResDeposited[iN] < yResDeposited[minIdx]) minIdx = iN;
+        }
+        TGraph* gMin = new TGraph(1, &sensorValues[minIdx], &yResDeposited[minIdx]);
+        gMin->SetName(TString::Format("%s_min", gName.Data()));
+        gMin->SetMarkerStyle(29);
+        gMin->SetMarkerSize(2.2);
+        gMin->SetMarkerColor(color);
+        fOut->cd();
+        gMin->Write();
+        mg_resDeposited_ns->Add(gMin, "P");
+      }
+
+      c_res_ns->SetGrid();
+      c_res_ns->SetLogx();
+      c_res_ns->SetLogy();
+      mg_resDeposited_ns->Draw("A");
+      leg_res_ns->Draw();
+      fOut->cd();
+      mg_resDeposited_ns->Write();
+      c_res_ns->Write();
+      c_res_ns->SaveAs(TString::Format("ResDeposited_bySensorCount_%s.png", config.directory.c_str()));
+
+      delete leg_res_ns;
+      delete c_res_ns;
+    }
+
     TString graphName = TString::Format("g_pce_vs_numSensors_%s", config.directory.c_str());
     TGraph* graph = new TGraph((int)areaValues_cm2.size(), areaValues_cm2.data(), pceValues.data());
     graph->SetName(graphName);
@@ -2196,6 +2406,19 @@ void NumSensors_PCEStudy()
     graph->Write();
     multigraph->Add(graph, "LP");
     legend->AddEntry(graph, config.label.c_str(), "lp");
+
+    TString graphName_ns = TString::Format("g_pce_vs_numSensors_bySensorCount_%s", config.directory.c_str());
+    TGraph* graph_ns = new TGraph((int)sensorValues.size(), sensorValues.data(), pceValues.data());
+    graph_ns->SetName(graphName_ns);
+    graph_ns->SetLineColor(config.color);
+    graph_ns->SetMarkerColor(config.color);
+    graph_ns->SetLineWidth(2);
+    graph_ns->SetMarkerStyle(20);
+    graph_ns->SetMarkerSize(0.9);
+    fOut->cd();
+    graph_ns->Write();
+    multigraph_ns->Add(graph_ns, "LP");
+    legend_ns->AddEntry(graph_ns, config.label.c_str(), "lp");
   }
 
   if (multigraph->GetListOfGraphs()->GetSize() == 0) {
@@ -2203,6 +2426,8 @@ void NumSensors_PCEStudy()
     fOut->Close();
     delete legend;
     delete canvas;
+    delete legend_ns;
+    delete canvas_ns;
     delete fOut;
     return;
   }
@@ -2214,11 +2439,22 @@ void NumSensors_PCEStudy()
   multigraph->Write();
   canvas->Write();
   canvas->SaveAs("PCE_vs_NumSensors.png");
+
+  canvas_ns->SetGrid();
+  multigraph_ns->Draw("A");
+  legend_ns->Draw();
+  fOut->cd();
+  multigraph_ns->Write();
+  canvas_ns->Write();
+  canvas_ns->SaveAs("PCE_vs_NumSensors_bySensorCount.png");
+
   fOut->Write();
   fOut->Close();
 
   delete legend;
   delete canvas;
+  delete legend_ns;
+  delete canvas_ns;
   delete fOut;
 }
 
