@@ -2088,6 +2088,7 @@ void Mems_PCEStudy(int grid_size = 25, bool drawOverlay = false, std::string stl
     }
   }
 
+  c_pceVsX_atYZero->cd();
   c_pceVsX_atYZero->SetGrid();
   mg_pceVsX_atYZero->Draw("A");
   leg_pceVsX_atYZero->Draw();
@@ -2098,6 +2099,7 @@ void Mems_PCEStudy(int grid_size = 25, bool drawOverlay = false, std::string stl
   delete leg_pceVsX_atYZero;
   delete c_pceVsX_atYZero;
 
+  c_pceVsY_atXZero->cd();
   c_pceVsY_atXZero->SetGrid();
   mg_pceVsY_atXZero->Draw("A");
   leg_pceVsY_atXZero->Draw();
@@ -2108,6 +2110,7 @@ void Mems_PCEStudy(int grid_size = 25, bool drawOverlay = false, std::string stl
   delete leg_pceVsY_atXZero;
   delete c_pceVsY_atXZero;
 
+  c_pceVsDiag_xEqY->cd();
   c_pceVsDiag_xEqY->SetGrid();
   mg_pceVsDiag_xEqY->Draw("A");
   leg_pceVsDiag_xEqY->Draw();
@@ -2432,6 +2435,7 @@ void NumSensors_PCEStudy()
     return;
   }
 
+  canvas->cd();
   canvas->SetGrid();
   multigraph->Draw("A");
   legend->Draw();
@@ -2440,6 +2444,7 @@ void NumSensors_PCEStudy()
   canvas->Write();
   canvas->SaveAs("PCE_vs_NumSensors.png");
 
+  canvas_ns->cd();
   canvas_ns->SetGrid();
   multigraph_ns->Draw("A");
   legend_ns->Draw();
