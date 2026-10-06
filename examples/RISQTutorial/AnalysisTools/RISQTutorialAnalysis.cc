@@ -1896,7 +1896,7 @@ static void DrawDetectorOverlayXY(double chipHalf_mm,
 void Mems_PCEStudy(int grid_size = 20, bool drawOverlay = false, std::string stlDir = "../../single_squat")
 {
   const int al = 30;
-  const int nb = 30;
+  const int nb = 70;
   const std::string baseRunDir = "../../../../260930_run_mems";
 
   // The four run configurations produced by run_mems.sh
@@ -2460,6 +2460,310 @@ void NumSensors_PCEStudy()
   delete canvas;
   delete legend_ns;
   delete canvas_ns;
+  delete fOut;
+}
+
+//---------------------------------------------------------------------------------------
+// Analyze the initial-phonon-energy scan submitted by G4Macros/run_energy.sh
+// (run_energy.sh -> energy.sh -> pceStudy.mac). Produces, for the side-wall (SW) and
+// polished-face (PF) loss configurations:
+//   1. PCE vs initial phonon energy, SW and PF as separate lines on one plot.
+//   2. Histogram of the phonon energy absorbed per event, one canvas per initial
+//      energy with SW and PF overlaid.
+//   3. Estimated net quasiparticle population vs time, one canvas per loss
+//      configuration with one line per initial energy.
+// The QP model is the same as Ns_QuasiparticleAnalysis: nQP = 2*E/Delta_Al per hit,
+// created at endT_ns and removed one QP at a time with exponential lifetimes.
+//---------------------------------------------------------------------------------------
+void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../energy_scan")
+{
+  const int al = 100;
+  const int ns = 1;
+  // Same strings as run_energy.sh, since they are part of the output filenames [eV]
+  const std::vector<std::string> energyStrings = {
+    "0.0001", "0.0002", "0.0003", "0.0006", "0.001",
+    "0.002", "0.003", "0.004", "0.005", "0.01"};
+
+  struct Config {
+    std::string directory;
+    std::string label;
+    Color_t color;
+  };
+  const std::vector<Config> configs = {
+    {"SQUAT_Al_Nb_SW", "Side-wall loss", kBlue + 1},
+    {"SQUAT_Al_Nb_PF", "Polished-wall loss", kRed + 1},
+  };
+
+  const double alGap_eV = 0.34e-3;
+  const double qpLifetimeMean_ns = 100000.0;  // 100 us
+  const int nTimeSamples = 2000;  // Net-QP curves are sampled on a uniform time grid
+  const int colors[] = {kBlack, kRed, kBlue, kGreen + 2, kMagenta + 1,
+                        kOrange + 7, kCyan + 2, kViolet, kPink + 7, kAzure + 2};
+
+  TRandom3 rng(0);
+
+  TFile* fOut = new TFile("PCE_vs_Energy.root", "RECREATE");
+  if (!fOut || fOut->IsZombie()) {
+    std::cerr << "Error: could not create PCE_vs_Energy.root" << std::endl;
+    return;
+  }
+
+  TMultiGraph* mg_pce = new TMultiGraph("mg_pce_vs_energy",
+      "Phonon Collection Efficiency vs Initial Phonon Energy;Initial phonon energy [meV];PCE [%]");
+  TLegend* leg_pce = new TLegend(0.72, 0.80, 0.88, 0.88);
+  leg_pce->SetBorderSize(1);
+  leg_pce->SetFillStyle(0);
+  leg_pce->SetTextSize(0.025);
+
+  // Absorbed-energy histograms, indexed [iE][iC], for the overlay canvases below
+  std::vector<std::vector<TH1F*> > h_absorbed(
+      energyStrings.size(), std::vector<TH1F*>(configs.size(), nullptr));
+
+  for (int iC = 0; iC < (int)configs.size(); ++iC) {
+    const Config& config = configs[iC];
+
+    std::vector<double> energies_meV, pceValues, pceErrors;
+
+    TCanvas* c_qp = new TCanvas(TString::Format("c_netQP_%s", config.directory.c_str()),
+        TString::Format("Net QP vs Time: %s", config.label.c_str()), 900, 700);
+    c_qp->SetLogy();
+    TLegend* leg_qp = new TLegend(0.62, 0.55, 0.88, 0.88);
+    leg_qp->SetBorderSize(1);
+    leg_qp->SetFillStyle(0);
+    bool firstQPDraw = true;
+    std::vector<TGraph*> qpGraphs;
+
+    for (int iE = 0; iE < (int)energyStrings.size(); ++iE) {
+      const double energy_eV = std::atof(energyStrings[iE].c_str());
+      const std::string tag = "Al" + std::to_string(al) + "_ns" + std::to_string(ns)
+                              + "_E" + energyStrings[iE] + "eV";
+      const std::string runDir = baseRunDir + "/" + config.directory;
+      const std::string primaryFilename = runDir + "/Primary_" + tag + ".txt";
+      const std::string hitsFilename = runDir + "/Hits_" + tag + ".txt";
+
+      std::ifstream primaryFile(primaryFilename.c_str());
+      std::ifstream hitsFile(hitsFilename.c_str());
+      if (!primaryFile.good() || !hitsFile.good()) {
+        std::cerr << "Skipping E=" << energyStrings[iE] << " eV for " << config.label
+                  << ": missing primary or hit file." << std::endl;
+        continue;
+      }
+
+      const std::map<int, PrimaryInfo> primaryInfo =
+          ParsePrimaryTextFileForPrimaries(primaryFilename);
+      const std::map<int, std::vector<Hit> > hitInfo =
+          ParseHitTextFileForHits(hitsFilename);
+
+      double totalPrimaryEnergy_eV = 0.0;
+      for (const auto& entry : primaryInfo) totalPrimaryEnergy_eV += entry.second.energy_eV;
+      if (totalPrimaryEnergy_eV <= 0.0) {
+        std::cerr << "Skipping E=" << energyStrings[iE] << " eV for " << config.label
+                  << ": primary energy is zero." << std::endl;
+        continue;
+      }
+
+      // Histogram of the total energy absorbed per event
+      TString hName = TString::Format("h_absorbed_%s_E%seV", config.directory.c_str(),
+                                      energyStrings[iE].c_str());
+      TH1F* h = new TH1F(hName,
+          TString::Format("Absorbed phonon energy, E_{init} = %.2f meV;Absorbed energy [eV];nEvents",
+                          1e3 * energy_eV),
+          100, 0, 1.05 * energy_eV);
+      h->SetDirectory(fOut);
+      h->SetStats(0);
+      h->SetLineWidth(2);
+      h->SetLineColorAlpha(config.color, 0.6);
+
+      struct QPEvent {
+        double time_ns;
+        double deltaQP;
+      };
+      std::vector<QPEvent> qpEvents;
+      double totalHitEnergy_eV = 0.0;
+
+      for (const auto& kv : hitInfo) {
+        double eventAbsorbed_eV = 0.0;
+        for (const Hit& hit : kv.second) {
+          if (hit.eDep_eV <= 0.0) continue;
+          eventAbsorbed_eV += hit.eDep_eV;
+
+          const int nQP = (int)std::round((hit.eDep_eV / alGap_eV) * 2.0);
+          qpEvents.push_back({hit.endT_ns, (double)nQP});
+          for (int iQP = 0; iQP < nQP; ++iQP) {
+            qpEvents.push_back({hit.endT_ns + rng.Exp(qpLifetimeMean_ns), -1.0});
+          }
+        }
+        totalHitEnergy_eV += eventAbsorbed_eV;
+        if (eventAbsorbed_eV > 0.0) h->Fill(eventAbsorbed_eV);
+      }
+
+      const double pce = totalHitEnergy_eV / totalPrimaryEnergy_eV;
+      const double nPrimaries = (double)primaryInfo.size();
+      const double pceErr = (pce > 0.0 && pce < 1.0)
+                              ? 100.0 * std::sqrt(pce * (1.0 - pce) / nPrimaries) : 0.0;
+      energies_meV.push_back(1e3 * energy_eV);
+      pceValues.push_back(100.0 * pce);
+      pceErrors.push_back(pceErr);
+      std::cout << config.label << "  E=" << energy_eV << " eV  PCE=" << 100.0 * pce
+                << " %" << std::endl;
+
+      fOut->cd();
+      h->Write();
+      h_absorbed[iE][iC] = h;
+
+      // Net QP population vs time: sort creation/removal events (creation first on ties),
+      // then sample the running total on a uniform time grid.
+      if (qpEvents.empty()) continue;
+      std::sort(qpEvents.begin(), qpEvents.end(),
+                [](const QPEvent& a, const QPEvent& b) {
+                  if (a.time_ns == b.time_ns) return a.deltaQP > b.deltaQP;
+                  return a.time_ns < b.time_ns;
+                });
+
+      const double tMax = qpEvents.back().time_ns;
+      const double dt = tMax / nTimeSamples;
+      std::vector<double> times, netQP;
+      double runningQP = 0.0, peakQP = 0.0;
+      size_t iEv = 0;
+      for (int iT = 0; iT <= nTimeSamples; ++iT) {
+        const double t = iT * dt;
+        while (iEv < qpEvents.size() && qpEvents[iEv].time_ns <= t) {
+          runningQP += qpEvents[iEv].deltaQP;
+          if (runningQP < 0.0) runningQP = 0.0;
+          if (runningQP > peakQP) peakQP = runningQP;
+          ++iEv;
+        }
+        times.push_back(t);
+        netQP.push_back(runningQP);
+      }
+      std::cout << "    Peak QP=" << peakQP << std::endl;
+
+      TGraph* g = new TGraph((int)times.size(), times.data(), netQP.data());
+      g->SetName(TString::Format("g_netQP_%s_E%seV", config.directory.c_str(),
+                                 energyStrings[iE].c_str()));
+      g->SetTitle(TString::Format("Net QP vs Time, %s;Time [ns];Net N_{QP}",
+                                  config.label.c_str()));
+      g->SetLineWidth(2);
+      g->SetLineColor(colors[iE < 10 ? iE : 9]);
+      fOut->cd();
+      g->Write();
+      qpGraphs.push_back(g);
+      leg_qp->AddEntry(g, TString::Format("E = %.2f meV", 1e3 * energy_eV), "l");
+    }
+
+    // Net QP vs time, one line per initial energy
+    if (!qpGraphs.empty()) {
+      double xMax = 0.0, yMax = 0.0;
+      for (TGraph* g : qpGraphs) {
+        for (int ip = 0; ip < g->GetN(); ++ip) {
+          double x, y;
+          g->GetPoint(ip, x, y);
+          if (x > xMax) xMax = x;
+          if (y > yMax) yMax = y;
+        }
+      }
+      for (TGraph* g : qpGraphs) {
+        if (firstQPDraw) {
+          g->Draw("AL");
+          g->GetXaxis()->SetLimits(0.0, xMax);
+          g->SetMinimum(1.0);
+          g->SetMaximum(3.0 * yMax);
+          firstQPDraw = false;
+        } else {
+          g->Draw("L SAME");
+        }
+      }
+      leg_qp->Draw();
+      fOut->cd();
+      c_qp->Write();
+      c_qp->SaveAs(TString::Format("netQP_vs_Time_%s.png", config.directory.c_str()));
+    }
+    delete leg_qp;
+    delete c_qp;
+
+    if (energies_meV.empty()) continue;
+
+    std::vector<double> xErr(energies_meV.size(), 0.0);
+    TGraphErrors* g_pce = new TGraphErrors((int)energies_meV.size(), energies_meV.data(),
+                                           pceValues.data(), xErr.data(), pceErrors.data());
+    g_pce->SetName(TString::Format("g_pce_vs_energy_%s", config.directory.c_str()));
+    g_pce->SetLineColor(config.color);
+    g_pce->SetMarkerColor(config.color);
+    g_pce->SetFillColor(config.color);
+    g_pce->SetLineWidth(2);
+    g_pce->SetMarkerStyle(20);
+    g_pce->SetMarkerSize(0.9);
+    fOut->cd();
+    g_pce->Write();
+    mg_pce->Add(g_pce, "LP");
+    leg_pce->AddEntry(g_pce, config.label.c_str(), "lp");
+  }
+
+  // PCE vs initial energy, SW and PF on the same plot
+  if (mg_pce->GetListOfGraphs() && mg_pce->GetListOfGraphs()->GetSize() > 0) {
+    TCanvas* c_pce = new TCanvas("c_pce_vs_energy", "PCE vs initial phonon energy", 900, 700);
+    c_pce->SetGrid();
+    c_pce->SetLogx();
+    mg_pce->Draw("A");
+    leg_pce->Draw();
+    fOut->cd();
+    mg_pce->Write();
+    c_pce->Write();
+    c_pce->SaveAs("PCE_vs_Energy.png");
+    delete c_pce;
+  } else {
+    std::cerr << "Error: no valid energy scan files were found in " << baseRunDir << std::endl;
+  }
+
+  // Absorbed-energy histograms: one canvas per initial energy, SW and PF overlaid,
+  // with the Al gap multiples marked as in the other eDep plots
+  for (int iE = 0; iE < (int)energyStrings.size(); ++iE) {
+    double maxY = 0.0;
+    for (TH1F* h : h_absorbed[iE]) {
+      if (h && h->GetMaximum() > maxY) maxY = h->GetMaximum();
+    }
+    if (maxY <= 0.0) continue;
+
+    const double energy_eV = std::atof(energyStrings[iE].c_str());
+    TCanvas* c = new TCanvas(TString::Format("c_absorbed_E%seV", energyStrings[iE].c_str()),
+        TString::Format("Absorbed energy, E=%.2f meV", 1e3 * energy_eV), 900, 700);
+    c->SetLogy();
+    TLegend* leg = new TLegend(0.68, 0.70, 0.88, 0.88);
+    leg->SetBorderSize(1);
+    leg->SetFillStyle(0);
+
+    bool first = true;
+    for (int iC = 0; iC < (int)configs.size(); ++iC) {
+      TH1F* h = h_absorbed[iE][iC];
+      if (!h) continue;
+      h->SetMaximum(1.15 * maxY);
+      h->SetMinimum(0.5);
+      h->Draw(first ? "HIST" : "HIST SAME");
+      first = false;
+      leg->AddEntry(h, configs[iC].label.c_str(), "l");
+    }
+
+    std::vector<TLine*> gapLines;
+    for (int k = 1; k * alGap_eV <= 1.05 * energy_eV; ++k) {
+      TLine* line = new TLine(k * alGap_eV, 0, k * alGap_eV, 1.15 * maxY);
+      line->SetLineColor(kGreen + 2);
+      line->SetLineStyle(2);
+      line->SetLineWidth(2);
+      line->Draw();
+      gapLines.push_back(line);
+    }
+    if (!gapLines.empty()) leg->AddEntry(gapLines[0], "Al gap", "l");
+    leg->Draw();
+
+    fOut->cd();
+    c->Write();
+    c->SaveAs(TString::Format("h_absorbed_E%seV.png", energyStrings[iE].c_str()));
+    delete leg;
+    delete c;
+  }
+
+  fOut->Write();
+  fOut->Close();
   delete fOut;
 }
 
