@@ -3,7 +3,7 @@
 Al_z="30"
 Nb_z="70"
 Al_bools="false"
-grid_size=20  # number of points along each axis (grid_size x grid_size total)
+grid_size=30  # number of points along each axis (grid_size x grid_size total)
 
 grid_indices=$(seq 0 $((grid_size - 1)))
 
@@ -24,7 +24,7 @@ do
         do
             # Config 1: SW loss
             echo "$Al_z $Nb_z $albool 0.02 0.0 $ix $iy $grid_size"
-            sbatch ./mems.sh "$Al_z" "$Nb_z" "$albool" 0.01 0.0 "$ix" "$iy" "$grid_size"
+            sbatch ./mems.sh "$Al_z" "$Nb_z" "$albool" 0.02 0.0 "$ix" "$iy" "$grid_size"
 
             # Config 2: PF loss
             echo "$Al_z $Nb_z $albool 0.0 0.0025 $ix $iy $grid_size"

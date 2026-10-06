@@ -19,11 +19,11 @@ do
             do
                 # Config 1
                 echo "$nbz $alz $albool 0.04 0.0 $ns"
-                sbatch ./numsensors.sh "$alz" "$nbz" "$albool" 0.01 0.0 "$ns"
+                sbatch ./numsensors.sh "$alz" "$nbz" "$albool" 0.04 0.0 "$ns"
 
                 # Config 2
                 echo "$nbz $alz $albool 0.0 0.01 $ns"
-                sbatch ./numsensors.sh "$alz" "$nbz" "$albool" 0.0 0.0025 "$ns"
+                sbatch ./numsensors.sh "$alz" "$nbz" "$albool" 0.0 0.01 "$ns"
             done
         done
     done

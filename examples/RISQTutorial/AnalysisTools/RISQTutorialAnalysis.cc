@@ -1893,11 +1893,11 @@ static void DrawDetectorOverlayXY(double chipHalf_mm,
 // Expected file naming (from mems.sh / run_mems.sh):
 //   ../G4Macros/260519_run/<config>/Hits_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
 //   ../G4Macros/260519_run/<config>/Primary_Al<Al>_Nb<Nb>_ix<ix>_iy<iy>.txt
-void Mems_PCEStudy(int grid_size = 20, bool drawOverlay = false, std::string stlDir = "../../single_squat")
+void Mems_PCEStudy(int grid_size = 30, bool drawOverlay = false, std::string stlDir = "../../single_squat")
 {
   const int al = 30;
   const int nb = 70;
-  const std::string baseRunDir = "../../../../260930_run_mems";
+  const std::string baseRunDir = "../../../../261005_run_mems";
 
   // The four run configurations produced by run_mems.sh
   struct Config {
@@ -2134,7 +2134,7 @@ void NumSensors_PCEStudy()
   const int al = 100;
   const std::vector<int> numSensors = {1, 2, 5, 10, 20, 30, 40, 50,
                                        60, 70, 80, 90, 100, 125, 150, 175, 200};
-  const std::string baseRunDir = "../../../../260930_run_numsensors";
+  const std::string baseRunDir = "../../../../261005_run_numsensors";
 
   struct Config {
     std::string directory;
@@ -2475,14 +2475,14 @@ void NumSensors_PCEStudy()
 // The QP model is the same as Ns_QuasiparticleAnalysis: nQP = 2*E/Delta_Al per hit,
 // created at endT_ns and removed one QP at a time with exponential lifetimes.
 //---------------------------------------------------------------------------------------
-void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../energy_scan")
+void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energy")
 {
-  const int al = 100;
+  const int al = 40;
   const int ns = 1;
   // Same strings as run_energy.sh, since they are part of the output filenames [eV]
-  const std::vector<std::string> energyStrings = {
-    "0.0001", "0.0002", "0.0003", "0.0006", "0.001",
-    "0.002", "0.003", "0.004", "0.005", "0.01"};
+  const std::vector<std::string> energyStrings = {"0.0002", "0.0003", "0.0004", "0.0005", 
+    "0.0006", "0.0008", "0.001", "0.0015", "0.002", "0.0025", "0.003", "0.0035", "0.004", 
+    "0.0045", "0.005", "0.0075", "0.01"};
 
   struct Config {
     std::string directory;
