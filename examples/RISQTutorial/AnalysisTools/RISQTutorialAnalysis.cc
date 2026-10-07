@@ -2133,8 +2133,8 @@ void NumSensors_PCEStudy()
 {
   const int al = 100;
   const std::vector<int> numSensors = {1, 2, 5, 10, 20, 30, 40, 50,
-                                       60, 70, 80, 90, 100, 125, 150, 175, 200};
-  const std::string baseRunDir = "../../../../261005_run_numsensors";
+                                       60, 70, 80, 90, 100, 125, 150, 175, 200, 225, 250, 275, 300, 330, 360, 390, 420};
+  const std::string baseRunDir = "../../../../261006_run_numsensors";
 
   struct Config {
     std::string directory;
