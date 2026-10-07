@@ -2495,7 +2495,7 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
   };
 
   const double alGap_eV = 0.34e-3;
-  const double qpLifetimeMean_ns = 100000.0;  // 100 us
+  const double qpLifetimeMean_ns = 300000.0;  // 300 us (3x the 100 us used elsewhere)
   const int nTimeSamples = 2000;  // Net-QP curves are sampled on a uniform time grid
   const int colors[] = {kBlack, kRed, kBlue, kGreen + 2, kMagenta + 1,
                         kOrange + 7, kCyan + 2, kViolet, kPink + 7, kAzure + 2};
