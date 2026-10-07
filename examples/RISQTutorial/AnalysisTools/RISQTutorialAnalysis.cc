@@ -2472,6 +2472,8 @@ void NumSensors_PCEStudy()
 //      energy with SW and PF overlaid.
 //   3. Estimated net quasiparticle population vs time, one canvas per loss
 //      configuration with one line per initial energy.
+//   4. Net QP vs time at 3 meV for QP lifetimes of 200 us to 2 ms (200 us steps),
+//      one canvas per loss configuration with one line per lifetime.
 // The QP model is the same as Ns_QuasiparticleAnalysis: nQP = 2*E/Delta_Al per hit,
 // created at endT_ns and removed one QP at a time with exponential lifetimes.
 //---------------------------------------------------------------------------------------
@@ -2495,12 +2497,68 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
   };
 
   const double alGap_eV = 0.34e-3;
-  const double qpLifetimeMean_ns = 300000.0;  // 300 us (3x the 100 us used elsewhere)
+  const double qpLifetimeMean_ns = 300000.0;  // 300 us
   const int nTimeSamples = 2000;  // Net-QP curves are sampled on a uniform time grid
   const int colors[] = {kBlack, kRed, kBlue, kGreen + 2, kMagenta + 1,
                         kOrange + 7, kCyan + 2, kViolet, kPink + 7, kAzure + 2};
 
   TRandom3 rng(0);
+
+  // QP lifetime scan, made for one initial energy only: 200 us to 2 ms in 200 us steps
+  const std::string lifetimeScanEnergy = "0.003";
+  std::vector<double> scanLifetimes_us;
+  for (int tau_us = 200; tau_us <= 2000; tau_us += 200) scanLifetimes_us.push_back(tau_us);
+
+  struct QPEvent {
+    double time_ns;
+    double deltaQP;
+  };
+  struct QPCurve {
+    std::vector<double> times, netQP;
+    double peakQP = 0.0;
+  };
+
+  // Net QP population vs time for the given hits and mean lifetime: nQP = 2*E/Delta_Al
+  // per hit is created at endT_ns, and each QP is removed after an exponential lifetime.
+  // Creation events sort before removals on ties; the running total is sampled on a
+  // uniform time grid.
+  auto computeNetQP = [&](const std::map<int, std::vector<Hit> >& hits, double tau_ns) {
+    std::vector<QPEvent> qpEvents;
+    for (const auto& kv : hits) {
+      for (const Hit& hit : kv.second) {
+        if (hit.eDep_eV <= 0.0) continue;
+        const int nQP = (int)std::round((hit.eDep_eV / alGap_eV) * 2.0);
+        qpEvents.push_back({hit.endT_ns, (double)nQP});
+        for (int iQP = 0; iQP < nQP; ++iQP) {
+          qpEvents.push_back({hit.endT_ns + rng.Exp(tau_ns), -1.0});
+        }
+      }
+    }
+
+    QPCurve curve;
+    if (qpEvents.empty()) return curve;
+    std::sort(qpEvents.begin(), qpEvents.end(),
+              [](const QPEvent& a, const QPEvent& b) {
+                if (a.time_ns == b.time_ns) return a.deltaQP > b.deltaQP;
+                return a.time_ns < b.time_ns;
+              });
+
+    const double dt = qpEvents.back().time_ns / nTimeSamples;
+    double runningQP = 0.0;
+    size_t iEv = 0;
+    for (int iT = 0; iT <= nTimeSamples; ++iT) {
+      const double t = iT * dt;
+      while (iEv < qpEvents.size() && qpEvents[iEv].time_ns <= t) {
+        runningQP += qpEvents[iEv].deltaQP;
+        if (runningQP < 0.0) runningQP = 0.0;
+        if (runningQP > curve.peakQP) curve.peakQP = runningQP;
+        ++iEv;
+      }
+      curve.times.push_back(t);
+      curve.netQP.push_back(runningQP);
+    }
+    return curve;
+  };
 
   TFile* fOut = new TFile("PCE_vs_Energy.root", "RECREATE");
   if (!fOut || fOut->IsZombie()) {
@@ -2532,6 +2590,10 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
     leg_qp->SetFillStyle(0);
     bool firstQPDraw = true;
     std::vector<TGraph*> qpGraphs;
+    std::vector<TGraph*> lifetimeGraphs;
+    TLegend* leg_lt = new TLegend(0.62, 0.55, 0.88, 0.88);
+    leg_lt->SetBorderSize(1);
+    leg_lt->SetFillStyle(0);
 
     for (int iE = 0; iE < (int)energyStrings.size(); ++iE) {
       const double energy_eV = std::atof(energyStrings[iE].c_str());
@@ -2574,11 +2636,6 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
       h->SetLineWidth(2);
       h->SetLineColorAlpha(config.color, 0.6);
 
-      struct QPEvent {
-        double time_ns;
-        double deltaQP;
-      };
-      std::vector<QPEvent> qpEvents;
       double totalHitEnergy_eV = 0.0;
 
       for (const auto& kv : hitInfo) {
@@ -2586,12 +2643,6 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
         for (const Hit& hit : kv.second) {
           if (hit.eDep_eV <= 0.0) continue;
           eventAbsorbed_eV += hit.eDep_eV;
-
-          const int nQP = (int)std::round((hit.eDep_eV / alGap_eV) * 2.0);
-          qpEvents.push_back({hit.endT_ns, (double)nQP});
-          for (int iQP = 0; iQP < nQP; ++iQP) {
-            qpEvents.push_back({hit.endT_ns + rng.Exp(qpLifetimeMean_ns), -1.0});
-          }
         }
         totalHitEnergy_eV += eventAbsorbed_eV;
         if (eventAbsorbed_eV > 0.0) h->Fill(eventAbsorbed_eV);
@@ -2611,32 +2662,35 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
       h->Write();
       h_absorbed[iE][iC] = h;
 
-      // Net QP population vs time: sort creation/removal events (creation first on ties),
-      // then sample the running total on a uniform time grid.
-      if (qpEvents.empty()) continue;
-      std::sort(qpEvents.begin(), qpEvents.end(),
-                [](const QPEvent& a, const QPEvent& b) {
-                  if (a.time_ns == b.time_ns) return a.deltaQP > b.deltaQP;
-                  return a.time_ns < b.time_ns;
-                });
+      // Same hits, many QP lifetimes, overlaid on one plot
+      if (energyStrings[iE] == lifetimeScanEnergy) {
+        for (int iL = 0; iL < (int)scanLifetimes_us.size(); ++iL) {
+          const double tau_us = scanLifetimes_us[iL];
+          const QPCurve curve = computeNetQP(hitInfo, 1e3 * tau_us);
+          if (curve.times.empty()) continue;
+          std::cout << "    tau=" << tau_us << " us  Peak QP=" << curve.peakQP << std::endl;
 
-      const double tMax = qpEvents.back().time_ns;
-      const double dt = tMax / nTimeSamples;
-      std::vector<double> times, netQP;
-      double runningQP = 0.0, peakQP = 0.0;
-      size_t iEv = 0;
-      for (int iT = 0; iT <= nTimeSamples; ++iT) {
-        const double t = iT * dt;
-        while (iEv < qpEvents.size() && qpEvents[iEv].time_ns <= t) {
-          runningQP += qpEvents[iEv].deltaQP;
-          if (runningQP < 0.0) runningQP = 0.0;
-          if (runningQP > peakQP) peakQP = runningQP;
-          ++iEv;
+          TGraph* gl = new TGraph((int)curve.times.size(), curve.times.data(),
+                                  curve.netQP.data());
+          gl->SetName(TString::Format("g_netQP_lifetimeScan_%s_tau%dus",
+                                      config.directory.c_str(), (int)tau_us));
+          gl->SetTitle(TString::Format(
+              "Net QP vs Time, E = %.2f meV, %s;Time [ns];Net N_{QP}",
+              1e3 * energy_eV, config.label.c_str()));
+          gl->SetLineWidth(2);
+          gl->SetLineColor(colors[iL < 10 ? iL : 9]);
+          fOut->cd();
+          gl->Write();
+          lifetimeGraphs.push_back(gl);
+          leg_lt->AddEntry(gl, TString::Format("#tau = %.0f #mus", tau_us), "l");
         }
-        times.push_back(t);
-        netQP.push_back(runningQP);
       }
-      std::cout << "    Peak QP=" << peakQP << std::endl;
+
+      const QPCurve curve = computeNetQP(hitInfo, qpLifetimeMean_ns);
+      if (curve.times.empty()) continue;
+      const std::vector<double>& times = curve.times;
+      const std::vector<double>& netQP = curve.netQP;
+      std::cout << "    Peak QP=" << curve.peakQP << std::endl;
 
       TGraph* g = new TGraph((int)times.size(), times.data(), netQP.data());
       g->SetName(TString::Format("g_netQP_%s_E%seV", config.directory.c_str(),
@@ -2680,6 +2734,40 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
     }
     delete leg_qp;
     delete c_qp;
+
+    if (!lifetimeGraphs.empty()) {
+      TCanvas* c_lt = new TCanvas(
+          TString::Format("c_netQP_lifetimeScan_%s", config.directory.c_str()),
+          TString::Format("Net QP vs Time, lifetime scan: %s", config.label.c_str()), 900, 700);
+      c_lt->SetLogy();
+      double xMax = 0.0, yMax = 0.0;
+      for (TGraph* g : lifetimeGraphs) {
+        for (int ip = 0; ip < g->GetN(); ++ip) {
+          double x, y;
+          g->GetPoint(ip, x, y);
+          if (x > xMax) xMax = x;
+          if (y > yMax) yMax = y;
+        }
+      }
+      for (int iL = 0; iL < (int)lifetimeGraphs.size(); ++iL) {
+        TGraph* g = lifetimeGraphs[iL];
+        if (iL == 0) {
+          g->Draw("AL");
+          g->GetXaxis()->SetLimits(0.0, xMax);
+          g->SetMinimum(1.0);
+          g->SetMaximum(3.0 * yMax);
+        } else {
+          g->Draw("L SAME");
+        }
+      }
+      leg_lt->Draw();
+      fOut->cd();
+      c_lt->Write();
+      c_lt->SaveAs(TString::Format("netQP_lifetimeScan_E%seV_%s.png",
+                                   lifetimeScanEnergy.c_str(), config.directory.c_str()));
+      delete c_lt;
+    }
+    delete leg_lt;
 
     if (energies_meV.empty()) continue;
 
