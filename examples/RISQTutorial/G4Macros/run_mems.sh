@@ -3,7 +3,7 @@
 Al_z="30"
 Nb_z="70"
 Al_bools="false"
-grid_size=30  # number of points along each axis (grid_size x grid_size total)
+grid_size=25  # number of points along each axis (grid_size x grid_size total)
 
 grid_indices=$(seq 0 $((grid_size - 1)))
 

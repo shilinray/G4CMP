@@ -2577,6 +2577,11 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
   std::vector<std::vector<TH1F*> > h_absorbed(
       energyStrings.size(), std::vector<TH1F*>(configs.size(), nullptr));
 
+  // PCE [%] and its error, indexed [iE][iC]; negative means the point is missing
+  std::vector<std::vector<double> > pceTable(
+      energyStrings.size(), std::vector<double>(configs.size(), -1.0));
+  std::vector<std::vector<double> > pceErrTable = pceTable;
+
   for (int iC = 0; iC < (int)configs.size(); ++iC) {
     const Config& config = configs[iC];
 
@@ -2655,6 +2660,8 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
       energies_meV.push_back(1e3 * energy_eV);
       pceValues.push_back(100.0 * pce);
       pceErrors.push_back(pceErr);
+      pceTable[iE][iC] = 100.0 * pce;
+      pceErrTable[iE][iC] = pceErr;
       std::cout << config.label << "  E=" << energy_eV << " eV  PCE=" << 100.0 * pce
                 << " %" << std::endl;
 
@@ -2785,6 +2792,33 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
     g_pce->Write();
     mg_pce->Add(g_pce, "LP");
     leg_pce->AddEntry(g_pce, config.label.c_str(), "lp");
+  }
+
+  // PCE vs initial energy as a text table, one row per energy
+  {
+    std::ofstream tableFile("PCE_vs_Energy.txt");
+    if (!tableFile.good()) {
+      std::cerr << "Error: could not create PCE_vs_Energy.txt" << std::endl;
+    } else {
+      tableFile << "# PCE vs initial phonon energy (error is binomial, in percentage points)\n";
+      tableFile << "# " << TString::Format("%-14s", "E_init[meV]");
+      for (const Config& config : configs) {
+        tableFile << TString::Format("%-14s%-14s", (config.directory + "_PCE[%]").c_str(),
+                                     (config.directory + "_err[%]").c_str());
+      }
+      tableFile << "\n";
+      for (int iE = 0; iE < (int)energyStrings.size(); ++iE) {
+        tableFile << "  " << TString::Format("%-14.4g", 1e3 * std::atof(energyStrings[iE].c_str()));
+        for (int iC = 0; iC < (int)configs.size(); ++iC) {
+          if (pceTable[iE][iC] < 0.0) {
+            tableFile << TString::Format("%-14s%-14s", "NA", "NA");
+          } else {
+            tableFile << TString::Format("%-14.4f%-14.4f", pceTable[iE][iC], pceErrTable[iE][iC]);
+          }
+        }
+        tableFile << "\n";
+      }
+    }
   }
 
   // PCE vs initial energy, SW and PF on the same plot
