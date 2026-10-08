@@ -2476,9 +2476,10 @@ void NumSensors_PCEStudy()
 //   4. Net QP vs time at 3 meV for QP lifetimes of 200 us to 2 ms (200 us steps),
 //      one canvas per loss configuration with one line per lifetime.
 //   5. Rise time, fall time and peak height of the net QP curves vs initial energy and vs
-//      QP lifetime (SW and PF overlaid), 6 canvases in total. Rise time is the 10%-90%
-//      rise to the peak; fall time is the time from the peak until the population has
-//      dropped to peak/e. Both are taken from the exact event list, not the plot grid.
+//      QP lifetime (SW and PF overlaid), 6 canvases in total, each with a matching .txt
+//      data file. Rise time is the time from t = 0 to the peak; fall time is the time
+//      from the peak until the population returns to zero (last QP removed). Both are
+//      taken from the exact event list, not the plot grid.
 // The Nqp(t) lines are rainbow-colored from red (lowest) to violet (highest).
 // The QP model is the same as Ns_QuasiparticleAnalysis: nQP = 2*E/Delta_Al per hit,
 // created at endT_ns and removed one QP at a time with exponential lifetimes.
@@ -2528,8 +2529,8 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
   struct QPCurve {
     std::vector<double> times, netQP;
     double peakQP = 0.0;
-    double riseTime_ns = -1.0;  // 10%-90% rise to the peak; negative if undefined
-    double fallTime_ns = -1.0;  // peak to peak/e; negative if undefined
+    double riseTime_ns = -1.0;  // t = 0 to the peak; negative if undefined
+    double fallTime_ns = -1.0;  // peak to zero population; negative if undefined
   };
 
   // Net QP population vs time for the given hits and mean lifetime: nQP = 2*E/Delta_Al
@@ -2557,28 +2558,18 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
                 return a.time_ns < b.time_ns;
               });
 
-    std::vector<double> cumulative(qpEvents.size());
     double total = 0.0;
     size_t iPeak = 0;
     for (size_t i = 0; i < qpEvents.size(); ++i) {
       total += qpEvents[i].deltaQP;
-      cumulative[i] = total;
       if (total > curve.peakQP) {
         curve.peakQP = total;
         iPeak = i;
       }
     }
     if (curve.peakQP > 0.0) {
-      size_t i10 = 0, i90 = 0;
-      while (cumulative[i10] < 0.1 * curve.peakQP) ++i10;
-      while (cumulative[i90] < 0.9 * curve.peakQP) ++i90;
-      curve.riseTime_ns = qpEvents[i90].time_ns - qpEvents[i10].time_ns;
-      for (size_t i = iPeak + 1; i < qpEvents.size(); ++i) {
-        if (cumulative[i] <= curve.peakQP / TMath::E()) {
-          curve.fallTime_ns = qpEvents[i].time_ns - qpEvents[iPeak].time_ns;
-          break;
-        }
-      }
+      curve.riseTime_ns = qpEvents[iPeak].time_ns;
+      curve.fallTime_ns = qpEvents.back().time_ns - qpEvents[iPeak].time_ns;
     }
 
     const double dt = qpEvents.back().time_ns / nTimeSamples;
@@ -2614,10 +2605,9 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
   std::vector<std::vector<TH1F*> > h_absorbed(
       energyStrings.size(), std::vector<TH1F*>(configs.size(), nullptr));
 
-  // PCE [%] and its error, indexed [iE][iC]; negative means the point is missing
+  // PCE [%], indexed [iE][iC]; negative means the point is missing
   std::vector<std::vector<double> > pceTable(
       energyStrings.size(), std::vector<double>(configs.size(), -1.0));
-  std::vector<std::vector<double> > pceErrTable = pceTable;
 
   // Rise time [us], fall time [us] and peak height of the net QP curves vs a scan variable
   struct QPMetrics {
@@ -2704,7 +2694,6 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
       pceValues.push_back(100.0 * pce);
       pceErrors.push_back(pceErr);
       pceTable[iE][iC] = 100.0 * pce;
-      pceErrTable[iE][iC] = pceErr;
       std::cout << config.label << "  E=" << energy_eV << " eV  PCE=" << 100.0 * pce
                 << " %" << std::endl;
 
@@ -2876,6 +2865,48 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
       mg->Add(g, "LP");
       leg->AddEntry(g, configs[iC].label.c_str(), "lp");
     }
+
+    // Matching data table: one row per scan value, one column per configuration
+    std::map<double, std::vector<double> > rows;
+    for (int iC = 0; iC < (int)configs.size(); ++iC) {
+      const QPMetrics& m = metrics[iC];
+      for (size_t i = 0; i < m.x.size(); ++i) {
+        std::vector<double>& row = rows.emplace(
+            m.x[i], std::vector<double>(configs.size(), -1.0)).first->second;
+        row[iC] = (m.*field)[i];
+      }
+    }
+    auto plainText = [](std::string str) {
+      for (const auto& sub : std::vector<std::pair<std::string, std::string> >{
+               {"#mu", "u"}, {"N_{QP}", "N_QP"}}) {
+        for (size_t pos = str.find(sub.first); pos != std::string::npos;
+             pos = str.find(sub.first, pos + sub.second.size())) {
+          str.replace(pos, sub.first.size(), sub.second);
+        }
+      }
+      return str;
+    };
+    std::ofstream dataFile((name + ".txt").c_str());
+    if (!dataFile.good()) {
+      std::cerr << "Error: could not create " << name << ".txt" << std::endl;
+    } else {
+      dataFile << "# " << plainText(title) << "\n# "
+               << TString::Format("%-16s", plainText(xTitle).c_str());
+      for (const Config& config : configs) {
+        dataFile << TString::Format("%-34s",
+            (config.directory + " " + plainText(yTitle)).c_str());
+      }
+      dataFile << "\n";
+      for (const auto& row : rows) {
+        dataFile << "  " << TString::Format("%-16.6g", row.first);
+        for (double value : row.second) {
+          if (value < 0.0) dataFile << TString::Format("%-34s", "NA");
+          else dataFile << TString::Format("%-34.6g", value);
+        }
+        dataFile << "\n";
+      }
+    }
+
     if (mg->GetListOfGraphs() && mg->GetListOfGraphs()->GetSize() > 0) {
       TCanvas* c = new TCanvas(("c_" + name).c_str(), title.c_str(), 900, 700);
       c->SetGrid();
@@ -2892,19 +2923,19 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
   };
 
   drawMetric(energyMetrics, &QPMetrics::rise_us, "QPRiseTime_vs_Energy",
-             "QP rise time (10%-90%) vs initial phonon energy",
+             "QP rise time (0 to peak) vs initial phonon energy",
              "Initial phonon energy [meV]", "Rise time [#mus]", true);
   drawMetric(energyMetrics, &QPMetrics::fall_us, "QPFallTime_vs_Energy",
-             "QP fall time (peak to peak/e) vs initial phonon energy",
+             "QP fall time (peak to zero) vs initial phonon energy",
              "Initial phonon energy [meV]", "Fall time [#mus]", true);
   drawMetric(energyMetrics, &QPMetrics::peak, "QPPeak_vs_Energy",
              "Peak N_{QP} vs initial phonon energy",
              "Initial phonon energy [meV]", "Peak N_{QP}", true);
   drawMetric(lifetimeMetrics, &QPMetrics::rise_us, "QPRiseTime_vs_Lifetime",
-             "QP rise time (10%-90%) vs QP lifetime",
+             "QP rise time (0 to peak) vs QP lifetime",
              "QP lifetime [#mus]", "Rise time [#mus]", false);
   drawMetric(lifetimeMetrics, &QPMetrics::fall_us, "QPFallTime_vs_Lifetime",
-             "QP fall time (peak to peak/e) vs QP lifetime",
+             "QP fall time (peak to zero) vs QP lifetime",
              "QP lifetime [#mus]", "Fall time [#mus]", false);
   drawMetric(lifetimeMetrics, &QPMetrics::peak, "QPPeak_vs_Lifetime",
              "Peak N_{QP} vs QP lifetime",
@@ -2916,20 +2947,19 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
     if (!tableFile.good()) {
       std::cerr << "Error: could not create PCE_vs_Energy.txt" << std::endl;
     } else {
-      tableFile << "# PCE vs initial phonon energy (error is binomial, in percentage points)\n";
+      tableFile << "# PCE vs initial phonon energy\n";
       tableFile << "# " << TString::Format("%-14s", "E_init[meV]");
       for (const Config& config : configs) {
-        tableFile << TString::Format("%-14s%-14s", (config.directory + "_PCE[%]").c_str(),
-                                     (config.directory + "_err[%]").c_str());
+        tableFile << TString::Format("%-24s", (config.directory + "_PCE[%]").c_str());
       }
       tableFile << "\n";
       for (int iE = 0; iE < (int)energyStrings.size(); ++iE) {
         tableFile << "  " << TString::Format("%-14.4g", 1e3 * std::atof(energyStrings[iE].c_str()));
         for (int iC = 0; iC < (int)configs.size(); ++iC) {
           if (pceTable[iE][iC] < 0.0) {
-            tableFile << TString::Format("%-14s%-14s", "NA", "NA");
+            tableFile << TString::Format("%-24s", "NA");
           } else {
-            tableFile << TString::Format("%-14.4f%-14.4f", pceTable[iE][iC], pceErrTable[iE][iC]);
+            tableFile << TString::Format("%-24.4f", pceTable[iE][iC]);
           }
         }
         tableFile << "\n";
