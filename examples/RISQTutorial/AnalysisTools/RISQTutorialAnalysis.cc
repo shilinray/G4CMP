@@ -3037,6 +3037,414 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
 
 
 //---------------------------------------------------------------------------------------
+// Same energy-scan files and QP model as Energy_PCEAndQPStudy, but the phonons are injected
+// at a constant average rate (Poisson process) over duration_s instead of all at t = 0.
+// Each of the nPhonons primaries is given a start time drawn uniformly in [0, duration_s]
+// (a Poisson process conditioned on nPhonons events), and that offset is added to the
+// endT_ns of all of its hits. Phonons do not interact, so this is exact for a
+// superposition of independent events. If a run has a different number of primaries than
+// nPhonons, events are re-used (sampled with replacement). Produces, for the side-wall (SW)
+// and polished-face (PF) configurations:
+//   1. Net QP vs time, one canvas per configuration, one line per initial energy.
+//   2. Net QP vs time at 3 meV for QP lifetimes of 200 us to 2 ms, one canvas per
+//      configuration, one line per lifetime.
+//   3. Rise time (t = 0 to peak), fall time (peak to zero) and peak height vs initial
+//      energy and vs QP lifetime, SW and PF overlaid, each with a matching .txt file.
+// Nqp(t) lines are rainbow-colored from red (lowest) to violet (highest). Output files
+// carry the "ConstRate" tag so they do not overwrite the t = 0 study.
+//---------------------------------------------------------------------------------------
+void Energy_ConstantRateQPStudy(std::string baseRunDir = "../../../../261005_run_energy",
+                                int nPhonons = 100000, double duration_s = 1.0)
+{
+  const int al = 40;
+  const int ns = 1;
+  // Same strings as run_energy.sh, since they are part of the output filenames [eV]
+  const std::vector<std::string> energyStrings = {"0.0002", "0.0003", "0.0004", "0.0005",
+    "0.0006", "0.0008", "0.001", "0.0015", "0.002", "0.0025", "0.003", "0.0035", "0.004",
+    "0.0045", "0.005", "0.0075", "0.01"};
+
+  struct Config {
+    std::string directory;
+    std::string label;
+    Color_t color;
+  };
+  const std::vector<Config> configs = {
+    {"SQUAT_Al_Nb_SW", "Side-wall loss", kBlue + 1},
+    {"SQUAT_Al_Nb_PF", "Polished-wall loss", kRed + 1},
+  };
+
+  const double alGap_eV = 0.34e-3;
+  const double qpLifetimeMean_ns = 300000.0;  // 300 us
+  const double duration_ns = duration_s * 1e9;
+  const int nTimeSamples = 5000;  // Net-QP curves are sampled on a uniform time grid
+
+  TRandom3 rng(0);
+
+  // QP lifetime scan, made for one initial energy only: 200 us to 2 ms in 200 us steps
+  const std::string lifetimeScanEnergy = "0.003";
+  std::vector<double> scanLifetimes_us;
+  for (int tau_us = 200; tau_us <= 2000; tau_us += 200) scanLifetimes_us.push_back(tau_us);
+
+  // Rainbow color for index i of n, running from red (i = 0) to violet (i = n - 1)
+  auto rainbowColor = [](int i, int n) {
+    const double hue = (n > 1) ? 270.0 * i / (n - 1) : 0.0;
+    Float_t r, g, b;
+    TColor::HSV2RGB(hue, 1.0, 1.0, r, g, b);
+    return TColor::GetColor(r, g, b);
+  };
+
+  struct Injection {
+    int eventID;
+    double t0_ns;
+  };
+  struct QPEvent {
+    double time_ns;
+    double deltaQP;
+  };
+  struct QPCurve {
+    std::vector<double> times_s, netQP;
+    double peakQP = 0.0;
+    double riseTime_ns = -1.0;  // t = 0 to the peak; negative if undefined
+    double fallTime_ns = -1.0;  // peak to zero population; negative if undefined
+  };
+  // Rise time [ms], fall time [ms] and peak height of the net QP curves vs a scan variable
+  struct QPMetrics {
+    std::vector<double> x, rise_ms, fall_ms, peak;
+  };
+
+  // Start time for each of the nPhonons phonons, constant average rate over duration_ns
+  auto makeInjections = [&](const std::map<int, PrimaryInfo>& primaryInfo) {
+    std::vector<int> ids;
+    for (const auto& kv : primaryInfo) ids.push_back(kv.first);
+    std::vector<Injection> injections;
+    injections.reserve(nPhonons);
+    for (int i = 0; i < nPhonons; ++i) {
+      const int id = ((int)ids.size() == nPhonons) ? ids[i] : ids[rng.Integer(ids.size())];
+      injections.push_back({id, rng.Uniform(duration_ns)});
+    }
+    return injections;
+  };
+
+  // Net QP population vs time: nQP = 2*E/Delta_Al per hit is created at endT_ns plus the
+  // phonon's injection time, and each QP is removed after an exponential lifetime.
+  // Creation events sort before removals on ties. Peak height, rise time and fall time come
+  // from the exact event list; the plotted curve is sampled on a uniform time grid.
+  auto computeNetQP = [&](const std::map<int, std::vector<Hit> >& hits,
+                          const std::vector<Injection>& injections, double tau_ns) {
+    std::vector<QPEvent> qpEvents;
+    for (const Injection& inj : injections) {
+      const auto it = hits.find(inj.eventID);
+      if (it == hits.end()) continue;
+      for (const Hit& hit : it->second) {
+        if (hit.eDep_eV <= 0.0) continue;
+        const int nQP = (int)std::round((hit.eDep_eV / alGap_eV) * 2.0);
+        const double tCreate_ns = hit.endT_ns + inj.t0_ns;
+        qpEvents.push_back({tCreate_ns, (double)nQP});
+        for (int iQP = 0; iQP < nQP; ++iQP) {
+          qpEvents.push_back({tCreate_ns + rng.Exp(tau_ns), -1.0});
+        }
+      }
+    }
+
+    QPCurve curve;
+    if (qpEvents.empty()) return curve;
+    std::sort(qpEvents.begin(), qpEvents.end(),
+              [](const QPEvent& a, const QPEvent& b) {
+                if (a.time_ns == b.time_ns) return a.deltaQP > b.deltaQP;
+                return a.time_ns < b.time_ns;
+              });
+
+    double total = 0.0;
+    size_t iPeak = 0;
+    for (size_t i = 0; i < qpEvents.size(); ++i) {
+      total += qpEvents[i].deltaQP;
+      if (total > curve.peakQP) {
+        curve.peakQP = total;
+        iPeak = i;
+      }
+    }
+    if (curve.peakQP > 0.0) {
+      curve.riseTime_ns = qpEvents[iPeak].time_ns;
+      curve.fallTime_ns = qpEvents.back().time_ns - qpEvents[iPeak].time_ns;
+    }
+
+    const double dt = qpEvents.back().time_ns / nTimeSamples;
+    double runningQP = 0.0;
+    size_t iEv = 0;
+    for (int iT = 0; iT <= nTimeSamples; ++iT) {
+      const double t = iT * dt;
+      while (iEv < qpEvents.size() && qpEvents[iEv].time_ns <= t) {
+        runningQP += qpEvents[iEv].deltaQP;
+        if (runningQP < 0.0) runningQP = 0.0;
+        ++iEv;
+      }
+      curve.times_s.push_back(t * 1e-9);
+      curve.netQP.push_back(runningQP);
+    }
+    return curve;
+  };
+
+  TFile* fOut = new TFile("QP_ConstantRate.root", "RECREATE");
+  if (!fOut || fOut->IsZombie()) {
+    std::cerr << "Error: could not create QP_ConstantRate.root" << std::endl;
+    return;
+  }
+
+  std::vector<QPMetrics> energyMetrics(configs.size()), lifetimeMetrics(configs.size());
+
+  // Draws one Nqp(t) canvas from a set of graphs and legend, log y from 1 up
+  auto drawNetQPCanvas = [&](TCanvas* canvas, const std::vector<TGraph*>& graphs,
+                             TLegend* legend, const std::string& pngName) {
+    double xMax = 0.0, yMax = 0.0;
+    for (TGraph* g : graphs) {
+      for (int ip = 0; ip < g->GetN(); ++ip) {
+        double x, y;
+        g->GetPoint(ip, x, y);
+        if (x > xMax) xMax = x;
+        if (y > yMax) yMax = y;
+      }
+    }
+    canvas->cd();
+    for (size_t i = 0; i < graphs.size(); ++i) {
+      if (i == 0) {
+        graphs[i]->Draw("AL");
+        graphs[i]->GetXaxis()->SetLimits(0.0, xMax);
+        graphs[i]->SetMinimum(1.0);
+        graphs[i]->SetMaximum(3.0 * yMax);
+      } else {
+        graphs[i]->Draw("L SAME");
+      }
+    }
+    legend->Draw();
+    fOut->cd();
+    canvas->Write();
+    canvas->SaveAs(pngName.c_str());
+  };
+
+  for (int iC = 0; iC < (int)configs.size(); ++iC) {
+    const Config& config = configs[iC];
+
+    std::vector<TGraph*> qpGraphs, lifetimeGraphs;
+    TLegend* leg_qp = new TLegend(0.62, 0.55, 0.88, 0.88);
+    leg_qp->SetBorderSize(1);
+    leg_qp->SetFillStyle(0);
+    TLegend* leg_lt = new TLegend(0.62, 0.55, 0.88, 0.88);
+    leg_lt->SetBorderSize(1);
+    leg_lt->SetFillStyle(0);
+
+    for (int iE = 0; iE < (int)energyStrings.size(); ++iE) {
+      const double energy_eV = std::atof(energyStrings[iE].c_str());
+      const std::string tag = "Al" + std::to_string(al) + "_ns" + std::to_string(ns)
+                              + "_E" + energyStrings[iE] + "eV";
+      const std::string runDir = baseRunDir + "/" + config.directory;
+      const std::string primaryFilename = runDir + "/Primary_" + tag + ".txt";
+      const std::string hitsFilename = runDir + "/Hits_" + tag + ".txt";
+
+      std::ifstream primaryFile(primaryFilename.c_str());
+      std::ifstream hitsFile(hitsFilename.c_str());
+      if (!primaryFile.good() || !hitsFile.good()) {
+        std::cerr << "Skipping E=" << energyStrings[iE] << " eV for " << config.label
+                  << ": missing primary or hit file." << std::endl;
+        continue;
+      }
+
+      const std::map<int, PrimaryInfo> primaryInfo =
+          ParsePrimaryTextFileForPrimaries(primaryFilename);
+      const std::map<int, std::vector<Hit> > hitInfo =
+          ParseHitTextFileForHits(hitsFilename);
+      if (primaryInfo.empty()) {
+        std::cerr << "Skipping E=" << energyStrings[iE] << " eV for " << config.label
+                  << ": no primaries." << std::endl;
+        continue;
+      }
+
+      // The same injection times are used for every lifetime, so only tau changes
+      const std::vector<Injection> injections = makeInjections(primaryInfo);
+
+      if (energyStrings[iE] == lifetimeScanEnergy) {
+        for (int iL = 0; iL < (int)scanLifetimes_us.size(); ++iL) {
+          const double tau_us = scanLifetimes_us[iL];
+          const QPCurve curve = computeNetQP(hitInfo, injections, 1e3 * tau_us);
+          if (curve.times_s.empty()) continue;
+          std::cout << config.label << "  tau=" << tau_us << " us  Peak QP=" << curve.peakQP
+                    << "  rise=" << curve.riseTime_ns / 1e6 << " ms  fall="
+                    << curve.fallTime_ns / 1e6 << " ms" << std::endl;
+          if (curve.peakQP > 0.0 && curve.fallTime_ns >= 0.0) {
+            lifetimeMetrics[iC].x.push_back(tau_us);
+            lifetimeMetrics[iC].rise_ms.push_back(curve.riseTime_ns / 1e6);
+            lifetimeMetrics[iC].fall_ms.push_back(curve.fallTime_ns / 1e6);
+            lifetimeMetrics[iC].peak.push_back(curve.peakQP);
+          }
+
+          TGraph* gl = new TGraph((int)curve.times_s.size(), curve.times_s.data(),
+                                  curve.netQP.data());
+          gl->SetName(TString::Format("g_netQP_ConstRate_lifetimeScan_%s_tau%dus",
+                                      config.directory.c_str(), (int)tau_us));
+          gl->SetTitle(TString::Format(
+              "Net QP vs Time, %d phonons over %.3g s, E = %.2f meV, %s;Time [s];Net N_{QP}",
+              nPhonons, duration_s, 1e3 * energy_eV, config.label.c_str()));
+          gl->SetLineWidth(2);
+          gl->SetLineColor(rainbowColor(iL, (int)scanLifetimes_us.size()));
+          fOut->cd();
+          gl->Write();
+          lifetimeGraphs.push_back(gl);
+          leg_lt->AddEntry(gl, TString::Format("#tau = %.0f #mus", tau_us), "l");
+        }
+      }
+
+      const QPCurve curve = computeNetQP(hitInfo, injections, qpLifetimeMean_ns);
+      if (curve.times_s.empty()) continue;
+      std::cout << config.label << "  E=" << energy_eV << " eV  Peak QP=" << curve.peakQP
+                << "  rise=" << curve.riseTime_ns / 1e6 << " ms  fall="
+                << curve.fallTime_ns / 1e6 << " ms" << std::endl;
+      if (curve.peakQP > 0.0 && curve.fallTime_ns >= 0.0) {
+        energyMetrics[iC].x.push_back(1e3 * energy_eV);
+        energyMetrics[iC].rise_ms.push_back(curve.riseTime_ns / 1e6);
+        energyMetrics[iC].fall_ms.push_back(curve.fallTime_ns / 1e6);
+        energyMetrics[iC].peak.push_back(curve.peakQP);
+      }
+
+      TGraph* g = new TGraph((int)curve.times_s.size(), curve.times_s.data(),
+                             curve.netQP.data());
+      g->SetName(TString::Format("g_netQP_ConstRate_%s_E%seV", config.directory.c_str(),
+                                 energyStrings[iE].c_str()));
+      g->SetTitle(TString::Format("Net QP vs Time, %d phonons over %.3g s, %s;Time [s];Net N_{QP}",
+                                  nPhonons, duration_s, config.label.c_str()));
+      g->SetLineWidth(2);
+      g->SetLineColor(rainbowColor(iE, (int)energyStrings.size()));
+      fOut->cd();
+      g->Write();
+      qpGraphs.push_back(g);
+      leg_qp->AddEntry(g, TString::Format("E = %.2f meV", 1e3 * energy_eV), "l");
+    }
+
+    if (!qpGraphs.empty()) {
+      TCanvas* c_qp = new TCanvas(
+          TString::Format("c_netQP_ConstRate_%s", config.directory.c_str()),
+          TString::Format("Net QP vs Time, constant rate: %s", config.label.c_str()), 900, 700);
+      c_qp->SetLogy();
+      drawNetQPCanvas(c_qp, qpGraphs, leg_qp,
+                      "netQP_ConstantRate_vs_Time_" + config.directory + ".png");
+      delete c_qp;
+    }
+    delete leg_qp;
+
+    if (!lifetimeGraphs.empty()) {
+      TCanvas* c_lt = new TCanvas(
+          TString::Format("c_netQP_ConstRate_lifetimeScan_%s", config.directory.c_str()),
+          TString::Format("Net QP vs Time, constant rate, lifetime scan: %s",
+                          config.label.c_str()), 900, 700);
+      c_lt->SetLogy();
+      drawNetQPCanvas(c_lt, lifetimeGraphs, leg_lt,
+                      "netQP_ConstantRate_lifetimeScan_E" + lifetimeScanEnergy + "eV_"
+                      + config.directory + ".png");
+      delete c_lt;
+    }
+    delete leg_lt;
+  }
+
+  // Rise time, fall time and peak height vs initial energy and vs QP lifetime,
+  // SW and PF overlaid on each canvas, with a matching text file
+  auto drawMetric = [&](const std::vector<QPMetrics>& metrics,
+                        std::vector<double> QPMetrics::*field, const std::string& name,
+                        const std::string& title, const std::string& xTitle,
+                        const std::string& yTitle, const std::string& xTitlePlain,
+                        const std::string& yTitlePlain, bool logX) {
+    TMultiGraph* mg = new TMultiGraph(("mg_" + name).c_str(),
+        (title + ";" + xTitle + ";" + yTitle).c_str());
+    TLegend* leg = new TLegend(0.15, 0.78, 0.40, 0.88);
+    leg->SetBorderSize(1);
+    leg->SetFillStyle(0);
+    for (int iC = 0; iC < (int)configs.size(); ++iC) {
+      const QPMetrics& m = metrics[iC];
+      if (m.x.empty()) continue;
+      TGraph* g = new TGraph((int)m.x.size(), m.x.data(), (m.*field).data());
+      g->SetName(("g_" + name + "_" + configs[iC].directory).c_str());
+      g->SetLineColor(configs[iC].color);
+      g->SetMarkerColor(configs[iC].color);
+      g->SetLineWidth(2);
+      g->SetMarkerStyle(20);
+      g->SetMarkerSize(0.9);
+      mg->Add(g, "LP");
+      leg->AddEntry(g, configs[iC].label.c_str(), "lp");
+    }
+
+    // Matching data table: one row per scan value, one column per configuration
+    std::map<double, std::vector<double> > rows;
+    for (int iC = 0; iC < (int)configs.size(); ++iC) {
+      const QPMetrics& m = metrics[iC];
+      for (size_t i = 0; i < m.x.size(); ++i) {
+        std::vector<double>& row = rows.emplace(
+            m.x[i], std::vector<double>(configs.size(), -1.0)).first->second;
+        row[iC] = (m.*field)[i];
+      }
+    }
+    std::ofstream dataFile((name + ".txt").c_str());
+    if (!dataFile.good()) {
+      std::cerr << "Error: could not create " << name << ".txt" << std::endl;
+    } else {
+      dataFile << "# " << yTitlePlain << " vs " << xTitlePlain << ", " << nPhonons
+               << " phonons at a constant rate over " << duration_s << " s\n# "
+               << TString::Format("%-16s", xTitlePlain.c_str());
+      for (const Config& config : configs) {
+        dataFile << TString::Format("%-34s", (config.directory + " " + yTitlePlain).c_str());
+      }
+      dataFile << "\n";
+      for (const auto& row : rows) {
+        dataFile << "  " << TString::Format("%-16.6g", row.first);
+        for (double value : row.second) {
+          if (value < 0.0) dataFile << TString::Format("%-34s", "NA");
+          else dataFile << TString::Format("%-34.6g", value);
+        }
+        dataFile << "\n";
+      }
+    }
+
+    if (mg->GetListOfGraphs() && mg->GetListOfGraphs()->GetSize() > 0) {
+      TCanvas* c = new TCanvas(("c_" + name).c_str(), title.c_str(), 900, 700);
+      c->SetGrid();
+      if (logX) c->SetLogx();
+      mg->Draw("A");
+      leg->Draw();
+      fOut->cd();
+      mg->Write();
+      c->Write();
+      c->SaveAs((name + ".png").c_str());
+      delete c;
+    }
+    delete leg;
+  };
+
+  const std::string energyX = "Initial phonon energy [meV]";
+  const std::string energyXPlain = "E_init[meV]";
+  const std::string lifetimeX = "QP lifetime [#mus]";
+  const std::string lifetimeXPlain = "tau[us]";
+  drawMetric(energyMetrics, &QPMetrics::rise_ms, "QPConstRateRiseTime_vs_Energy",
+             "QP rise time (0 to peak), constant-rate injection, vs initial phonon energy",
+             energyX, "Rise time [ms]", energyXPlain, "rise_time[ms]", true);
+  drawMetric(energyMetrics, &QPMetrics::fall_ms, "QPConstRateFallTime_vs_Energy",
+             "QP fall time (peak to zero), constant-rate injection, vs initial phonon energy",
+             energyX, "Fall time [ms]", energyXPlain, "fall_time[ms]", true);
+  drawMetric(energyMetrics, &QPMetrics::peak, "QPConstRatePeak_vs_Energy",
+             "Peak N_{QP}, constant-rate injection, vs initial phonon energy",
+             energyX, "Peak N_{QP}", energyXPlain, "peak_N_QP", true);
+  drawMetric(lifetimeMetrics, &QPMetrics::rise_ms, "QPConstRateRiseTime_vs_Lifetime",
+             "QP rise time (0 to peak), constant-rate injection, vs QP lifetime",
+             lifetimeX, "Rise time [ms]", lifetimeXPlain, "rise_time[ms]", false);
+  drawMetric(lifetimeMetrics, &QPMetrics::fall_ms, "QPConstRateFallTime_vs_Lifetime",
+             "QP fall time (peak to zero), constant-rate injection, vs QP lifetime",
+             lifetimeX, "Fall time [ms]", lifetimeXPlain, "fall_time[ms]", false);
+  drawMetric(lifetimeMetrics, &QPMetrics::peak, "QPConstRatePeak_vs_Lifetime",
+             "Peak N_{QP}, constant-rate injection, vs QP lifetime",
+             lifetimeX, "Peak N_{QP}", lifetimeXPlain, "peak_N_QP", false);
+
+  fOut->Write();
+  fOut->Close();
+  delete fOut;
+}
+
+
+//---------------------------------------------------------------------------------------
 // Parsing function
 //---------------------------------------------------------------------------------------
 // Parsing function
