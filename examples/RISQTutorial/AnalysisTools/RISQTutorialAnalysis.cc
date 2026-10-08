@@ -2475,10 +2475,11 @@ void NumSensors_PCEStudy()
 //      configuration with one line per initial energy.
 //   4. Net QP vs time at 3 meV for QP lifetimes of 200 us to 2 ms (200 us steps),
 //      one canvas per loss configuration with one line per lifetime.
-//   5. Rise time, fall time and peak height of the net QP curves vs initial energy and vs
-//      QP lifetime (SW and PF overlaid), 6 canvases in total, each with a matching .txt
-//      data file. Rise time is the time from t = 0 to the peak; fall time is the time
-//      from the peak until the population returns to zero (last QP removed). Both are
+//   5. Rise time, fall time, peak height and average of the net QP curves vs initial
+//      energy and vs QP lifetime (SW and PF overlaid), 8 canvases in total, each with a
+//      matching .txt data file. Rise time is the time from t = 0 to the peak; fall time
+//      is the time from the peak until the population returns to zero (last QP removed);
+//      the average is the time average of Nqp from t = 0 to that last removal. All are
 //      taken from the exact event list, not the plot grid.
 // The Nqp(t) lines are rainbow-colored from red (lowest) to violet (highest).
 // The QP model is the same as Ns_QuasiparticleAnalysis: nQP = 2*E/Delta_Al per hit,
@@ -2531,6 +2532,7 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
     double peakQP = 0.0;
     double riseTime_ns = -1.0;  // t = 0 to the peak; negative if undefined
     double fallTime_ns = -1.0;  // peak to zero population; negative if undefined
+    double avgQP = 0.0;  // time average over [0, last QP removed]
   };
 
   // Net QP population vs time for the given hits and mean lifetime: nQP = 2*E/Delta_Al
@@ -2558,9 +2560,10 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
                 return a.time_ns < b.time_ns;
               });
 
-    double total = 0.0;
+    double total = 0.0, integral = 0.0;
     size_t iPeak = 0;
     for (size_t i = 0; i < qpEvents.size(); ++i) {
+      if (i > 0) integral += total * (qpEvents[i].time_ns - qpEvents[i - 1].time_ns);
       total += qpEvents[i].deltaQP;
       if (total > curve.peakQP) {
         curve.peakQP = total;
@@ -2570,6 +2573,7 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
     if (curve.peakQP > 0.0) {
       curve.riseTime_ns = qpEvents[iPeak].time_ns;
       curve.fallTime_ns = qpEvents.back().time_ns - qpEvents[iPeak].time_ns;
+      curve.avgQP = integral / qpEvents.back().time_ns;
     }
 
     const double dt = qpEvents.back().time_ns / nTimeSamples;
@@ -2609,9 +2613,10 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
   std::vector<std::vector<double> > pceTable(
       energyStrings.size(), std::vector<double>(configs.size(), -1.0));
 
-  // Rise time [us], fall time [us] and peak height of the net QP curves vs a scan variable
+  // Rise time [us], fall time [us], peak height and average of the net QP curves vs a
+  // scan variable
   struct QPMetrics {
-    std::vector<double> x, rise_us, fall_us, peak;
+    std::vector<double> x, rise_us, fall_us, peak, avg;
   };
   std::vector<QPMetrics> energyMetrics(configs.size()), lifetimeMetrics(configs.size());
 
@@ -2708,6 +2713,7 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
           const QPCurve curve = computeNetQP(hitInfo, 1e3 * tau_us);
           if (curve.times.empty()) continue;
           std::cout << "    tau=" << tau_us << " us  Peak QP=" << curve.peakQP
+                    << "  Average QP=" << curve.avgQP
                     << "  rise=" << curve.riseTime_ns / 1e3 << " us  fall="
                     << curve.fallTime_ns / 1e3 << " us" << std::endl;
           if (curve.peakQP > 0.0 && curve.fallTime_ns >= 0.0) {
@@ -2715,6 +2721,7 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
             lifetimeMetrics[iC].rise_us.push_back(curve.riseTime_ns / 1e3);
             lifetimeMetrics[iC].fall_us.push_back(curve.fallTime_ns / 1e3);
             lifetimeMetrics[iC].peak.push_back(curve.peakQP);
+            lifetimeMetrics[iC].avg.push_back(curve.avgQP);
           }
 
           TGraph* gl = new TGraph((int)curve.times.size(), curve.times.data(),
@@ -2737,13 +2744,15 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
       if (curve.times.empty()) continue;
       const std::vector<double>& times = curve.times;
       const std::vector<double>& netQP = curve.netQP;
-      std::cout << "    Peak QP=" << curve.peakQP << "  rise=" << curve.riseTime_ns / 1e3
-                << " us  fall=" << curve.fallTime_ns / 1e3 << " us" << std::endl;
+      std::cout << "    Peak QP=" << curve.peakQP << "  Average QP=" << curve.avgQP
+                << "  rise=" << curve.riseTime_ns / 1e3 << " us  fall="
+                << curve.fallTime_ns / 1e3 << " us" << std::endl;
       if (curve.peakQP > 0.0 && curve.fallTime_ns >= 0.0) {
         energyMetrics[iC].x.push_back(1e3 * energy_eV);
         energyMetrics[iC].rise_us.push_back(curve.riseTime_ns / 1e3);
         energyMetrics[iC].fall_us.push_back(curve.fallTime_ns / 1e3);
         energyMetrics[iC].peak.push_back(curve.peakQP);
+        energyMetrics[iC].avg.push_back(curve.avgQP);
       }
 
       TGraph* g = new TGraph((int)times.size(), times.data(), netQP.data());
@@ -2841,7 +2850,7 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
     leg_pce->AddEntry(g_pce, config.label.c_str(), "lp");
   }
 
-  // Rise time, fall time and peak height vs initial energy and vs QP lifetime,
+  // Rise time, fall time, peak height and average vs initial energy and vs QP lifetime,
   // SW and PF overlaid on each canvas
   auto drawMetric = [&](const std::vector<QPMetrics>& metrics,
                         std::vector<double> QPMetrics::*field, const std::string& name,
@@ -2940,6 +2949,12 @@ void Energy_PCEAndQPStudy(std::string baseRunDir = "../../../../261005_run_energ
   drawMetric(lifetimeMetrics, &QPMetrics::peak, "QPPeak_vs_Lifetime",
              "Peak N_{QP} vs QP lifetime",
              "QP lifetime [#mus]", "Peak N_{QP}", false);
+  drawMetric(energyMetrics, &QPMetrics::avg, "QPAvg_vs_Energy",
+             "Average N_{QP} (0 to last QP removed) vs initial phonon energy",
+             "Initial phonon energy [meV]", "Average N_{QP}", true);
+  drawMetric(lifetimeMetrics, &QPMetrics::avg, "QPAvg_vs_Lifetime",
+             "Average N_{QP} (0 to last QP removed) vs QP lifetime",
+             "QP lifetime [#mus]", "Average N_{QP}", false);
 
   // PCE vs initial energy as a text table, one row per energy
   {
