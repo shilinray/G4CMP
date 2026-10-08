@@ -1,0 +1,17 @@
+# peak_N_QP vs E_init[meV], 100000 phonons at a constant rate over 1 s
+# E_init[meV]     SQUAT_Al_Nb_SW peak_N_QP          SQUAT_Al_Nb_PF peak_N_QP          
+  0.4             25                                9                                 
+  0.5             28                                9                                 
+  0.6             27                                10                                
+  0.8             36                                12                                
+  1               37                                16                                
+  1.5             48                                23                                
+  2               52                                27                                
+  2.5             61                                32                                
+  3               84                                37                                
+  3.5             17                                14                                
+  4               23                                17                                
+  4.5             33                                21                                
+  5               49                                22                                
+  7.5             65                                36                                
+  10              88                                53                                
