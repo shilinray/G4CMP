@@ -45,6 +45,9 @@ then
     elif [ "$pAbsProbSideWallSi" = "0.0" ]
     then
         run_dir="/sdf/home/s/shilin/mycode/261007_run_mems/MEMS_Al_PF"
+    elif [ "$pAbsProbSideWallSi" = "$pAbsProbPolishedWallSi" ]
+    then
+        run_dir="/sdf/home/s/shilin/mycode/261007_run_mems/MEMS_Al_SAME"
     else
         run_dir="/sdf/home/s/shilin/mycode/261007_run_mems/MEMS_Al_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
     fi
@@ -55,6 +58,9 @@ else
     elif [ "$pAbsProbSideWallSi" = "0.0" ]
     then
         run_dir="/sdf/home/s/shilin/mycode/261007_run_mems/MEMS_Al_Nb_PF"
+    elif [ "$pAbsProbSideWallSi" = "$pAbsProbPolishedWallSi" ]
+    then
+        run_dir="/sdf/home/s/shilin/mycode/261007_run_mems/MEMS_Al_Nb_SAME"
     else
         run_dir="/sdf/home/s/shilin/mycode/261007_run_mems/MEMS_Al_Nb_wall_${pAbsProbSideWallSi}_polished_${pAbsProbPolishedWallSi}"
     fi

@@ -29,6 +29,10 @@ do
             # Config 2: PF loss
             echo "$Al_z $Nb_z $albool 0.0 0.0025 $ix $iy $grid_size"
             sbatch ./mems.sh "$Al_z" "$Nb_z" "$albool" 0.0 0.0025 "$ix" "$iy" "$grid_size"
+
+            # Config 3: Same loss (side wall and polished face)
+            echo "$Al_z $Nb_z $albool 0.0025 0.0025 $ix $iy $grid_size"
+            sbatch ./mems.sh "$Al_z" "$Nb_z" "$albool" 0.0025 0.0025 "$ix" "$iy" "$grid_size"
         done
     done
 done
