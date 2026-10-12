@@ -7,7 +7,7 @@
 #SBATCH --mem-per-cpu=4096
 #SBATCH --time=0-02:00:00
 #SBATCH --gpus 0
-#SBATCH --output=/sdf/home/s/shilin/mycode/slurm_output_mems_circle/slurm-%j.out
+#SBATCH --output=/sdf/home/s/shilin/mycode/slurm_output_261012_mems_circle_80/slurm-%j.out
 
 # load SCDMS singularity image module
 
@@ -38,7 +38,7 @@ chip_radius="$9"
 gps_x=$(echo "scale=4; -$chip_radius + ($ix + 0.5) * 2 * $chip_radius / $grid_size" | bc -l)
 gps_y=$(echo "scale=4; -$chip_radius + ($iy + 0.5) * 2 * $chip_radius / $grid_size" | bc -l)
 
-base_dir="/sdf/home/s/shilin/mycode/run_mems_circle"
+base_dir="/sdf/home/s/shilin/mycode/261012_run_mems_circle_80"
 
 if [ "$Al_bool" = "true" ]
 then
